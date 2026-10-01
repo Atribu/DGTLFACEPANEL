@@ -1,0 +1,356 @@
+.bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 39px;
+  height: 39px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.bell:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+.heading h1 {
+  margin: 5px 0 9px;
+  font-size: 30px;
+  letter-spacing: -1px;
+}
+.heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.heading .eyebrow {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+.readAll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.readAll:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+.readAll:disabled,
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 17px;
+}
+.filters {
+  display: inline-flex;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 4px;
+  background: #fff;
+}
+.filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  padding: 9px 15px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.filters button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.filters span {
+  border-radius: 5px;
+  background: #fff;
+  color: var(--accent);
+  padding: 1px 6px;
+  font-size: 10px;
+}
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+.item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.item:last-child {
+  border-bottom: 0;
+}
+.unread {
+  background: linear-gradient(90deg, #fbf8fe, #fff 70%);
+}
+.unread::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent);
+}
+.icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 39px;
+  height: 39px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.attention {
+  background: #fff2e3;
+  color: #97571a;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.itemTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 2px 0 7px;
+}
+.itemTop h2 {
+  font-size: 13px;
+  font-weight: 750;
+  margin: 0;
+  color: var(--ink);
+}
+.unreadLabel {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #efe2f7;
+  color: #6f2d91;
+  font-size: 9px;
+  font-weight: 800;
+}
+.content > p {
+  margin: 0;
+  font-size: 12px;
+  color: #645b72;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.metadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.metadata > span:first-child {
+  font-weight: 650;
+}
+.actions {
+  display: flex;
+  gap: 17px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 0;
+  min-height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
+}
+.openTask {
+  color: var(--accent);
+  font-weight: 750;
+}
+.markRead {
+  color: var(--muted);
+}
+.error {
+  margin: 14px 0;
+  padding: 13px 16px;
+  border: 1px solid #edcaca;
+  border-radius: 10px;
+  background: #fff7f7;
+  color: #963c3c;
+  font-size: 12px;
+}
+.error button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0 0 0 7px;
+}
+.empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 290px;
+  padding: 45px 25px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 17px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.empty h2 {
+  font-size: 17px;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+.empty p {
+  max-width: 360px;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.limit {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 15px 2px;
+}
+.page button:focus-visible,
+.bell:focus-visible {
+  outline: 3px solid #d3b6e3;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .heading h1 {
+    font-size: 26px;
+  }
+  .heading p {
+    font-size: 12px;
+  }
+  .readAll {
+    width: 100%;
+  }
+  .item {
+    padding: 19px 16px;
+    gap: 11px;
+  }
+  .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+  .itemTop h2 {
+    font-size: 12px;
+  }
+  .content > p {
+    font-size: 11px;
+  }
+  .filters button {
+    padding: 9px 11px;
+  }
+  .refresh span {
+    display: none;
+  }
+}

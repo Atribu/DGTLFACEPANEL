@@ -1,0 +1,2647 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Kullanıcının kuracağı şirket içi iş takip sistemi için kaynak görevleri ve süreç bilgisini koruyan inceleme kaydı. Bu dosya uygulama kodu veya onaylanmış ürün kapsamı değildir.",
+  "source": {
+    "spreadsheetId": "1A0hUfjNLQAJCJAEJisz5m2m-GxnskE0vBHUSIg2kb8U",
+    "url": "https://docs.google.com/spreadsheets/d/1A0hUfjNLQAJCJAEJisz5m2m-GxnskE0vBHUSIg2kb8U/edit",
+    "title": "DGTLFACE Yeni Otel Entegrasyon Sureci",
+    "readDate": "2026-10-01",
+    "scope": "Her sekmenin tüm sütunlarında 1–160. satırlar okundu. Daha aşağıdaki satırlar incelenmedi."
+  },
+  "userDirection": "Görevler ileride projede kullanılacak. Kullanıcı ile ihtiyaçlar konuşuluyor; uygulama geliştirme aşamasına henüz geçilmedi.",
+  "checklist": {
+    "sheetId": 2086216876,
+    "title": "Ana Checklist",
+    "readRange": "'Ana Checklist'!A1:Z160",
+    "sourceHeaders": [
+      "✓",
+      "Aşama",
+      "Görev ID",
+      "Yapılacak İş",
+      "Tamamlanma Kriteri",
+      "Otelden Talep / Girdi",
+      "Sorumlu",
+      "Öncelik",
+      "Hedef Tarih",
+      "Notlar"
+    ],
+    "tasks": [
+      {
+        "sourceRow": 7,
+        "completionMark": "☐",
+        "stage": "01. Proje Açılışı",
+        "sourceTaskId": "PRJ-001",
+        "task": "Otel onboarding proje kaydını aç",
+        "completionCriterion": "Otel, marka, lokasyon, açılış tarihi, kapsam ve iletişim bilgileri tek kayıtta yer alır.",
+        "hotelInput": "Resmî unvan, marka adı, adres, vergi bilgileri, ruhsat/sertifikalar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 8,
+        "completionMark": "☐",
+        "stage": "01. Proje Açılışı",
+        "sourceTaskId": "PRJ-002",
+        "task": "Ana iletişim ve onay matrisi oluştur",
+        "completionCriterion": "Genel müdür, satış, ön büro, muhasebe, IT ve acil durum yetkilileri ile onay süreleri belirlenir.",
+        "hotelInput": "Ad-soyad, görev, telefon, e-posta, yetki/onay alanı",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 9,
+        "completionMark": "☐",
+        "stage": "01. Proje Açılışı",
+        "sourceTaskId": "PRJ-004",
+        "task": "Mevcut dijital varlık envanterini çıkar",
+        "completionCriterion": "Web sitesi, domain, PMS, OTA, sosyal medya, reklam, analitik, e-posta ve telefon hesapları listelenir.",
+        "hotelInput": "Mevcut hesap ve tedarikçi listesi",
+        "responsibleRole": "Dijital Strateji",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 10,
+        "completionMark": "☐",
+        "stage": "01. Proje Açılışı",
+        "sourceTaskId": "PRJ-005",
+        "task": "Marka ve ticari hedefleri yazılılaştır",
+        "completionCriterion": "Hedef pazar, segment, oda/geceleme hedefi, ADR, doluluk, gelir ve direkt rezervasyon hedefleri netleşir.",
+        "hotelInput": "Bütçe, hedefler, sezonlar, müşteri segmentleri",
+        "responsibleRole": "Dijital Strateji",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 11,
+        "completionMark": "☐",
+        "stage": "01. Proje Açılışı",
+        "sourceTaskId": "PRJ-006",
+        "task": "Rakip setini belirle",
+        "completionCriterion": "En az 5 doğrudan rakip; fiyat, kanal, içerik, puan ve teklif açısından izlemeye alınır.",
+        "hotelInput": "Otelin bildirdiği rakipler",
+        "responsibleRole": "Dijital Strateji",
+        "priority": "Orta",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 12,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-001",
+        "task": "Aktif otel hattının NAC'a taşınması için otele e-posta gönder",
+        "completionCriterion": "Taşıma talebi, gerekli evraklar, süreç sahibi ve hedef tarih e-postada açıkça yer alır.",
+        "hotelInput": "Aktif numara(lar), operatör, abonelik sahibi, son fatura, imza yetkilisi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 13,
+        "completionMark": "☐",
+        "stage": "02. Whatsapp",
+        "sourceTaskId": "DAT-008",
+        "task": "WhatsApp için sim kart talebi",
+        "completionCriterion": "Connexease baglantısı için Sim Kart talep edilir",
+        "hotelInput": "WhatsApp Business bilgileri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 14,
+        "completionMark": "☐",
+        "stage": "02. Connexease ",
+        "sourceTaskId": "DAT-008",
+        "task": "Widget ve mesaj bağlantıları",
+        "completionCriterion": "Connexease widget ve sosyal medya baglantıları kurulur",
+        "hotelInput": "Connexease ",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 15,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-002",
+        "task": "Numara taşıma evraklarını kontrol et",
+        "completionCriterion": "Eksiksiz ve güncel evraklar doğrulanır; eksikler yazılı talep edilir.",
+        "hotelInput": "Kimlik/imza sirküleri, vergi levhası, yetki belgesi, son fatura",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 16,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-003",
+        "task": "NAC taşıma başvurusunu aç ve takip et",
+        "completionCriterion": "Başvuru numarası, tahmini geçiş tarihi ve sorumlu kişi not edilir.",
+        "hotelInput": "Onaylı taşıma evrakları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 17,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-004",
+        "task": "IVR/karşılama akışını tasarla",
+        "completionCriterion": "Mesai içi/dışı, dil seçenekleri, rezervasyon ve resepsiyon yönlendirmeleri onaylanır.",
+        "hotelInput": "Çalışma saatleri, departmanlar, diller, acil yönlendirme",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 18,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-005",
+        "task": "IVR metinlerini yaz ve otel onayı al",
+        "completionCriterion": "TR ve gereken yabancı dillerde metinler, KVKK bilgilendirmesi dahil onaylıdır.",
+        "hotelInput": "Dil tercihleri, marka telaffuzu, KVKK metni",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 19,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-006",
+        "task": "Çağrı kayıt/aydınlatma metnini doğrula",
+        "completionCriterion": "Yasal metin, saklama süresi ve erişim yetkisi otel tarafından onaylanır.",
+        "hotelInput": "Hukuk/KVKK onayı",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 20,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-007",
+        "task": "Geçiş öncesi ve sonrası test aramaları yap",
+        "completionCriterion": "Gelen/giden çağrı, IVR, transfer, kayıt, mesai dışı ve kaçan çağrı senaryoları başarıyla test edilir.",
+        "hotelInput": "Test için otel yetkilisi",
+        "responsibleRole": "Çağrı Merkezi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 21,
+        "completionMark": "☐",
+        "stage": "02. Telefon & NAC",
+        "sourceTaskId": "TEL-008",
+        "task": "Eski hat yönlendirme ve kesinti planını onayla",
+        "completionCriterion": "Geçiş anında çağrı kaybını önleyen geri dönüş planı ve duyuru yöntemi hazırdır.",
+        "hotelInput": "Operatör/otel teknik kişi onayı",
+        "responsibleRole": "Çağrı Merkezi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 22,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-001",
+        "task": "Güvenli erişim talep formunu otele gönder",
+        "completionCriterion": "Tüm hesaplar platform, kullanıcı, rol, sahip, 2FA ve kurtarma yöntemiyle listelenir.",
+        "hotelInput": "Hesap sahipleri ve mevcut erişimler",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 23,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-002",
+        "task": "Sosyal medya erişim bilgilerini iste",
+        "completionCriterion": "Meta Business, Facebook, Instagram, TikTok, LinkedIn, YouTube ve diğer hesap erişimleri tamamlanır.",
+        "hotelInput": "Business ID, sayfa/hesap linkleri, yönetici davetleri",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 24,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-003",
+        "task": "Google ekosistemi erişimlerini iste",
+        "completionCriterion": "Google Business Profile, Ads, Analytics, Tag Manager, Search Console ve Merchant/Hotel Center erişimleri alınır.",
+        "hotelInput": "Hesap kimlikleri ve yönetici davetleri",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 25,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-004",
+        "task": "Domain, DNS ve hosting erişimlerini iste",
+        "completionCriterion": "Registrar, DNS, hosting/Vercel/Cloudflare ve kurumsal e-posta yönetimi için uygun rol erişimleri alınır.",
+        "hotelInput": "Domain firması, DNS/hosting bilgisi, teknik kişi",
+        "responsibleRole": "Web & IT",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 26,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-005",
+        "task": "OTA extranet erişimlerini iste",
+        "completionCriterion": "Booking.com, Expedia, Airbnb, Agoda, Hotelbeds ve kullanılan diğer OTA'lara erişim tamamlanır.",
+        "hotelInput": "OTA listesi, tesis ID'leri, kullanıcı davetleri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 27,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-006",
+        "task": "Reklam hesaplarının sahipliğini doğrula",
+        "completionCriterion": "Hesapların otele ait olduğu, ödeme profilinin doğru olduğu ve ajansın partner rolüyle eklendiği doğrulanır.",
+        "hotelInput": "Fatura bilgisi, ödeme yöntemi, Business Manager/Ads ID",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 28,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-007",
+        "task": "Tüm kritik hesaplarda 2FA ve kurtarma yöntemlerini etkinleştir",
+        "completionCriterion": "En az iki yetkili, güvenli kurtarma e-postası/telefonu ve 2FA mevcuttur.",
+        "hotelInput": "Yetkili telefon/e-posta bilgileri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 29,
+        "completionMark": "☐",
+        "stage": "03. Erişim & Güvenlik",
+        "sourceTaskId": "ACC-008",
+        "task": "Ajans kullanıcılarını kişisel hesap yerine kurumsal hesaplarla tanımla",
+        "completionCriterion": "Paylaşılan parola yoktur; kişi bazlı, en az yetki prensibine uygun erişim vardır.",
+        "hotelInput": "Ajans/otel kurumsal e-posta hesapları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 30,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-001",
+        "task": "Elektraweb kullanıcı oluşturma talebini aç",
+        "completionCriterion": "Talep numarası ve sağlayıcı sorumlusu kayıt altındadır.",
+        "hotelInput": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 31,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-002",
+        "task": "Turizm İşletme Belgesi Talep Et",
+        "completionCriterion": "Ota Kurulumlarında Kritik bilgi",
+        "hotelInput": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 32,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-002",
+        "task": "Vergi Levhası Talep et",
+        "completionCriterion": "Ota Kurulumlarında Kritik bilgi",
+        "hotelInput": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 33,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-003",
+        "task": "Banka Hesap Bilgileri Talep Et",
+        "completionCriterion": "PMS Kurulumlarında Kritik bilgi",
+        "hotelInput": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 34,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-004",
+        "task": "Sanal Pos Entegrasyonu Talep Et",
+        "completionCriterion": "PMS Kurulumlarında Kritik bilgi",
+        "hotelInput": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 35,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-005",
+        "task": "Elektraweb kullanıcı tanımlarını oluştur ve tamamla",
+        "completionCriterion": "Kişi bazlı roller tanımlanmış, girişler test edilmiş ve yetkiler doğrulanmıştır.",
+        "hotelInput": "Ad-soyad, e-posta, rol/yetki listesi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 36,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-006",
+        "task": "Entegrasyon kullanıcısını kur",
+        "completionCriterion": "API/entegrasyon kullanıcısı minimum gerekli yetkiyle aktif ve güvenli biçimde kayıtlıdır.",
+        "hotelInput": "Entegrasyon kapsamı ve teknik onay",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 37,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-007",
+        "task": "Çağrı merkezi acentasını Elektraweb'de kur",
+        "completionCriterion": "Acenta kodu, komisyon/kontrat, pazar ve rezervasyon kaynağı doğru tanımlanmıştır.",
+        "hotelInput": "Acenta unvanı, vergi/fatura bilgileri, komisyon ve kontrat",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 38,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-009",
+        "task": "Asisia bağlantısı için fiyat ve kontratları Elektraweb'e tanımla",
+        "completionCriterion": "Oda tipleri, pansiyonlar, fiyatlar, çocuk politikaları, iptal/no-show ve kontrat tarihleri eksiksizdir.",
+        "hotelInput": "Onaylı fiyat tablosu, sezonlar, kontratlar, politikalar",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 39,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-010",
+        "task": "Oda tipi ve pansiyon eşleştirmelerini doğrula",
+        "completionCriterion": "Kodlar, kişi kapasitesi, yatak tipi ve pansiyon adları tüm sistemlerde birebir eşleşir.",
+        "hotelInput": "Oda envanteri ve pansiyon açıklamaları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 40,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-011",
+        "task": "Vergi, para birimi ve fiyat dahil/hariç ayarlarını kontrol et",
+        "completionCriterion": "KDV, konaklama vergisi, servis/şehir vergileri ve kur dönüşümü rezervasyon çıktısında doğrudur.",
+        "hotelInput": "Vergi/fatura uygulaması ve mali müşavir onayı",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 41,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-012",
+        "task": "Rezervasyon kaynak ve kampanya kodlarını oluştur",
+        "completionCriterion": "Web, çağrı merkezi, walk-in, OTA ve kampanya kaynakları raporda ayrışır.",
+        "hotelInput": "Raporlama/kaynak kodu ihtiyaçları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 42,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-013",
+        "task": "E-posta/SMS rezervasyon şablonlarını kur",
+        "completionCriterion": "Onay, değişiklik, iptal, ödeme ve pre-arrival şablonları marka ve yasal metinlerle hazırdır.",
+        "hotelInput": "Logo, iletişim, iptal/ödeme metni, KVKK",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 43,
+        "completionMark": "☐",
+        "stage": "04. Elektraweb & Asisia",
+        "sourceTaskId": "PMS-014",
+        "task": "Test rezervasyonu ve iptal/değişiklik akışını tamamla",
+        "completionCriterion": "Fiyat, müsaitlik, vergi, ödeme, bildirim ve envanter geri dönüşü uçtan uca doğrulanmıştır.",
+        "hotelInput": "Test kartı/ödeme yöntemi, otel test yetkilisi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 44,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-001",
+        "task": "Otelin kullandığı tüm OTA bilgilerini talep et",
+        "completionCriterion": "Platform, tesis ID, sözleşme, komisyon, pazar, ödeme modeli, iletişim ve erişim bilgileri tek listede bulunur.",
+        "hotelInput": "OTA extranet listesi ve sözleşmeleri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 45,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-002",
+        "task": "OTA bağlantılarının mevcut durumunu kontrol et",
+        "completionCriterion": "Her kanal için aktif/pasif, channel manager bağlantısı, son senkron ve hata durumu kaydedilir.",
+        "hotelInput": "Channel manager/PMS erişimi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 46,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-003",
+        "task": "Tesis adı, adres, koordinat ve iletişim tutarlılığını kontrol et",
+        "completionCriterion": "Tüm OTA ve harita kayıtlarında NAP bilgileri birebir tutarlıdır.",
+        "hotelInput": "Resmî adres, koordinat, telefon, e-posta",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 47,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-004",
+        "task": "Oda tipi, kapasite ve özellik eşleştirmelerini kontrol et",
+        "completionCriterion": "Oda adları, kişi/çocuk kapasitesi, m², yatak, manzara ve olanaklar doğru görünür.",
+        "hotelInput": "Güncel oda envanteri ve özellik listesi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 48,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-005",
+        "task": "Fiyat planı ve pansiyon eşleştirmelerini kontrol et",
+        "completionCriterion": "İade edilebilir/edilemez, kahvaltı/yarım pansiyon ve mobil/ülke fiyatları doğru bağlanmıştır.",
+        "hotelInput": "Onaylı fiyat planları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 49,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-006",
+        "task": "Müsaitlik ve envanter senkronunu test et",
+        "completionCriterion": "PMS değişikliği tüm bağlı kanallara doğru süre ve miktarda yansır.",
+        "hotelInput": "Test tarihleri ve envanter onayı",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 50,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-007",
+        "task": "İptal, ön ödeme, no-show ve çocuk politikalarını eşitle",
+        "completionCriterion": "Müşteriye görünen politikalar kontrat ve PMS ile tutarlıdır.",
+        "hotelInput": "Onaylı politika metinleri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 51,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-008",
+        "task": "Vergi ve ek ücret gösterimini kontrol et",
+        "completionCriterion": "Toplam fiyat, vergiler, tesis/servis ücretleri ve yerinde ödemeler açık ve doğrudur.",
+        "hotelInput": "Vergi uygulaması",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 52,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-009",
+        "task": "Fotoğraf sıralaması ve içerik kalite kontrolü yap",
+        "completionCriterion": "Kapak fotoğrafı güçlü; oda, banyo, ortak alan, yeme-içme, konum ve olanaklar günceldir.",
+        "hotelInput": "Yüksek çözünürlüklü fotoğraf/video arşivi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 53,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-010",
+        "task": "Tesis ve oda açıklamalarını optimize et",
+        "completionCriterion": "Doğru, ikna edici, platform limitlerine uygun ve gereken dillerde içerik yayınlanır.",
+        "hotelInput": "Onaylı özellikler ve çeviriler",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 54,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-011",
+        "task": "Ödeme/sanal kart ve fatura akışını test et",
+        "completionCriterion": "VCC tahsilat tarihleri, kart yetkisi, ödeme modeli ve fatura sorumluluğu nettir.",
+        "hotelInput": "Muhasebe ve POS bilgisi",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 55,
+        "completionMark": "☐",
+        "stage": "05. OTA & Dağıtım",
+        "sourceTaskId": "OTA-014",
+        "task": "OTA mesaj şablonları ve yanıt SLA'sı kur",
+        "completionCriterion": "Rezervasyon öncesi/sonrası sorular, ulaşım, check-in ve şikâyet yanıtları hazırdır.",
+        "hotelInput": "Otel operasyon bilgileri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Orta",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 56,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-001",
+        "task": "Marka dosyalarını talep et",
+        "completionCriterion": "Vektörel logo, renkler, fontlar, kullanım kılavuzu ve eski kreatifler merkezi klasörde bulunur.",
+        "hotelInput": "AI/SVG/PDF logo, brandbook, font lisansları",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 57,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-002",
+        "task": "Otel bilgi formunu tamamlat",
+        "completionCriterion": "Tesis hikâyesi, oda, olanak, yeme-içme, spa, toplantı, ulaşım, kurallar ve SSS eksiksizdir.",
+        "hotelInput": "Detaylı tesis bilgi formu",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 58,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-004",
+        "task": "Fotoğraf/video arşivini denetle",
+        "completionCriterion": "Güncellik, çözünürlük, yatay/dikey format, kullanım hakkı ve eksik çekim listesi belirlenir.",
+        "hotelInput": "Orijinal medya dosyaları ve kullanım izinleri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 59,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-005",
+        "task": "Yeni çekim gerekiyorsa shot list ve çekim planı hazırla",
+        "completionCriterion": "Oda tipleri, insanlar, detaylar, gün ışığı/gece, yemek, drone ve dikey video ihtiyaçları planlanır.",
+        "hotelInput": "Çekim izni, model/mekân uygunluğu",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 60,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-007",
+        "task": "İçerik onay ve revizyon sürecini kur",
+        "completionCriterion": "Tek onay mercii, geri bildirim formatı, maksimum tur ve teslim süreleri yazılıdır.",
+        "hotelInput": "Onay yetkilisi ve SLA",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 61,
+        "completionMark": "☐",
+        "stage": "06. Marka & İçerik",
+        "sourceTaskId": "CNT-008",
+        "task": "Kampanya ve teklif envanterini oluştur",
+        "completionCriterion": "Erken rezervasyon, uzun konaklama, balayı, şirket, grup ve sezon teklifleri koşullarıyla kayıtlıdır.",
+        "hotelInput": "Teklif koşulları, tarih, stok, indirim, iptal kuralı",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 62,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-001",
+        "task": "Web sitesi teknik ve içerik audit'i yap",
+        "completionCriterion": "Mobil, hız, erişilebilirlik, güvenlik, SEO, dönüşüm ve içerik sorunları önceliklendirilir.",
+        "hotelInput": "Web/hosting erişimi",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 63,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-002",
+        "task": "Domain, DNS, SSL ve yenileme sahipliğini doğrula",
+        "completionCriterion": "Domain otel kontrolünde; otomatik yenileme, doğru irtibat ve geçerli SSL vardır.",
+        "hotelInput": "Registrar/fatura/yetkili bilgileri",
+        "responsibleRole": "Web & IT",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 64,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-003",
+        "task": "Rezervasyon motoru bağlantısını kur/kontrol et",
+        "completionCriterion": "Doğru tesis, fiyat, müsaitlik, dil, para birimi ve yönlendirme ile çalışır.",
+        "hotelInput": "Booking engine/PMS bilgileri",
+        "responsibleRole": "Web & IT",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 65,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-004",
+        "task": "Web test rezervasyonu ve ödeme akışını tamamla",
+        "completionCriterion": "Mobil/masaüstü rezervasyon, kupon, ödeme, onay, e-posta, iptal ve PMS kaydı doğrudur.",
+        "hotelInput": "Test kartı, test tarihleri",
+        "responsibleRole": "Web & IT",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 66,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-005",
+        "task": "Mobil kullanıcı deneyimi ve dönüşüm yollarını iyileştir",
+        "completionCriterion": "Rezervasyon CTA'sı görünür; WhatsApp/telefon/tarih seçimi ve formlar sürtünmesizdir.",
+        "hotelInput": "Onaylı iletişim kanalları",
+        "responsibleRole": "Web & IT",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 67,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-006",
+        "task": "SEO temel kurulumunu tamamla",
+        "completionCriterion": "Title/meta, H yapısı, canonical, robots, sitemap, hreflang, schema ve 404/redirect kontrolleri tamamdır.",
+        "hotelInput": "Hedef diller, anahtar hizmetler",
+        "responsibleRole": "Web & IT",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 68,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-007",
+        "task": "Yerel SEO/NAP tutarlılığını düzelt",
+        "completionCriterion": "Web, Google Business Profile, haritalar ve dizinlerde ad-adres-telefon aynıdır.",
+        "hotelInput": "Resmî NAP bilgileri",
+        "responsibleRole": "Web & IT",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 69,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-008",
+        "task": "KVKK, gizlilik, çerez ve ticari ileti izinlerini uygula",
+        "completionCriterion": "Formlar ve çerez yönetimi kategorisel rıza ve gerekli metinlerle çalışır.",
+        "hotelInput": "Onaylı yasal metinler",
+        "responsibleRole": "Web & IT",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 70,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-009",
+        "task": "Erişilebilirlik ve temel uyumluluk kontrolü yap",
+        "completionCriterion": "Kontrast, klavye, alt metin, form etiketleri ve okunabilirlikte kritik engeller giderilir.",
+        "hotelInput": "Varsa erişilebilirlik gereksinimleri",
+        "responsibleRole": "Web & IT",
+        "priority": "Orta",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 71,
+        "completionMark": "☐",
+        "stage": "07. Web & Rezervasyon",
+        "sourceTaskId": "WEB-010",
+        "task": "Kurumsal e-posta teslim edilebilirliğini kontrol et",
+        "completionCriterion": "SPF, DKIM, DMARC, gönderici adları ve rezervasyon e-postalarının spam testi yapılır.",
+        "hotelInput": "DNS ve e-posta sağlayıcı erişimi",
+        "responsibleRole": "Web & IT",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 72,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-001",
+        "task": "GA4 mülk ve veri akışını kur/kontrol et",
+        "completionCriterion": "Doğru domain, saat dilimi, para birimi, trafik ve iç trafik filtreleri yapılandırılmıştır.",
+        "hotelInput": "GA4 erişimi ve kurum bilgileri",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 73,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-002",
+        "task": "Google Tag Manager kurulumunu kontrol et",
+        "completionCriterion": "Tek doğru container vardır; sürümleme, yetkiler ve ortam ayrımı düzenlidir.",
+        "hotelInput": "GTM erişimi",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 74,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-003",
+        "task": "Dönüşüm ölçüm planını oluştur",
+        "completionCriterion": "Booking engine başlangıç/arama/oda seçimi/ödeme/satın alma, form, telefon ve WhatsApp olayları tanımlıdır.",
+        "hotelInput": "İş hedefleri ve booking engine teknik bilgisi",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 75,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-004",
+        "task": "E-ticaret ve rezervasyon gelir takibini kur",
+        "completionCriterion": "Transaction ID, değer, para birimi, oda/gece ve kupon verileri tekilleştirilerek GA4'e gider.",
+        "hotelInput": "Rezervasyon motoru dataLayer/API desteği",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 76,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-005",
+        "task": "Cross-domain ölçümlemeyi yapılandır",
+        "completionCriterion": "Web sitesi ve farklı domaindeki booking engine arasında oturum/referral kaybı oluşmaz.",
+        "hotelInput": "Tüm ilgili domainler",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 77,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-006",
+        "task": "Google Ads ve Meta dönüşüm etiketlerini kur",
+        "completionCriterion": "Satın alma ve mikro dönüşümler doğru değerle, tekrar saymadan platformlara ulaşır.",
+        "hotelInput": "Ads/Meta erişimleri",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 78,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-007",
+        "task": "Consent Mode ve çerez onayı entegrasyonunu test et",
+        "completionCriterion": "Rıza öncesi/sonrası etiket davranışı ve bölgesel gereklilikler doğrulanır.",
+        "hotelInput": "CMP ve yasal tercih",
+        "responsibleRole": "Analytics",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 79,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-008",
+        "task": "Telefon ve WhatsApp kaynak takibini kur",
+        "completionCriterion": "Tıklamalar ve mümkünse çağrı sonuçları kampanya/kaynak bazında raporlanır.",
+        "hotelInput": "NAC/telefon ve WhatsApp Business bilgileri",
+        "responsibleRole": "Proje Yöneticisi",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 80,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-009",
+        "task": "UTM isimlendirme standardını oluştur",
+        "completionCriterion": "Kaynak, medium, campaign, content ve ülke/dil formatı tüm ekip için tek standarda bağlıdır.",
+        "hotelInput": "Kampanya/kanal yapısı",
+        "responsibleRole": "Analytics",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 81,
+        "completionMark": "☐",
+        "stage": "08. Ölçümleme & Veri",
+        "sourceTaskId": "DAT-010",
+        "task": "Search Console ve sitemap doğrulamasını tamamla",
+        "completionCriterion": "Tüm domain varyantları, sitemap gönderimi, indeksleme ve kritik hatalar kontrol edilir.",
+        "hotelInput": "Search Console ve DNS erişimi",
+        "responsibleRole": "SEO",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 82,
+        "completionMark": "☐",
+        "stage": "09. Sosyal Medya",
+        "sourceTaskId": "SOC-001",
+        "task": "Sosyal hesap sahipliği ve profil bilgilerini düzelt",
+        "completionCriterion": "Kullanıcı adı, bio, kategori, link, telefon, e-posta, adres ve profil görselleri tutarlıdır.",
+        "hotelInput": "Onaylı bio, NAP, logo",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 83,
+        "completionMark": "☐",
+        "stage": "09. Sosyal Medya",
+        "sourceTaskId": "SOC-002",
+        "task": "Meta Business varlıklarını bağla",
+        "completionCriterion": "Sayfa, Instagram, reklam hesabı, pixel/dataset, katalog ve WhatsApp doğru işletmeye bağlıdır.",
+        "hotelInput": "Meta Business erişimi",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 84,
+        "completionMark": "☐",
+        "stage": "09. Sosyal Medya",
+        "sourceTaskId": "SOC-003",
+        "task": "Topluluk yönetimi kurallarını ve SLA'yı yaz",
+        "completionCriterion": "Yorum/DM yanıt süresi, rezervasyon yönlendirmesi, kriz/şikâyet eskalasyonu ve yasaklı yanıtlar belirlenir.",
+        "hotelInput": "Otel iletişim ve eskalasyon kişileri",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 85,
+        "completionMark": "☐",
+        "stage": "09. Sosyal Medya",
+        "sourceTaskId": "SOC-004",
+        "task": "Aylık içerik sütunları ve yayın takvimi hazırla",
+        "completionCriterion": "Oda, deneyim, destinasyon, ekip, yeme-içme, teklif ve UGC dengesi onaylıdır.",
+        "hotelInput": "Etkinlikler, teklifler, operasyon takvimi",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 86,
+        "completionMark": "☐",
+        "stage": "09. Sosyal Medya",
+        "sourceTaskId": "SOC-005",
+        "task": "Highlight/sabitlenmiş içerik yapısını kur",
+        "completionCriterion": "Odalar, konum, ulaşım, restoran, SSS, teklif ve rezervasyon bölümleri günceldir.",
+        "hotelInput": "Onaylı içerik ve kapaklar",
+        "responsibleRole": "Sosyal Medya",
+        "priority": "Orta",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 87,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-001",
+        "task": "Medya bütçesi ve kanal dağılımını onaylat",
+        "completionCriterion": "Aylık/sezonluk bütçe, platform, ülke, dil, hedef ve ajans ücreti net biçimde onaylıdır.",
+        "hotelInput": "Bütçe ve satış hedefleri",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 88,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-002",
+        "task": "Hedef pazar, persona ve rezervasyon penceresini analiz et",
+        "completionCriterion": "Ülke/şehir, dil, cihaz, kalış süresi, booking window ve segment öncelikleri tanımlanır.",
+        "hotelInput": "Geçmiş PMS/OTA verisi",
+        "responsibleRole": "Dijital Strateji",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 89,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-003",
+        "task": "Google Ads hesap/fatura/ödeme ayarlarını doğrula",
+        "completionCriterion": "Saat dilimi, para birimi, fatura profili, ödeme yöntemi ve otomatik etiketleme doğrudur.",
+        "hotelInput": "Fatura ve ödeme bilgisi",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 90,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-004",
+        "task": "Meta reklam hesap/fatura/ödeme ayarlarını doğrula",
+        "completionCriterion": "Hesap sınırı, ödeme, fatura, domain doğrulama ve roller doğrudur.",
+        "hotelInput": "Fatura ve ödeme bilgisi",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 91,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-005",
+        "task": "Marka arama kampanyasını kur",
+        "completionCriterion": "Marka varyasyonları, negatifler, site bağlantıları, arama uzantıları ve doğru landing page kullanılır.",
+        "hotelInput": "Marka/tesis ad varyasyonları",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 92,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-006",
+        "task": "Jenerik ve destinasyon arama kampanyalarını kur",
+        "completionCriterion": "Niyet bazlı gruplama, konum/dil, negatif kelime ve teklif stratejisi hedeflerle uyumludur.",
+        "hotelInput": "Hedef pazar ve teklif listesi",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 93,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-007",
+        "task": "Meta prospecting ve remarketing yapısını kur",
+        "completionCriterion": "Soğuk kitle, site/etkileşim kitleleri, hariç tutmalar ve kreatif formatları ayrıştırılır.",
+        "hotelInput": "Onaylı kreatif ve hedef pazar",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 94,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-008",
+        "task": "Google Hotel Ads/Free Booking Links uygunluğunu kontrol et",
+        "completionCriterion": "Hotel Center, fiyat feed'i, landing page ve tesis eşleştirmesi çalışır veya aksiyon planı vardır.",
+        "hotelInput": "Google Business/Hotel Center ve booking engine desteği",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 95,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-009",
+        "task": "Kreatif brief ve format setini tamamla",
+        "completionCriterion": "1:1, 4:5, 9:16, yatay; statik/video, dil ve teklif varyasyonları platforma hazırdır.",
+        "hotelInput": "Medya arşivi ve onaylı teklifler",
+        "responsibleRole": "Kreatif Ekip",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 96,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-010",
+        "task": "Landing page ve mesaj eşleşmesini kontrol et",
+        "completionCriterion": "Reklam vaadi, dil, fiyat/teklif, tarih ve CTA açılış sayfasıyla tutarlıdır.",
+        "hotelInput": "Onaylı kampanya koşulları",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 97,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-011",
+        "task": "Negatif anahtar kelime ve marka güvenliği listesini kur",
+        "completionCriterion": "Alakasız, iş ilanı, şikâyet, ücretsiz ve uygun olmayan içerik sorguları yönetilir.",
+        "hotelInput": "Marka hassasiyetleri",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Orta",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 98,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-012",
+        "task": "Kampanya adlandırma ve etiket standardını uygula",
+        "completionCriterion": "Platform-ülke-dil-hedef-kitle-teklif-tarih bilgisi adlarda ve UTM'lerde tutarlıdır.",
+        "hotelInput": "UTM standardı",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Yüksek",
+        "targetDate": "",
+        "notes": ""
+      },
+      {
+        "sourceRow": 99,
+        "completionMark": "☐",
+        "stage": "10. Reklam & Talep",
+        "sourceTaskId": "ADS-013",
+        "task": "Yayın öncesi reklam QA yap",
+        "completionCriterion": "URL, fiyat, tarih, dil, konum, bütçe, dönüşüm, piksel, kreatif ve politika kontrolleri iki kişiyle tamamlanır.",
+        "hotelInput": "Nihai otel onayı",
+        "responsibleRole": "Performans Pazarlama",
+        "priority": "Kritik",
+        "targetDate": "",
+        "notes": ""
+      }
+    ]
+  },
+  "checklistCopy": {
+    "sheetId": 1026306805,
+    "title": "Ana Checklist sayfasının kopyası",
+    "readRange": "'Ana Checklist sayfasının kopyası'!A1:Z160",
+    "identicalToMainInReadRange": true,
+    "handling": "Aynı okuma aralığında birebir eşleştiğinden ikinci görev seti olarak sayılmadı."
+  },
+  "otherSourceSheets": [
+    {
+      "sheetId": 1719354960,
+      "title": "İlk Adım ",
+      "range": "'İlk Adım '!A1:AA160",
+      "rows": [
+        {
+          "row": 1,
+          "values": [
+            "Yönetim"
+          ]
+        },
+        {
+          "row": 2,
+          "values": [
+            "1",
+            "Kuruluş Evrakları",
+            "1.1",
+            "vergi levhası"
+          ]
+        },
+        {
+          "row": 3,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Turizm İşletme Belgesi"
+          ]
+        },
+        {
+          "row": 4,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Faaliyet Belgesi"
+          ]
+        },
+        {
+          "row": 5,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "İmza Sirku"
+          ]
+        },
+        {
+          "row": 6,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "Ticari Sicil Gazetesi"
+          ]
+        },
+        {
+          "row": 7,
+          "values": [
+            "",
+            "",
+            "1.6",
+            "Şirket Yetkili ve iletişim bilgileri"
+          ]
+        },
+        {
+          "row": 9,
+          "values": [
+            "2",
+            "Finans",
+            "1.1",
+            "Iban bilgisi"
+          ]
+        },
+        {
+          "row": 10,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Sanal Pos Bilgisi"
+          ]
+        },
+        {
+          "row": 11,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Reklam Kredi Kartı 2 adet ( sanal kart kurumsal)"
+          ]
+        },
+        {
+          "row": 12,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Fatura Bilgisi"
+          ]
+        },
+        {
+          "row": 16,
+          "values": [
+            "3",
+            "Operasyonel Kurulum",
+            "1.1",
+            "Elektra Erişim ( Proje Yöneticisi)"
+          ]
+        },
+        {
+          "row": 18,
+          "values": [
+            "4",
+            "Call Center İşlemleri",
+            "1.1",
+            "Nac Geçiş Maili"
+          ]
+        },
+        {
+          "row": 19,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Satış Whatsapp Simcard Talebi"
+          ]
+        },
+        {
+          "row": 20,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Fact Sheet"
+          ]
+        },
+        {
+          "row": 21,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Kontrat Talebi"
+          ]
+        },
+        {
+          "row": 22,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "Satış Kuralları( ref/nonref ,min geceleme, ön ödeme"
+          ]
+        },
+        {
+          "row": 24,
+          "values": [
+            "5",
+            "Ota Entegrasyonu",
+            "1.1",
+            "Aktif platform şifreleri giriş erişim bilgileri talebi"
+          ]
+        },
+        {
+          "row": 26,
+          "values": [
+            "6",
+            "Creative",
+            "1.1",
+            "Meta Business Erişim bilgisi"
+          ]
+        },
+        {
+          "row": 27,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Mevcut Görsel Erişimi"
+          ]
+        },
+        {
+          "row": 29,
+          "values": [
+            "7",
+            "Yazılım",
+            "1.1",
+            "Domain Erişim"
+          ]
+        },
+        {
+          "row": 31,
+          "values": [
+            "8",
+            "Seo+Sem",
+            "1.1",
+            "Google My business Erişimi"
+          ]
+        },
+        {
+          "row": 32,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "GA4 ve GTM erişimi"
+          ]
+        },
+        {
+          "row": 33,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Search Console"
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 932152806,
+      "title": "Sürdürülen Operasyon ",
+      "range": "'Sürdürülen Operasyon '!A1:AA160",
+      "rows": [
+        {
+          "row": 2,
+          "values": [
+            "1",
+            "Kuruluş Evrakları",
+            "1.1",
+            "Vergi levhası"
+          ]
+        },
+        {
+          "row": 3,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Turizm İşletme Belgesi"
+          ]
+        },
+        {
+          "row": 4,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Faaliyet Belgesi"
+          ]
+        },
+        {
+          "row": 5,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "İmza Sirküleri"
+          ]
+        },
+        {
+          "row": 6,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "Ticari Sicil Gazetesi"
+          ]
+        },
+        {
+          "row": 7,
+          "values": [
+            "",
+            "",
+            "1.6",
+            "Şirket Yetkili ve iletişim bilgileri"
+          ]
+        },
+        {
+          "row": 9,
+          "values": [
+            "2",
+            "Finans",
+            "1.1",
+            "Iban bilgisi"
+          ]
+        },
+        {
+          "row": 10,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Sanal Pos Bilgisi"
+          ]
+        },
+        {
+          "row": 11,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Reklam Kredi Kartı 2 adet ( sanal kart kurumsal)"
+          ]
+        },
+        {
+          "row": 12,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Fatura Bilgisi"
+          ]
+        },
+        {
+          "row": 13,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "Yetkili Kişi Bilgileri"
+          ]
+        },
+        {
+          "row": 15,
+          "values": [
+            "3",
+            "Operasyonel Kurulum",
+            "1.1",
+            "Elektra Genel Kurulum"
+          ]
+        },
+        {
+          "row": 16,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Asisia Kurulum"
+          ]
+        },
+        {
+          "row": 17,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Connexease Genel Kurulum"
+          ]
+        },
+        {
+          "row": 18,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Otel Veri Analizi ve Raporlama"
+          ]
+        },
+        {
+          "row": 19,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "OTA ve Call Center için Kontrat Girdisi"
+          ]
+        },
+        {
+          "row": 20,
+          "values": [
+            "",
+            "",
+            "1.6",
+            "Benchmark"
+          ]
+        },
+        {
+          "row": 22,
+          "values": [
+            "4",
+            "Call Center İşlemleri",
+            "1.1",
+            "Nac Geçiş Maili",
+            "",
+            "",
+            "",
+            "Asisa Proje Kurulumunu Yap ve Agentları Yetkilendir"
+          ]
+        },
+        {
+          "row": 23,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Satış Whatsapp Simcard Talebi",
+            "",
+            "",
+            "",
+            "E devlet Sozlesme Onayını Takıp et"
+          ]
+        },
+        {
+          "row": 24,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Fact Sheet",
+            "",
+            "",
+            "",
+            "Sesli Yanıt Sistemleri kurulumu"
+          ]
+        },
+        {
+          "row": 25,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Kontrat Talebi",
+            "",
+            "",
+            "",
+            "Teklif Formu oluşturulması için Asisia İle İletişime Gir"
+          ]
+        },
+        {
+          "row": 26,
+          "values": [
+            "",
+            "",
+            "1.5",
+            "Satış Kuralları( ref/nonref ,min geceleme, ön ödeme",
+            "",
+            "",
+            "",
+            "Connexease Sosyal Medya ve Whatsapp Bağlantısını Etkinleştir ve Test et"
+          ]
+        },
+        {
+          "row": 29,
+          "values": [
+            "5",
+            "Ota Entegrasyonu",
+            "1.1",
+            "Aktif platform şifreleri giriş erişim bilgileri talebi",
+            "",
+            "",
+            "",
+            "Otalar ve Elektra Arası Entegrasyon Kontrolu"
+          ]
+        },
+        {
+          "row": 30,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Mevcut Olmayan Uygun platform Tespiti ve Kurulum Talebi Oluşturulması",
+            "",
+            "",
+            "",
+            "Ota İçi Tesis Kuralların ve Krezervasyon Kuralları Doğruluğu Kontrolu"
+          ]
+        },
+        {
+          "row": 31,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Ota içi gorsellerin kontrolu ve Fotografların Güncellenmesi"
+          ]
+        },
+        {
+          "row": 32,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Tesis Olanakları Kontrolü Ve güncellenmesi"
+          ]
+        },
+        {
+          "row": 33,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otalardaki Oda Bilgileri ve Olanakları Kontrolünün Sağlanması"
+          ]
+        },
+        {
+          "row": 34,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otaların Ödeme Alma yöntemlerinin Kontrolü"
+          ]
+        },
+        {
+          "row": 35,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otalar Yorum için Şablon Oluşturulması"
+          ]
+        },
+        {
+          "row": 38,
+          "values": [
+            "6",
+            "Creative",
+            "1.1",
+            "Meta Business Erişim bilgisi",
+            "",
+            "",
+            "1.3.1",
+            "Otel Çekim Planlaması ve Odanın Çekime Hazırlığı"
+          ]
+        },
+        {
+          "row": 39,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Mevcut Görsel Erişimi",
+            "",
+            "",
+            "",
+            "Her Oda Tipinin Balkon, Oda, Banyo Fotoğraf Çekimi"
+          ]
+        },
+        {
+          "row": 40,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Otel Görsel İçerik Üretimi",
+            "",
+            "",
+            "",
+            "Her Oda Tipinin Balkon, Oda, Banyo Video Çekimi"
+          ]
+        },
+        {
+          "row": 41,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Çekilen İçeriklerin Depolanması ve Yedeklenmesi",
+            "",
+            "",
+            "",
+            "Her Oda Tipinin Balkon, Oda, Banyo 360 Çekimi"
+          ]
+        },
+        {
+          "row": 42,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Lobi, Resepsiyon, Restorantları, Barları, Havuzları ve Kullanılan Bütün alanların Fotoğraf Çekimi"
+          ]
+        },
+        {
+          "row": 43,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Lobi, Resepsiyon, Restorantları, Barları, Havuzları ve Kullanılan Bütün alanların Video Çekimi"
+          ]
+        },
+        {
+          "row": 44,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Lobi, Resepsiyon, Restorantları, Barları, Havuzları ve Kullanılan Bütün alanların 360 Çekimi"
+          ]
+        },
+        {
+          "row": 45,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Restorant Yiyecek ve İçecek Çekimi"
+          ]
+        },
+        {
+          "row": 46,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Genel Bina Fotoğraf Çekimi"
+          ]
+        },
+        {
+          "row": 47,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Genel Drone Çekimi"
+          ]
+        },
+        {
+          "row": 48,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Konum Drone Çekimi"
+          ]
+        },
+        {
+          "row": 49,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Otel Aksiyon Çekimleri"
+          ]
+        },
+        {
+          "row": 50,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Çekilen İçeriklerin İşlenmesi"
+          ]
+        },
+        {
+          "row": 51,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "İşlenmiş İçeriklerin Platformlara Uygun Hale Getirilmesi"
+          ]
+        },
+        {
+          "row": 52,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "İşlenmiş İçeriklerin Kullanılarak Aylık Feed Plan Oluşturulması ve Paylaşımların Planlanması"
+          ]
+        },
+        {
+          "row": 55,
+          "values": [
+            "7",
+            "Yazılım",
+            "1.1",
+            "Domain Erişim",
+            "",
+            "",
+            "",
+            "Web Sitesi Uygun Tasarım Oluşturulması"
+          ]
+        },
+        {
+          "row": 56,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Websitesi Güncellenmesi",
+            "",
+            "",
+            "",
+            "Tasarımın Koda Dökülmesi ve Optimize Edilmesi"
+          ]
+        },
+        {
+          "row": 57,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Websitesi İçeriklerin 4 dil uyumlu şekilde çevirmesi"
+          ]
+        },
+        {
+          "row": 58,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Live Chat Widget Entegrasyonunun sağlanması"
+          ]
+        },
+        {
+          "row": 59,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Gizlilik, KVKK ve Çerez metinlerinin otelden Talep edilmesi"
+          ]
+        },
+        {
+          "row": 60,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Rezervasyon Widget Oluşturulması ve kontrol edilmesi"
+          ]
+        },
+        {
+          "row": 61,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Sürdürülebilirlik Politikaları Hakkında Otelden Bilgi talep edilip Siteye Yüklenmesi"
+          ]
+        },
+        {
+          "row": 62,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Seo Alt yapısının oluşturulması"
+          ]
+        },
+        {
+          "row": 64,
+          "values": [
+            "8",
+            "Seo+Sem",
+            "1.1",
+            "Google My business Erişimi",
+            "",
+            "",
+            "",
+            "Anahtar Kelime Analizi"
+          ]
+        },
+        {
+          "row": 65,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "GA4 ve GTM erişimi",
+            "",
+            "",
+            "",
+            "Meta Başlık ve Açıklama Optimizasyonu"
+          ]
+        },
+        {
+          "row": 66,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Search Console",
+            "",
+            "",
+            "",
+            "Başlık Etiketleri Düzenlenmesi"
+          ]
+        },
+        {
+          "row": 67,
+          "values": [
+            "",
+            "",
+            "1.4",
+            "Rakip Otel Analizi ve Raporlama",
+            "",
+            "",
+            "",
+            "Site İçi Linkleme"
+          ]
+        },
+        {
+          "row": 68,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Backlink Oluşturma"
+          ]
+        },
+        {
+          "row": 69,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Dış SEO Stratejisi"
+          ]
+        },
+        {
+          "row": 70,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık SEO Uyumlu Blog Sayfa Üretimi"
+          ]
+        },
+        {
+          "row": 72,
+          "values": [
+            "9",
+            "Günlük, Haftalık, Aylık"
+          ]
+        },
+        {
+          "row": 73,
+          "values": [
+            "",
+            "",
+            "1.1",
+            "Günlük İş Tamamlama",
+            "",
+            "",
+            "",
+            "Aylık, Ay sonunda",
+            "Feed Plan Oluşturulması"
+          ]
+        },
+        {
+          "row": 74,
+          "values": [
+            "",
+            "",
+            "1.2",
+            "Haftalık İş Tamamlama",
+            "",
+            "",
+            "",
+            "Günlük",
+            "OTA & Çağrı Merkezi Müsaitlik / Eşleşme Kontrolü"
+          ]
+        },
+        {
+          "row": 75,
+          "values": [
+            "",
+            "",
+            "1.3",
+            "Aylık İş Tamamlama",
+            "",
+            "",
+            "",
+            "Haftalık",
+            "SEO Çalışma Döngüsü"
+          ]
+        },
+        {
+          "row": 76,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık",
+            "Creative / İçerik Çekim Döngüsü"
+          ]
+        },
+        {
+          "row": 77,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "Satış Raporlama"
+          ]
+        },
+        {
+          "row": 78,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "Kredi Kartı Hareketleri"
+          ]
+        },
+        {
+          "row": 79,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "Konser Satış Kontrol"
+          ]
+        },
+        {
+          "row": 80,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Haftalık",
+            "SEM / Dijital Reklam Optimizasyonu"
+          ]
+        },
+        {
+          "row": 81,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "Kontrat Takibi ve Kontrolü"
+          ]
+        },
+        {
+          "row": 82,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Haftalık",
+            "Benchmark & Rakip Analizi"
+          ]
+        },
+        {
+          "row": 83,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "Sistem & Entegrasyon Sağlık Kontrolü"
+          ]
+        },
+        {
+          "row": 84,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "↳ Web sitesi erişim kontrolü"
+          ]
+        },
+        {
+          "row": 85,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "↳ Rezervasyon widget kontrolü"
+          ]
+        },
+        {
+          "row": 86,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "↳ Call Center çağrı testi"
+          ]
+        },
+        {
+          "row": 87,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Günlük",
+            "↳ Connexease bağlantı kontrolü"
+          ]
+        },
+        {
+          "row": 88,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık",
+            "Cari Mutabakat"
+          ]
+        },
+        {
+          "row": 89,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık",
+            "Prim Hesaplama"
+          ]
+        },
+        {
+          "row": 90,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık",
+            "ADS / Reklam Faturalarının Kontrolü"
+          ]
+        },
+        {
+          "row": 91,
+          "values": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Aylık",
+            "SEO Güncel Durum & Performans Raporu"
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 1894224493,
+      "title": "Aylık/Haftalık",
+      "range": "'Aylık/Haftalık'!A1:Z160",
+      "rows": [
+        {
+          "row": 1,
+          "values": [
+            "İş / Kontrol",
+            "Periyot"
+          ]
+        }
+      ]
+    }
+  ],
+  "recurringWork": {
+    "sourceSheetId": 932152806,
+    "items": [
+      {
+        "sourceRow": 73,
+        "period": "Aylık, Ay sonunda",
+        "task": "Feed Plan Oluşturulması",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 74,
+        "period": "Günlük",
+        "task": "OTA & Çağrı Merkezi Müsaitlik / Eşleşme Kontrolü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 75,
+        "period": "Haftalık",
+        "task": "SEO Çalışma Döngüsü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 76,
+        "period": "Aylık",
+        "task": "Creative / İçerik Çekim Döngüsü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 77,
+        "period": "Günlük",
+        "task": "Satış Raporlama",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 78,
+        "period": "Günlük",
+        "task": "Kredi Kartı Hareketleri",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 79,
+        "period": "Günlük",
+        "task": "Konser Satış Kontrol",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 80,
+        "period": "Haftalık",
+        "task": "SEM / Dijital Reklam Optimizasyonu",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 81,
+        "period": "Günlük",
+        "task": "Kontrat Takibi ve Kontrolü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 82,
+        "period": "Haftalık",
+        "task": "Benchmark & Rakip Analizi",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 83,
+        "period": "Günlük",
+        "task": "Sistem & Entegrasyon Sağlık Kontrolü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 84,
+        "period": "Günlük",
+        "task": "↳ Web sitesi erişim kontrolü",
+        "explicitSubcheck": true
+      },
+      {
+        "sourceRow": 85,
+        "period": "Günlük",
+        "task": "↳ Rezervasyon widget kontrolü",
+        "explicitSubcheck": true
+      },
+      {
+        "sourceRow": 86,
+        "period": "Günlük",
+        "task": "↳ Call Center çağrı testi",
+        "explicitSubcheck": true
+      },
+      {
+        "sourceRow": 87,
+        "period": "Günlük",
+        "task": "↳ Connexease bağlantı kontrolü",
+        "explicitSubcheck": true
+      },
+      {
+        "sourceRow": 88,
+        "period": "Aylık",
+        "task": "Cari Mutabakat",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 89,
+        "period": "Aylık",
+        "task": "Prim Hesaplama",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 90,
+        "period": "Aylık",
+        "task": "ADS / Reklam Faturalarının Kontrolü",
+        "explicitSubcheck": false
+      },
+      {
+        "sourceRow": 91,
+        "period": "Aylık",
+        "task": "SEO Güncel Durum & Performans Raporu",
+        "explicitSubcheck": false
+      }
+    ],
+    "note": "Kaynakta 19 satır bulunur: 15 üst düzey iş ve sistem/entegrasyon sağlık kontrolünün 4 açık alt kontrolü. Ayrı Aylık/Haftalık sekmesinin okunan aralığı yalnızca başlık içerir."
+  },
+  "observations": {
+    "taskCount": 93,
+    "stageCounts": {
+      "01. Proje Açılışı": 5,
+      "02. Telefon & NAC": 8,
+      "02. Whatsapp": 1,
+      "02. Connexease ": 1,
+      "03. Erişim & Güvenlik": 8,
+      "04. Elektraweb & Asisia": 14,
+      "05. OTA & Dağıtım": 12,
+      "06. Marka & İçerik": 6,
+      "07. Web & Rezervasyon": 10,
+      "08. Ölçümleme & Veri": 10,
+      "09. Sosyal Medya": 5,
+      "10. Reklam & Talep": 13
+    },
+    "responsibleRoleCounts": {
+      "Proje Yöneticisi": 47,
+      "Dijital Strateji": 4,
+      "Çağrı Merkezi": 2,
+      "Sosyal Medya": 6,
+      "Performans Pazarlama": 13,
+      "Web & IT": 10,
+      "Analytics": 9,
+      "SEO": 1,
+      "Kreatif Ekip": 1
+    },
+    "priorityCounts": {
+      "Kritik": 57,
+      "Yüksek": 31,
+      "Orta": 5
+    },
+    "duplicateSourceTaskIds": [
+      {
+        "id": "DAT-008",
+        "rows": [
+          13,
+          14,
+          79
+        ]
+      },
+      {
+        "id": "PMS-002",
+        "rows": [
+          31,
+          32
+        ]
+      }
+    ],
+    "processLayers": [
+      "İlk Adım: evrak, finans, erişim ve başlangıç girdileri.",
+      "Ana Checklist: otel kurulum/entegrasyon görevleri; sorumluluk, öncelik ve tamamlanma kriterleri.",
+      "Sürdürülen Operasyon: departmanlara göre işler, ayrı ayrıntı listeleri ve tekrarlanan kontroller."
+    ],
+    "sourceInterpretation": [
+      "Sorumlu alanları kişi adı değil rol/ekip düzeyindedir.",
+      "Ana listede hedef tarih ve not alanları boş; tamamlanma işaretleri ☐. Kaynak özetindeki 'Devam Eden' sayısı başlamış iş olarak yorumlanmamalı; kaynak yalnızca tamamlanma kutusu gösteriyor.",
+      "Görev metni, tamamlanma kriteri ve otelden beklenen girdi ayrı ayrı korunmalı.",
+      "Sürdürülen Operasyon sayfasında D sütunundaki başlıklar ve H sütunundaki ayrıntılar aynı satırda yer alsa da birebir ebeveyn-alt görev ilişkisi güvenilir biçimde tanımlanmamış; bu ilişki uydurulmamalı.",
+      "Tekrarlanan görev kodları tekil kayıt anahtarı olarak kullanılamaz. Kaynak görev kodları değiştirilmeden saklandı.",
+      "Kaynakta açık görev bağımlılıkları, kişi atamaları, durum geçişleri ve otomatik zamanlama kuralları tanımlı değil.",
+      "Günlük/haftalık/aylık periyotlar mevcut; kesin çalışma günleri, saatler ve sorumlular henüz belirlenmiş değil."
+    ],
+    "openScope": "İlk sürümün kapsamı, otel/proje ilişkisi, kullanıcı rolleri, görev onayı ve tekrar kuralları kullanıcıyla netleştirilecek; bunlar kaynak veriden onaylanmış gereksinim olarak çıkarılmamalı."
+  }
+}

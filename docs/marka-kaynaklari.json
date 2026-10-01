@@ -1,0 +1,27 @@
+{
+  "source": "https://dgtlface.com/tr/",
+  "retrievedAt": "2026-10-01",
+  "stylesheets": [
+    "https://dgtlface.com/_next/static/css/1ad8fb0fdaf2b090.css",
+    "https://dgtlface.com/_next/static/css/1644034286d4a96f.css"
+  ],
+  "palette": {
+    "dark": "#140F25",
+    "header": "#150016",
+    "purple": "#A754CF",
+    "blue": "#547CCF",
+    "blueAlternate": "#547DCF",
+    "cyan": "#54B9CF",
+    "white": "#FFFFFF"
+  },
+  "gradient": "linear-gradient(270deg, #54b9cf -1.56%, #547dcf 49.74%, #547ccf 49.75%, #a754cf)",
+  "artwork": {
+    "public/brand/dgtlface-logo-white.svg": "Official desktop header SVG; original paths and white fill, viewBox 0 0 220 55.",
+    "public/brand/dgtlface-mark-white.svg": "Official mobile header SVG; original paths and white fill, viewBox 0 0 56 49.",
+    "public/brand/dgtlface-logo-dark.svg": "Same official geometry, recolored #140F25 for light backgrounds. Panel adaptation, not a separately sourced official variant.",
+    "public/brand/dgtlface-mark-dark.svg": "Same official geometry, recolored #140F25 for light backgrounds. Panel adaptation.",
+    "app/favicon.ico": "https://dgtlface.com/favicon.ico",
+    "app/apple-icon.png": "https://dgtlface.com/apple-touch-icon.png"
+  },
+  "adaptationNotes": "Brand colors are applied to navigation, login, actions, selected controls and progress. Darker purple text/control tones and pale lavender surfaces support contrast. Semantic success, warning and error colors remain distinguishable. No task or user data was changed."
+}
