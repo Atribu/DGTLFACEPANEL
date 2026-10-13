@@ -72,6 +72,7 @@ export interface BootstrapData {
   activities: Activity[];
   comments: TaskComment[];
   demo: boolean;
+  checklistImportWarning?: string;
 }
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   planned: "Planlandı",

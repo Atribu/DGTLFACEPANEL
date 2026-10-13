@@ -79,6 +79,7 @@ export default function Workspace() {
   const id = params.get("id") || "";
   const [data, setData] = useState<BootstrapData | null>(null);
   const [loadError, setLoadError] = useState("");
+  const [retryingImport, setRetryingImport] = useState(false);
   const [toast, setToast] = useState<{ message: string; kind: string } | null>(
     null,
   );
@@ -362,6 +363,30 @@ export default function Workspace() {
           </div>
         </header>
         <main className="workspace-main" key={`${view}-${id}`}>
+          {admin && data.checklistImportWarning && (
+            <div className="checklist-import-notice" role="alert">
+              <div>
+                <strong>Otel görevlerinin ilk yüklemesi tamamlanamadı</strong>
+                <p>{data.checklistImportWarning}</p>
+              </div>
+              <button
+                className="btn btn-secondary"
+                disabled={retryingImport}
+                onClick={async () => {
+                  setRetryingImport(true);
+                  try {
+                    await refresh();
+                  } catch (error) {
+                    notify((error as Error).message, "error");
+                  } finally {
+                    setRetryingImport(false);
+                  }
+                }}
+              >
+                {retryingImport ? "Yükleniyor…" : "Tekrar dene"}
+              </button>
+            </div>
+          )}
           {view === "hotels" ? (
             <HotelsView {...props} />
           ) : view === "hotel" ? (

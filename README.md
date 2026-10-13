@@ -1,6 +1,6 @@
 # DGTLFACE Operasyon Paneli
 
-Otellerin kurulum işlerini, ekip sorumluluklarını ve yönetici onayını takip eden ilk çalışan sürüm. Next.js, React ve TypeScript ile geliştirilmiştir. Veriler sunucuda saklanır; rol ve işlem yetkileri API katmanında doğrulanır. Uygulama henüz yayınlanmadı.
+Otellerin kurulum işlerini, ekip sorumluluklarını ve yönetici onayını takip eden ilk çalışan sürüm. Next.js, React ve TypeScript ile geliştirilmiştir. Veriler sunucuda saklanır; rol ve işlem yetkileri API katmanında doğrulanır. Canlı panel: [panel.dgtlface.com](https://panel.dgtlface.com).
 
 ## Yerelde çalıştırma
 
@@ -121,7 +121,7 @@ Kendi yönetici hesabınızı pasifleştiremez veya kendi yönetici rolünüzü 
 
 ## PostgreSQL ve üretim ayarları
 
-`DATABASE_URL` tanımlandığında uygulama PGlite yerine PostgreSQL kullanır. Veritabanı tabloları ilk bağlantıda oluşturulur. PGlite verileri PostgreSQL'e otomatik taşınmaz.
+`DATABASE_URL` tanımlandığında uygulama PGlite yerine PostgreSQL kullanır. Veritabanı tabloları ilk bağlantıda oluşturulur. Yerel PGlite kayıtları PostgreSQL'e otomatik taşınmaz; kodla gelen altı otelin başlangıç görevleri ise aşağıdaki tek seferlik akışla eklenir.
 
 [.env.example](.env.example) dosyasını `.env.local` olarak kopyalayın ve ortama göre doldurun:
 
@@ -158,7 +158,37 @@ npm run start
 
 Üretim sunucusu `127.0.0.1:3000` üzerinde dinler; HTTPS sağlayan bir ters vekilin arkasında çalıştırılmalıdır. Üretim oturum çerezi HTTPS gerektirir. `/api/health` uygulamanın veritabanı bağlantısını, depolama türünü ve demo durumunu döndürür.
 
-## Kontroller
+## Altı otelin görev listesini otomatik oluşturma
+
+Görev içeriği `docs/gorev-referansi.json` ile kodun parçası olarak yayınlanır. Güncellemeden sonra **mevcut bir aktif yönetici panele ilk kez girdiğinde** (`/api/bootstrap`), demo olmayan ortamlarda Miramare Beach, Miramare Quenn, Port Nature Luxury Resort, SY Hotels, Mi Hotel ve Teona Hotel için başlangıç görevleri veritabanına eklenir: **6 otel, otel başına 93 görev ve 12 grup, toplam 558 görev**. Mevcut `DATABASE_URL` bağlantısı kullanılır; ek ortam değişkeni, sunucu komutu veya `IMPORT_ADMIN_EMAIL` gerekmez. Hesap oluşturma, giriş ekranı, sağlık kontrolü ve build bu aktarımı tetiklemez. Personel/gözlemci oturumu da aktarımı başlatmaz; yönetici ilk açılışı tamamladıktan sonra kendi yetkileri kapsamında kayıtları görürler.
+
+Aktarım bitince tüm okuma ve düzenlemeler normal şekilde veritabanından devam eder. `app_meta` tablosundaki kalıcı `hotel-checklist-2026-10-v1` kaydı, sonraki açılışlar ve yayınlarda aktarımı atlatır. Otel adları, açıklamalar, tikler ve görev durumları sonradan değiştirilebilir; silinen işler tekrar oluşturulmaz. Kaynak JSON'u daha sonra değiştirmek mevcut kayıtları güncellemez. Bu tamamlama kaydı rutin kullanımda silinmemelidir.
+
+Görevler planlandı durumunda, tarihsiz ve kişi ataması olmadan başlar. Yeni otellerin koordinasyon sorumlusu, ilk aktarımı başlatan yöneticidir. Bilinmeyen konum, yetkili, e-posta ve hizmet bilgileri boş bırakılır; aynı isimde mevcut boş otel varsa bilgileri korunarak kullanılır. Kişi hesapları, demo ilerlemeleri veya telefondaki tik/notlar aktarılmaz; bu işlem mobil senkronizasyon kurmaz.
+
+Aktarım tek transaction içinde tamamlanır; hata olursa bu aktarımın tüm eklemeleri geri alınır. Eşzamanlı yönetici girişleri aynı görevleri çoğaltmaz. Görevler otel başına toplu eklenir; kilit bekleme süresi sınırlandırılmıştır. Aynı isimde birden fazla otel veya önceden görev eklenmiş hedef otel bulunursa, mevcut içerik değiştirilmeden aktarım durur. Başka oteller etkilenmez. Yönetici panelin üstünde açıklamayı ve **Tekrar dene** düğmesini görür; panel kullanılabilir kalır. Geçici sorun giderildiğinde yeniden deneme veya sayfa yenileme aktarımı tekrar dener. Kaynaktaki tekrar eden görünen görev kodları farklı `sourceRow` kimlikleriyle korunur.
+
+### İsteğe bağlı komut satırı kontrolü
+
+Otomatik akış için aşağıdaki komutlar gerekli değildir. `scripts/import-checklist.ts`, bağımsız salt okunur önizleme ve elle aktarım seçeneği sunar. Kullanılacaksa `DATABASE_URL` canlı PostgreSQL bağlantısı, `IMPORT_ADMIN_EMAIL` ise mevcut aktif yöneticinin e-postası olmalıdır. Ortam değerleri sunucuda veya Git dışında tutulan `.env.local` dosyasında tanımlanabilir. Betik hesap/şema oluşturmaz ve `SESSION_SECRET` gerektirmez.
+
+```sh
+# Kaynak listesini gör; veritabanına bağlanmaz:
+npm run import:checklist -- --catalog
+
+# Gerçek hedefi ve eklenecek kayıtları gör; salt okunur transaction kullanır:
+npm run import:checklist
+
+# Planın doğru hedefi gösterdiğini kontrol ettikten sonra bir kez uygula:
+NODE_ENV=production npm run import:checklist -- --apply
+
+# Kaydedilen aktarımı tekrar doğrula:
+npm run import:checklist
+```
+
+Komut satırı kontrolü kaydedilen kaynak ve görev kimliklerini ayrıca doğrular. Aktarımdan sonra görev silinmiş veya kaynak değiştirilmişse doğrulama uyarısı verebilir; kayıtları otomatik onarmaz. Panelin otomatik akışı ise tamamlanmış aktarımı tekrar doğrulayıp dayatmaz, veritabanındaki güncel içeriği kullanır.
+
+## Geliştirme kontrolleri
 
 ```sh
 npm run typecheck
@@ -177,4 +207,4 @@ Yeni özellik testleri kişisel bildirim sahipliğini ve otel kapsamını, yinel
 
 ## Gerçek ekip pilotu öncesi
 
-Uygulama şu anda yerelde çalışır; canlı yayın ve otomatik üretim yedeği henüz kurulmadı. Gerçek ekip pilotu için sunucu/alan adı, HTTPS, ayrı PostgreSQL veritabanı, web ve worker servisleri ile otomatik veritabanı yedeği ve geri yükleme denemesi hazırlanmalıdır. Örnek hesaplar ve demo verileri üretime taşınmamalıdır.
+Canlı panel yayınlandı. Gerçek ekip pilotunda web ve worker servislerinin sürekliliği, üretim veritabanı yedekleri ve geri yükleme denemesi ayrıca doğrulanmalıdır. Örnek hesaplar ve demo verileri üretime taşınmamalıdır.

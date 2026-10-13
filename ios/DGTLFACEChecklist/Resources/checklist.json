@@ -1,0 +1,915 @@
+{
+  "schemaVersion": 1,
+  "title": "DGTLFACE İş Listesi",
+  "groups": [
+    {
+      "id": "group-c680d93197a9",
+      "title": "Proje Açılışı",
+      "items": [
+        {
+          "id": "step-row-7",
+          "code": "PRJ-001",
+          "title": "Otel onboarding proje kaydını aç",
+          "criterion": "Otel, marka, lokasyon, açılış tarihi, kapsam ve iletişim bilgileri tek kayıtta yer alır.",
+          "input": "Resmî unvan, marka adı, adres, vergi bilgileri, ruhsat/sertifikalar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-8",
+          "code": "PRJ-002",
+          "title": "Ana iletişim ve onay matrisi oluştur",
+          "criterion": "Genel müdür, satış, ön büro, muhasebe, IT ve acil durum yetkilileri ile onay süreleri belirlenir.",
+          "input": "Ad-soyad, görev, telefon, e-posta, yetki/onay alanı",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-9",
+          "code": "PRJ-004",
+          "title": "Mevcut dijital varlık envanterini çıkar",
+          "criterion": "Web sitesi, domain, PMS, OTA, sosyal medya, reklam, analitik, e-posta ve telefon hesapları listelenir.",
+          "input": "Mevcut hesap ve tedarikçi listesi",
+          "department": "Dijital Strateji",
+          "priority": 1
+        },
+        {
+          "id": "step-row-10",
+          "code": "PRJ-005",
+          "title": "Marka ve ticari hedefleri yazılılaştır",
+          "criterion": "Hedef pazar, segment, oda/geceleme hedefi, ADR, doluluk, gelir ve direkt rezervasyon hedefleri netleşir.",
+          "input": "Bütçe, hedefler, sezonlar, müşteri segmentleri",
+          "department": "Dijital Strateji",
+          "priority": 3
+        },
+        {
+          "id": "step-row-11",
+          "code": "PRJ-006",
+          "title": "Rakip setini belirle",
+          "criterion": "En az 5 doğrudan rakip; fiyat, kanal, içerik, puan ve teklif açısından izlemeye alınır.",
+          "input": "Otelin bildirdiği rakipler",
+          "department": "Dijital Strateji",
+          "priority": 5
+        }
+      ]
+    },
+    {
+      "id": "group-847da123d3db",
+      "title": "Telefon & NAC",
+      "items": [
+        {
+          "id": "step-row-12",
+          "code": "TEL-001",
+          "title": "Aktif otel hattının NAC'a taşınması için otele e-posta gönder",
+          "criterion": "Taşıma talebi, gerekli evraklar, süreç sahibi ve hedef tarih e-postada açıkça yer alır.",
+          "input": "Aktif numara(lar), operatör, abonelik sahibi, son fatura, imza yetkilisi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-15",
+          "code": "TEL-002",
+          "title": "Numara taşıma evraklarını kontrol et",
+          "criterion": "Eksiksiz ve güncel evraklar doğrulanır; eksikler yazılı talep edilir.",
+          "input": "Kimlik/imza sirküleri, vergi levhası, yetki belgesi, son fatura",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-16",
+          "code": "TEL-003",
+          "title": "NAC taşıma başvurusunu aç ve takip et",
+          "criterion": "Başvuru numarası, tahmini geçiş tarihi ve sorumlu kişi not edilir.",
+          "input": "Onaylı taşıma evrakları",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-17",
+          "code": "TEL-004",
+          "title": "IVR/karşılama akışını tasarla",
+          "criterion": "Mesai içi/dışı, dil seçenekleri, rezervasyon ve resepsiyon yönlendirmeleri onaylanır.",
+          "input": "Çalışma saatleri, departmanlar, diller, acil yönlendirme",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-18",
+          "code": "TEL-005",
+          "title": "IVR metinlerini yaz ve otel onayı al",
+          "criterion": "TR ve gereken yabancı dillerde metinler, KVKK bilgilendirmesi dahil onaylıdır.",
+          "input": "Dil tercihleri, marka telaffuzu, KVKK metni",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-19",
+          "code": "TEL-006",
+          "title": "Çağrı kayıt/aydınlatma metnini doğrula",
+          "criterion": "Yasal metin, saklama süresi ve erişim yetkisi otel tarafından onaylanır.",
+          "input": "Hukuk/KVKK onayı",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-20",
+          "code": "TEL-007",
+          "title": "Geçiş öncesi ve sonrası test aramaları yap",
+          "criterion": "Gelen/giden çağrı, IVR, transfer, kayıt, mesai dışı ve kaçan çağrı senaryoları başarıyla test edilir.",
+          "input": "Test için otel yetkilisi",
+          "department": "Çağrı Merkezi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-21",
+          "code": "TEL-008",
+          "title": "Eski hat yönlendirme ve kesinti planını onayla",
+          "criterion": "Geçiş anında çağrı kaybını önleyen geri dönüş planı ve duyuru yöntemi hazırdır.",
+          "input": "Operatör/otel teknik kişi onayı",
+          "department": "Çağrı Merkezi",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "id": "group-5c4317f6ee07",
+      "title": "WhatsApp",
+      "items": [
+        {
+          "id": "step-row-13",
+          "code": "DAT-008",
+          "title": "WhatsApp için sim kart talebi",
+          "criterion": "Connexease baglantısı için Sim Kart talep edilir",
+          "input": "WhatsApp Business bilgileri",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-ff9bfc57b42c",
+      "title": "Connexease",
+      "items": [
+        {
+          "id": "step-row-14",
+          "code": "DAT-008",
+          "title": "Widget ve mesaj bağlantıları",
+          "criterion": "Connexease widget ve sosyal medya baglantıları kurulur",
+          "input": "Connexease ",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-5fe6e7240504",
+      "title": "Erişim & Güvenlik",
+      "items": [
+        {
+          "id": "step-row-22",
+          "code": "ACC-001",
+          "title": "Güvenli erişim talep formunu otele gönder",
+          "criterion": "Tüm hesaplar platform, kullanıcı, rol, sahip, 2FA ve kurtarma yöntemiyle listelenir.",
+          "input": "Hesap sahipleri ve mevcut erişimler",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-23",
+          "code": "ACC-002",
+          "title": "Sosyal medya erişim bilgilerini iste",
+          "criterion": "Meta Business, Facebook, Instagram, TikTok, LinkedIn, YouTube ve diğer hesap erişimleri tamamlanır.",
+          "input": "Business ID, sayfa/hesap linkleri, yönetici davetleri",
+          "department": "Sosyal Medya",
+          "priority": 1
+        },
+        {
+          "id": "step-row-24",
+          "code": "ACC-003",
+          "title": "Google ekosistemi erişimlerini iste",
+          "criterion": "Google Business Profile, Ads, Analytics, Tag Manager, Search Console ve Merchant/Hotel Center erişimleri alınır.",
+          "input": "Hesap kimlikleri ve yönetici davetleri",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-25",
+          "code": "ACC-004",
+          "title": "Domain, DNS ve hosting erişimlerini iste",
+          "criterion": "Registrar, DNS, hosting/Vercel/Cloudflare ve kurumsal e-posta yönetimi için uygun rol erişimleri alınır.",
+          "input": "Domain firması, DNS/hosting bilgisi, teknik kişi",
+          "department": "Web & IT",
+          "priority": 1
+        },
+        {
+          "id": "step-row-26",
+          "code": "ACC-005",
+          "title": "OTA extranet erişimlerini iste",
+          "criterion": "Booking.com, Expedia, Airbnb, Agoda, Hotelbeds ve kullanılan diğer OTA'lara erişim tamamlanır.",
+          "input": "OTA listesi, tesis ID'leri, kullanıcı davetleri",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-27",
+          "code": "ACC-006",
+          "title": "Reklam hesaplarının sahipliğini doğrula",
+          "criterion": "Hesapların otele ait olduğu, ödeme profilinin doğru olduğu ve ajansın partner rolüyle eklendiği doğrulanır.",
+          "input": "Fatura bilgisi, ödeme yöntemi, Business Manager/Ads ID",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-28",
+          "code": "ACC-007",
+          "title": "Tüm kritik hesaplarda 2FA ve kurtarma yöntemlerini etkinleştir",
+          "criterion": "En az iki yetkili, güvenli kurtarma e-postası/telefonu ve 2FA mevcuttur.",
+          "input": "Yetkili telefon/e-posta bilgileri",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-29",
+          "code": "ACC-008",
+          "title": "Ajans kullanıcılarını kişisel hesap yerine kurumsal hesaplarla tanımla",
+          "criterion": "Paylaşılan parola yoktur; kişi bazlı, en az yetki prensibine uygun erişim vardır.",
+          "input": "Ajans/otel kurumsal e-posta hesapları",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-7568d08d56ee",
+      "title": "Elektraweb & Asisia",
+      "items": [
+        {
+          "id": "step-row-30",
+          "code": "PMS-001",
+          "title": "Elektraweb kullanıcı oluşturma talebini aç",
+          "criterion": "Talep numarası ve sağlayıcı sorumlusu kayıt altındadır.",
+          "input": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-31",
+          "code": "PMS-002",
+          "title": "Turizm İşletme Belgesi Talep Et",
+          "criterion": "Ota Kurulumlarında Kritik bilgi",
+          "input": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-32",
+          "code": "PMS-002",
+          "title": "Vergi Levhası Talep et",
+          "criterion": "Ota Kurulumlarında Kritik bilgi",
+          "input": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-33",
+          "code": "PMS-003",
+          "title": "Banka Hesap Bilgileri Talep Et",
+          "criterion": "PMS Kurulumlarında Kritik bilgi",
+          "input": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-34",
+          "code": "PMS-004",
+          "title": "Sanal Pos Entegrasyonu Talep Et",
+          "criterion": "PMS Kurulumlarında Kritik bilgi",
+          "input": "Tesis kodu, yetkili kişi, talep edilecek kullanıcılar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-35",
+          "code": "PMS-005",
+          "title": "Elektraweb kullanıcı tanımlarını oluştur ve tamamla",
+          "criterion": "Kişi bazlı roller tanımlanmış, girişler test edilmiş ve yetkiler doğrulanmıştır.",
+          "input": "Ad-soyad, e-posta, rol/yetki listesi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-36",
+          "code": "PMS-006",
+          "title": "Entegrasyon kullanıcısını kur",
+          "criterion": "API/entegrasyon kullanıcısı minimum gerekli yetkiyle aktif ve güvenli biçimde kayıtlıdır.",
+          "input": "Entegrasyon kapsamı ve teknik onay",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-37",
+          "code": "PMS-007",
+          "title": "Çağrı merkezi acentasını Elektraweb'de kur",
+          "criterion": "Acenta kodu, komisyon/kontrat, pazar ve rezervasyon kaynağı doğru tanımlanmıştır.",
+          "input": "Acenta unvanı, vergi/fatura bilgileri, komisyon ve kontrat",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-38",
+          "code": "PMS-009",
+          "title": "Asisia bağlantısı için fiyat ve kontratları Elektraweb'e tanımla",
+          "criterion": "Oda tipleri, pansiyonlar, fiyatlar, çocuk politikaları, iptal/no-show ve kontrat tarihleri eksiksizdir.",
+          "input": "Onaylı fiyat tablosu, sezonlar, kontratlar, politikalar",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-39",
+          "code": "PMS-010",
+          "title": "Oda tipi ve pansiyon eşleştirmelerini doğrula",
+          "criterion": "Kodlar, kişi kapasitesi, yatak tipi ve pansiyon adları tüm sistemlerde birebir eşleşir.",
+          "input": "Oda envanteri ve pansiyon açıklamaları",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-40",
+          "code": "PMS-011",
+          "title": "Vergi, para birimi ve fiyat dahil/hariç ayarlarını kontrol et",
+          "criterion": "KDV, konaklama vergisi, servis/şehir vergileri ve kur dönüşümü rezervasyon çıktısında doğrudur.",
+          "input": "Vergi/fatura uygulaması ve mali müşavir onayı",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-41",
+          "code": "PMS-012",
+          "title": "Rezervasyon kaynak ve kampanya kodlarını oluştur",
+          "criterion": "Web, çağrı merkezi, walk-in, OTA ve kampanya kaynakları raporda ayrışır.",
+          "input": "Raporlama/kaynak kodu ihtiyaçları",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-42",
+          "code": "PMS-013",
+          "title": "E-posta/SMS rezervasyon şablonlarını kur",
+          "criterion": "Onay, değişiklik, iptal, ödeme ve pre-arrival şablonları marka ve yasal metinlerle hazırdır.",
+          "input": "Logo, iletişim, iptal/ödeme metni, KVKK",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-43",
+          "code": "PMS-014",
+          "title": "Test rezervasyonu ve iptal/değişiklik akışını tamamla",
+          "criterion": "Fiyat, müsaitlik, vergi, ödeme, bildirim ve envanter geri dönüşü uçtan uca doğrulanmıştır.",
+          "input": "Test kartı/ödeme yöntemi, otel test yetkilisi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "id": "group-4a0248c5328d",
+      "title": "OTA & Dağıtım",
+      "items": [
+        {
+          "id": "step-row-44",
+          "code": "OTA-001",
+          "title": "Otelin kullandığı tüm OTA bilgilerini talep et",
+          "criterion": "Platform, tesis ID, sözleşme, komisyon, pazar, ödeme modeli, iletişim ve erişim bilgileri tek listede bulunur.",
+          "input": "OTA extranet listesi ve sözleşmeleri",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-45",
+          "code": "OTA-002",
+          "title": "OTA bağlantılarının mevcut durumunu kontrol et",
+          "criterion": "Her kanal için aktif/pasif, channel manager bağlantısı, son senkron ve hata durumu kaydedilir.",
+          "input": "Channel manager/PMS erişimi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-46",
+          "code": "OTA-003",
+          "title": "Tesis adı, adres, koordinat ve iletişim tutarlılığını kontrol et",
+          "criterion": "Tüm OTA ve harita kayıtlarında NAP bilgileri birebir tutarlıdır.",
+          "input": "Resmî adres, koordinat, telefon, e-posta",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-47",
+          "code": "OTA-004",
+          "title": "Oda tipi, kapasite ve özellik eşleştirmelerini kontrol et",
+          "criterion": "Oda adları, kişi/çocuk kapasitesi, m², yatak, manzara ve olanaklar doğru görünür.",
+          "input": "Güncel oda envanteri ve özellik listesi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-48",
+          "code": "OTA-005",
+          "title": "Fiyat planı ve pansiyon eşleştirmelerini kontrol et",
+          "criterion": "İade edilebilir/edilemez, kahvaltı/yarım pansiyon ve mobil/ülke fiyatları doğru bağlanmıştır.",
+          "input": "Onaylı fiyat planları",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-49",
+          "code": "OTA-006",
+          "title": "Müsaitlik ve envanter senkronunu test et",
+          "criterion": "PMS değişikliği tüm bağlı kanallara doğru süre ve miktarda yansır.",
+          "input": "Test tarihleri ve envanter onayı",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-50",
+          "code": "OTA-007",
+          "title": "İptal, ön ödeme, no-show ve çocuk politikalarını eşitle",
+          "criterion": "Müşteriye görünen politikalar kontrat ve PMS ile tutarlıdır.",
+          "input": "Onaylı politika metinleri",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-51",
+          "code": "OTA-008",
+          "title": "Vergi ve ek ücret gösterimini kontrol et",
+          "criterion": "Toplam fiyat, vergiler, tesis/servis ücretleri ve yerinde ödemeler açık ve doğrudur.",
+          "input": "Vergi uygulaması",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-52",
+          "code": "OTA-009",
+          "title": "Fotoğraf sıralaması ve içerik kalite kontrolü yap",
+          "criterion": "Kapak fotoğrafı güçlü; oda, banyo, ortak alan, yeme-içme, konum ve olanaklar günceldir.",
+          "input": "Yüksek çözünürlüklü fotoğraf/video arşivi",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-53",
+          "code": "OTA-010",
+          "title": "Tesis ve oda açıklamalarını optimize et",
+          "criterion": "Doğru, ikna edici, platform limitlerine uygun ve gereken dillerde içerik yayınlanır.",
+          "input": "Onaylı özellikler ve çeviriler",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-54",
+          "code": "OTA-011",
+          "title": "Ödeme/sanal kart ve fatura akışını test et",
+          "criterion": "VCC tahsilat tarihleri, kart yetkisi, ödeme modeli ve fatura sorumluluğu nettir.",
+          "input": "Muhasebe ve POS bilgisi",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-55",
+          "code": "OTA-014",
+          "title": "OTA mesaj şablonları ve yanıt SLA'sı kur",
+          "criterion": "Rezervasyon öncesi/sonrası sorular, ulaşım, check-in ve şikâyet yanıtları hazırdır.",
+          "input": "Otel operasyon bilgileri",
+          "department": "Proje Yöneticisi",
+          "priority": 5
+        }
+      ]
+    },
+    {
+      "id": "group-fd7429f7f816",
+      "title": "Marka & İçerik",
+      "items": [
+        {
+          "id": "step-row-56",
+          "code": "CNT-001",
+          "title": "Marka dosyalarını talep et",
+          "criterion": "Vektörel logo, renkler, fontlar, kullanım kılavuzu ve eski kreatifler merkezi klasörde bulunur.",
+          "input": "AI/SVG/PDF logo, brandbook, font lisansları",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-57",
+          "code": "CNT-002",
+          "title": "Otel bilgi formunu tamamlat",
+          "criterion": "Tesis hikâyesi, oda, olanak, yeme-içme, spa, toplantı, ulaşım, kurallar ve SSS eksiksizdir.",
+          "input": "Detaylı tesis bilgi formu",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-58",
+          "code": "CNT-004",
+          "title": "Fotoğraf/video arşivini denetle",
+          "criterion": "Güncellik, çözünürlük, yatay/dikey format, kullanım hakkı ve eksik çekim listesi belirlenir.",
+          "input": "Orijinal medya dosyaları ve kullanım izinleri",
+          "department": "Proje Yöneticisi",
+          "priority": 1
+        },
+        {
+          "id": "step-row-59",
+          "code": "CNT-005",
+          "title": "Yeni çekim gerekiyorsa shot list ve çekim planı hazırla",
+          "criterion": "Oda tipleri, insanlar, detaylar, gün ışığı/gece, yemek, drone ve dikey video ihtiyaçları planlanır.",
+          "input": "Çekim izni, model/mekân uygunluğu",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-60",
+          "code": "CNT-007",
+          "title": "İçerik onay ve revizyon sürecini kur",
+          "criterion": "Tek onay mercii, geri bildirim formatı, maksimum tur ve teslim süreleri yazılıdır.",
+          "input": "Onay yetkilisi ve SLA",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-61",
+          "code": "CNT-008",
+          "title": "Kampanya ve teklif envanterini oluştur",
+          "criterion": "Erken rezervasyon, uzun konaklama, balayı, şirket, grup ve sezon teklifleri koşullarıyla kayıtlıdır.",
+          "input": "Teklif koşulları, tarih, stok, indirim, iptal kuralı",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-2a8afce27e33",
+      "title": "Web & Rezervasyon",
+      "items": [
+        {
+          "id": "step-row-62",
+          "code": "WEB-001",
+          "title": "Web sitesi teknik ve içerik audit'i yap",
+          "criterion": "Mobil, hız, erişilebilirlik, güvenlik, SEO, dönüşüm ve içerik sorunları önceliklendirilir.",
+          "input": "Web/hosting erişimi",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-63",
+          "code": "WEB-002",
+          "title": "Domain, DNS, SSL ve yenileme sahipliğini doğrula",
+          "criterion": "Domain otel kontrolünde; otomatik yenileme, doğru irtibat ve geçerli SSL vardır.",
+          "input": "Registrar/fatura/yetkili bilgileri",
+          "department": "Web & IT",
+          "priority": 1
+        },
+        {
+          "id": "step-row-64",
+          "code": "WEB-003",
+          "title": "Rezervasyon motoru bağlantısını kur/kontrol et",
+          "criterion": "Doğru tesis, fiyat, müsaitlik, dil, para birimi ve yönlendirme ile çalışır.",
+          "input": "Booking engine/PMS bilgileri",
+          "department": "Web & IT",
+          "priority": 1
+        },
+        {
+          "id": "step-row-65",
+          "code": "WEB-004",
+          "title": "Web test rezervasyonu ve ödeme akışını tamamla",
+          "criterion": "Mobil/masaüstü rezervasyon, kupon, ödeme, onay, e-posta, iptal ve PMS kaydı doğrudur.",
+          "input": "Test kartı, test tarihleri",
+          "department": "Web & IT",
+          "priority": 1
+        },
+        {
+          "id": "step-row-66",
+          "code": "WEB-005",
+          "title": "Mobil kullanıcı deneyimi ve dönüşüm yollarını iyileştir",
+          "criterion": "Rezervasyon CTA'sı görünür; WhatsApp/telefon/tarih seçimi ve formlar sürtünmesizdir.",
+          "input": "Onaylı iletişim kanalları",
+          "department": "Web & IT",
+          "priority": 3
+        },
+        {
+          "id": "step-row-67",
+          "code": "WEB-006",
+          "title": "SEO temel kurulumunu tamamla",
+          "criterion": "Title/meta, H yapısı, canonical, robots, sitemap, hreflang, schema ve 404/redirect kontrolleri tamamdır.",
+          "input": "Hedef diller, anahtar hizmetler",
+          "department": "Web & IT",
+          "priority": 3
+        },
+        {
+          "id": "step-row-68",
+          "code": "WEB-007",
+          "title": "Yerel SEO/NAP tutarlılığını düzelt",
+          "criterion": "Web, Google Business Profile, haritalar ve dizinlerde ad-adres-telefon aynıdır.",
+          "input": "Resmî NAP bilgileri",
+          "department": "Web & IT",
+          "priority": 3
+        },
+        {
+          "id": "step-row-69",
+          "code": "WEB-008",
+          "title": "KVKK, gizlilik, çerez ve ticari ileti izinlerini uygula",
+          "criterion": "Formlar ve çerez yönetimi kategorisel rıza ve gerekli metinlerle çalışır.",
+          "input": "Onaylı yasal metinler",
+          "department": "Web & IT",
+          "priority": 1
+        },
+        {
+          "id": "step-row-70",
+          "code": "WEB-009",
+          "title": "Erişilebilirlik ve temel uyumluluk kontrolü yap",
+          "criterion": "Kontrast, klavye, alt metin, form etiketleri ve okunabilirlikte kritik engeller giderilir.",
+          "input": "Varsa erişilebilirlik gereksinimleri",
+          "department": "Web & IT",
+          "priority": 5
+        },
+        {
+          "id": "step-row-71",
+          "code": "WEB-010",
+          "title": "Kurumsal e-posta teslim edilebilirliğini kontrol et",
+          "criterion": "SPF, DKIM, DMARC, gönderici adları ve rezervasyon e-postalarının spam testi yapılır.",
+          "input": "DNS ve e-posta sağlayıcı erişimi",
+          "department": "Web & IT",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-2ad8bd092c55",
+      "title": "Ölçümleme & Veri",
+      "items": [
+        {
+          "id": "step-row-72",
+          "code": "DAT-001",
+          "title": "GA4 mülk ve veri akışını kur/kontrol et",
+          "criterion": "Doğru domain, saat dilimi, para birimi, trafik ve iç trafik filtreleri yapılandırılmıştır.",
+          "input": "GA4 erişimi ve kurum bilgileri",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-73",
+          "code": "DAT-002",
+          "title": "Google Tag Manager kurulumunu kontrol et",
+          "criterion": "Tek doğru container vardır; sürümleme, yetkiler ve ortam ayrımı düzenlidir.",
+          "input": "GTM erişimi",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-74",
+          "code": "DAT-003",
+          "title": "Dönüşüm ölçüm planını oluştur",
+          "criterion": "Booking engine başlangıç/arama/oda seçimi/ödeme/satın alma, form, telefon ve WhatsApp olayları tanımlıdır.",
+          "input": "İş hedefleri ve booking engine teknik bilgisi",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-75",
+          "code": "DAT-004",
+          "title": "E-ticaret ve rezervasyon gelir takibini kur",
+          "criterion": "Transaction ID, değer, para birimi, oda/gece ve kupon verileri tekilleştirilerek GA4'e gider.",
+          "input": "Rezervasyon motoru dataLayer/API desteği",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-76",
+          "code": "DAT-005",
+          "title": "Cross-domain ölçümlemeyi yapılandır",
+          "criterion": "Web sitesi ve farklı domaindeki booking engine arasında oturum/referral kaybı oluşmaz.",
+          "input": "Tüm ilgili domainler",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-77",
+          "code": "DAT-006",
+          "title": "Google Ads ve Meta dönüşüm etiketlerini kur",
+          "criterion": "Satın alma ve mikro dönüşümler doğru değerle, tekrar saymadan platformlara ulaşır.",
+          "input": "Ads/Meta erişimleri",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-78",
+          "code": "DAT-007",
+          "title": "Consent Mode ve çerez onayı entegrasyonunu test et",
+          "criterion": "Rıza öncesi/sonrası etiket davranışı ve bölgesel gereklilikler doğrulanır.",
+          "input": "CMP ve yasal tercih",
+          "department": "Analytics",
+          "priority": 1
+        },
+        {
+          "id": "step-row-79",
+          "code": "DAT-008",
+          "title": "Telefon ve WhatsApp kaynak takibini kur",
+          "criterion": "Tıklamalar ve mümkünse çağrı sonuçları kampanya/kaynak bazında raporlanır.",
+          "input": "NAC/telefon ve WhatsApp Business bilgileri",
+          "department": "Proje Yöneticisi",
+          "priority": 3
+        },
+        {
+          "id": "step-row-80",
+          "code": "DAT-009",
+          "title": "UTM isimlendirme standardını oluştur",
+          "criterion": "Kaynak, medium, campaign, content ve ülke/dil formatı tüm ekip için tek standarda bağlıdır.",
+          "input": "Kampanya/kanal yapısı",
+          "department": "Analytics",
+          "priority": 3
+        },
+        {
+          "id": "step-row-81",
+          "code": "DAT-010",
+          "title": "Search Console ve sitemap doğrulamasını tamamla",
+          "criterion": "Tüm domain varyantları, sitemap gönderimi, indeksleme ve kritik hatalar kontrol edilir.",
+          "input": "Search Console ve DNS erişimi",
+          "department": "SEO",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "id": "group-325c893c7c87",
+      "title": "Sosyal Medya",
+      "items": [
+        {
+          "id": "step-row-82",
+          "code": "SOC-001",
+          "title": "Sosyal hesap sahipliği ve profil bilgilerini düzelt",
+          "criterion": "Kullanıcı adı, bio, kategori, link, telefon, e-posta, adres ve profil görselleri tutarlıdır.",
+          "input": "Onaylı bio, NAP, logo",
+          "department": "Sosyal Medya",
+          "priority": 1
+        },
+        {
+          "id": "step-row-83",
+          "code": "SOC-002",
+          "title": "Meta Business varlıklarını bağla",
+          "criterion": "Sayfa, Instagram, reklam hesabı, pixel/dataset, katalog ve WhatsApp doğru işletmeye bağlıdır.",
+          "input": "Meta Business erişimi",
+          "department": "Sosyal Medya",
+          "priority": 1
+        },
+        {
+          "id": "step-row-84",
+          "code": "SOC-003",
+          "title": "Topluluk yönetimi kurallarını ve SLA'yı yaz",
+          "criterion": "Yorum/DM yanıt süresi, rezervasyon yönlendirmesi, kriz/şikâyet eskalasyonu ve yasaklı yanıtlar belirlenir.",
+          "input": "Otel iletişim ve eskalasyon kişileri",
+          "department": "Sosyal Medya",
+          "priority": 3
+        },
+        {
+          "id": "step-row-85",
+          "code": "SOC-004",
+          "title": "Aylık içerik sütunları ve yayın takvimi hazırla",
+          "criterion": "Oda, deneyim, destinasyon, ekip, yeme-içme, teklif ve UGC dengesi onaylıdır.",
+          "input": "Etkinlikler, teklifler, operasyon takvimi",
+          "department": "Sosyal Medya",
+          "priority": 3
+        },
+        {
+          "id": "step-row-86",
+          "code": "SOC-005",
+          "title": "Highlight/sabitlenmiş içerik yapısını kur",
+          "criterion": "Odalar, konum, ulaşım, restoran, SSS, teklif ve rezervasyon bölümleri günceldir.",
+          "input": "Onaylı içerik ve kapaklar",
+          "department": "Sosyal Medya",
+          "priority": 5
+        }
+      ]
+    },
+    {
+      "id": "group-c8807195df96",
+      "title": "Reklam & Talep",
+      "items": [
+        {
+          "id": "step-row-87",
+          "code": "ADS-001",
+          "title": "Medya bütçesi ve kanal dağılımını onaylat",
+          "criterion": "Aylık/sezonluk bütçe, platform, ülke, dil, hedef ve ajans ücreti net biçimde onaylıdır.",
+          "input": "Bütçe ve satış hedefleri",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-88",
+          "code": "ADS-002",
+          "title": "Hedef pazar, persona ve rezervasyon penceresini analiz et",
+          "criterion": "Ülke/şehir, dil, cihaz, kalış süresi, booking window ve segment öncelikleri tanımlanır.",
+          "input": "Geçmiş PMS/OTA verisi",
+          "department": "Dijital Strateji",
+          "priority": 3
+        },
+        {
+          "id": "step-row-89",
+          "code": "ADS-003",
+          "title": "Google Ads hesap/fatura/ödeme ayarlarını doğrula",
+          "criterion": "Saat dilimi, para birimi, fatura profili, ödeme yöntemi ve otomatik etiketleme doğrudur.",
+          "input": "Fatura ve ödeme bilgisi",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-90",
+          "code": "ADS-004",
+          "title": "Meta reklam hesap/fatura/ödeme ayarlarını doğrula",
+          "criterion": "Hesap sınırı, ödeme, fatura, domain doğrulama ve roller doğrudur.",
+          "input": "Fatura ve ödeme bilgisi",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-91",
+          "code": "ADS-005",
+          "title": "Marka arama kampanyasını kur",
+          "criterion": "Marka varyasyonları, negatifler, site bağlantıları, arama uzantıları ve doğru landing page kullanılır.",
+          "input": "Marka/tesis ad varyasyonları",
+          "department": "Performans Pazarlama",
+          "priority": 3
+        },
+        {
+          "id": "step-row-92",
+          "code": "ADS-006",
+          "title": "Jenerik ve destinasyon arama kampanyalarını kur",
+          "criterion": "Niyet bazlı gruplama, konum/dil, negatif kelime ve teklif stratejisi hedeflerle uyumludur.",
+          "input": "Hedef pazar ve teklif listesi",
+          "department": "Performans Pazarlama",
+          "priority": 3
+        },
+        {
+          "id": "step-row-93",
+          "code": "ADS-007",
+          "title": "Meta prospecting ve remarketing yapısını kur",
+          "criterion": "Soğuk kitle, site/etkileşim kitleleri, hariç tutmalar ve kreatif formatları ayrıştırılır.",
+          "input": "Onaylı kreatif ve hedef pazar",
+          "department": "Performans Pazarlama",
+          "priority": 3
+        },
+        {
+          "id": "step-row-94",
+          "code": "ADS-008",
+          "title": "Google Hotel Ads/Free Booking Links uygunluğunu kontrol et",
+          "criterion": "Hotel Center, fiyat feed'i, landing page ve tesis eşleştirmesi çalışır veya aksiyon planı vardır.",
+          "input": "Google Business/Hotel Center ve booking engine desteği",
+          "department": "Performans Pazarlama",
+          "priority": 3
+        },
+        {
+          "id": "step-row-95",
+          "code": "ADS-009",
+          "title": "Kreatif brief ve format setini tamamla",
+          "criterion": "1:1, 4:5, 9:16, yatay; statik/video, dil ve teklif varyasyonları platforma hazırdır.",
+          "input": "Medya arşivi ve onaylı teklifler",
+          "department": "Kreatif Ekip",
+          "priority": 3
+        },
+        {
+          "id": "step-row-96",
+          "code": "ADS-010",
+          "title": "Landing page ve mesaj eşleşmesini kontrol et",
+          "criterion": "Reklam vaadi, dil, fiyat/teklif, tarih ve CTA açılış sayfasıyla tutarlıdır.",
+          "input": "Onaylı kampanya koşulları",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        },
+        {
+          "id": "step-row-97",
+          "code": "ADS-011",
+          "title": "Negatif anahtar kelime ve marka güvenliği listesini kur",
+          "criterion": "Alakasız, iş ilanı, şikâyet, ücretsiz ve uygun olmayan içerik sorguları yönetilir.",
+          "input": "Marka hassasiyetleri",
+          "department": "Performans Pazarlama",
+          "priority": 5
+        },
+        {
+          "id": "step-row-98",
+          "code": "ADS-012",
+          "title": "Kampanya adlandırma ve etiket standardını uygula",
+          "criterion": "Platform-ülke-dil-hedef-kitle-teklif-tarih bilgisi adlarda ve UTM'lerde tutarlıdır.",
+          "input": "UTM standardı",
+          "department": "Performans Pazarlama",
+          "priority": 3
+        },
+        {
+          "id": "step-row-99",
+          "code": "ADS-013",
+          "title": "Yayın öncesi reklam QA yap",
+          "criterion": "URL, fiyat, tarih, dil, konum, bütçe, dönüşüm, piksel, kreatif ve politika kontrolleri iki kişiyle tamamlanır.",
+          "input": "Nihai otel onayı",
+          "department": "Performans Pazarlama",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

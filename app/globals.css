@@ -1446,6 +1446,24 @@ button {
   color: #b57966;
   line-height: 1.6;
 }
+.checklist-import-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #ecd8d2;
+  border-radius: 8px;
+  background: #fff6f2;
+  color: #7b493b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.checklist-import-notice p {
+  margin: 4px 0 0;
+}
 .modal-overlay {
   position: fixed;
   inset: 0;

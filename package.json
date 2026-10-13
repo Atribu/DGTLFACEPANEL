@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "worker": "node --env-file-if-exists=.env.local --import tsx scripts/worker.ts",
+    "import:checklist": "node --env-file-if-exists=.env.local --import tsx scripts/import-checklist.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:integration": "node tests/http-smoke.mjs"
