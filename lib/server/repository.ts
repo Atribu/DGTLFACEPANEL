@@ -29,6 +29,7 @@ import {
 } from "./validation";
 import type { z } from "zod";
 import { notifyTaskChange } from "./notifications";
+import { mobileCommentId, taskVersion } from "./mobile-sync";
 
 export async function audit(
   tx: Queryable,
@@ -288,10 +289,18 @@ export async function updateTask(
   user: User,
   taskId: string,
   input: z.infer<typeof patchTaskSchema>,
+  expectedVersion?: string,
 ) {
   const db = await getDb();
   return db.transaction(async (tx) => {
     const task = await findTask(tx, user, taskId, true);
+    // Compare only after acquiring the row lock, so simultaneous writes cannot
+    // both pass with a version read before the other transaction committed.
+    if (expectedVersion !== undefined && taskVersion(task) !== expectedVersion)
+      throw new HttpError(
+        409,
+        "Görev başka bir ekip üyesi tarafından güncellendi. Güncel bilgileri alıp tekrar deneyin.",
+      );
     const before = structuredClone(task);
     let message = "";
     switch (input.action) {
@@ -418,7 +427,12 @@ export async function updateTask(
     return { task };
   });
 }
-export async function addComment(user: User, taskId: string, body: string) {
+export async function addComment(
+  user: User,
+  taskId: string,
+  body: string,
+  requestId?: string,
+) {
   const db = await getDb();
   return db.transaction(async (tx) => {
     const task = await findTask(tx, user, taskId, true);
@@ -427,8 +441,31 @@ export async function addComment(user: User, taskId: string, body: string) {
         403,
         "Yalnızca size atanan görevlere yorum yazabilirsiniz.",
       );
+    const commentId = requestId
+      ? mobileCommentId(user.id, taskId, requestId)
+      : randomUUID();
+    if (requestId) {
+      // The task lock serializes retries. Authorization is checked before any
+      // lookup, including when access/assignment changed after the first write.
+      const [existing] = await tx.query<{ data: TaskComment }>(
+        "SELECT data FROM task_comments WHERE id=$1",
+        [commentId],
+      );
+      if (existing) {
+        if (
+          existing.data.taskId !== taskId ||
+          existing.data.userId !== user.id ||
+          existing.data.body !== body
+        )
+          throw new HttpError(
+            409,
+            "Bu notun gönderim kimliği başka bir içerik için kullanılmış. Yeni bir not olarak gönderin.",
+          );
+        return { comment: existing.data };
+      }
+    }
     const comment: TaskComment = {
-      id: randomUUID(),
+      id: commentId,
       taskId,
       userId: user.id,
       userName: user.name,

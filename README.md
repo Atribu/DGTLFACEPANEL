@@ -77,6 +77,16 @@ Her otelin görev ve kriter kayıtları bağımsız kimlikler alır. Kaynaktaki 
 
 E-posta ile kullanıcı daveti, şifre sıfırlama, e-posta/mesaj bildirimleri ve Google Sheets/PMS/OTA entegrasyonları sonraki kapsam için ayrılmıştır. Ekip ekranı güncel iş yükünü, Yetkiler ekranı rol kurallarını gösterir. Hesaplar yöneticiye özel Kullanıcılar ekranından yönetilir. Üst çubuktaki hareket listesi uygulama içi kayıtları gösterir.
 
+## iPhone ile ortak ekip takibi
+
+`ios/` içindeki **DGTLFACE İşler 1.2.0 (3)**, aynı web hesabı ve veritabanını kullanan ekip uygulamasıdır. Webin 8 saatlik oturumu ve mevcut roller geçerlidir: yönetici tüm görevlerde, personel kendisine atanmış görevlerde işlem yapar; gözlemci yalnızca bağlı otellerini okur. Telefondaki tikler tamamlanma kriterlerini günceller; görevin tamamlanması için kontrole gönderme ve yönetici onayı gerekir. Eklenen açıklamalar webde de görünen ortak yorumlardır; mevcut yorumun üzerine yazılmaz. Başka biri görevi değiştirdiyse eski veriye dayanan mobil değişiklik reddedilir ve güncel görev alınır.
+
+Uygulama açıkken 30 saniyede, Düşük Güç Modu'nda 90 saniyede kontrol yapılır; bağlantı hatalarında aralık 300 saniyeye kadar uzar. Web paneli görünürken 30 saniyede kontrol edilir. Her iki tarafta elle yenileme kullanılabilir; değişmemiş yanıtlarda ETag/304 ile içerik tekrar taşınmaz. Bu akış anlık sunucu bildirimi değildir; iPhone arka plandayken yenileme veya push bildirimi çalışmaz. Çevrimdışı son indirilen liste salt okunur; yeniden bağlantı doğrulanana kadar tik veya yorum gönderilemez.
+
+Oturum yalnız bu cihazda kullanılabilen Keychain kaydında saklanır. Çıkışta veya sunucunun oturumu reddetmesinde ekip önbelleği temizlenir. Eski kişisel `progress-v1.json` / `progress-v2.json` kayıtları ayrı, salt okunur cihaz arşivinde korunur; ekip verisine otomatik aktarılmaz.
+
+**Yayın sırası:** önce web/API değişikliklerini mevcut sunucuya yayınlayın, ardından iPhone'a aynı paket kimliğiyle 1.2.0 güncellemesini yükleyin; mevcut uygulamayı silmeyin. Yeni ortam değişkeni veya ayrı mobil hesap gerekmez. Bu kod güncellemesi kendiliğinden canlı sunucuya ya da telefona kurulmuş sayılmaz. Kurulum, test komutları ve cihaz kontrol listesi [ios/README.md](ios/README.md) dosyasındadır.
+
 ## Dosyalar ve bağlantılar
 
 Görev detayındaki **Dosyalar ve bağlantılar** alanında yönetici veya görevin sorumlusu teslim ekleyebilir. Görevi görmeye yetkili kullanıcılar ekleri de görür; otel gözlemcilerinin otel kapsamı indirme isteklerinde de doğrulanır. Dosyalar herkese açık bir dizine yazılmaz; içerikleri ve bilgileri aynı veritabanında tutulur.
@@ -160,7 +170,7 @@ npm run start
 
 ## Altı otelin görev listesini otomatik oluşturma
 
-Görev içeriği `docs/gorev-referansi.json` ile kodun parçası olarak yayınlanır. Güncellemeden sonra **mevcut bir aktif yönetici panele ilk kez girdiğinde** (`/api/bootstrap`), demo olmayan ortamlarda Miramare Beach, Miramare Quenn, Port Nature Luxury Resort, SY Hotels, Mi Hotel ve Teona Hotel için başlangıç görevleri veritabanına eklenir: **6 otel, otel başına 93 görev ve 12 grup, toplam 558 görev**. Mevcut `DATABASE_URL` bağlantısı kullanılır; ek ortam değişkeni, sunucu komutu veya `IMPORT_ADMIN_EMAIL` gerekmez. Hesap oluşturma, giriş ekranı, sağlık kontrolü ve build bu aktarımı tetiklemez. Personel/gözlemci oturumu da aktarımı başlatmaz; yönetici ilk açılışı tamamladıktan sonra kendi yetkileri kapsamında kayıtları görürler.
+Görev içeriği `docs/gorev-referansi.json` ile kodun parçası olarak yayınlanır. Güncellemeden sonra **mevcut bir aktif yönetici panele ilk kez girdiğinde** (`/api/bootstrap` veya `/api/mobile/bootstrap`), demo olmayan ortamlarda Miramare Beach, Miramare Quenn, Port Nature Luxury Resort, SY Hotels, Mi Hotel ve Teona Hotel için başlangıç görevleri veritabanına eklenir: **6 otel, otel başına 93 görev ve 12 grup, toplam 558 görev**. Mevcut `DATABASE_URL` bağlantısı kullanılır; ek ortam değişkeni, sunucu komutu veya `IMPORT_ADMIN_EMAIL` gerekmez. Hesap oluşturma, giriş ekranı, sağlık kontrolü ve build bu aktarımı tetiklemez. Personel/gözlemci oturumu da aktarımı başlatmaz; yönetici ilk açılışı tamamladıktan sonra kendi yetkileri kapsamında kayıtları görürler.
 
 Aktarım bitince tüm okuma ve düzenlemeler normal şekilde veritabanından devam eder. `app_meta` tablosundaki kalıcı `hotel-checklist-2026-10-v1` kaydı, sonraki açılışlar ve yayınlarda aktarımı atlatır. Otel adları, açıklamalar, tikler ve görev durumları sonradan değiştirilebilir; silinen işler tekrar oluşturulmaz. Kaynak JSON'u daha sonra değiştirmek mevcut kayıtları güncellemez. Bu tamamlama kaydı rutin kullanımda silinmemelidir.
 

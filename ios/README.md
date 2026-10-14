@@ -1,92 +1,99 @@
 # DGTLFACE İşler — iPhone
 
-Her otel için 93 hazır işlemi 12 grupta gösteren kişisel kontrol listesi. Her otelin tikleri ve işlem notları ayrı tutulur; her telefonun kayıtları bağımsızdır. Uygulama internet veya kullanıcı hesabı gerektirmez.
+**1.2.0 (3)** sürümü, [DGTLFACE web paneline](https://panel.dgtlface.com) aynı hesapla bağlanan ekip uygulamasıdır. Oteller, görevler, kriter tikleri ve ekip yorumları sunucudaki ortak veritabanından alınır. Eski kişisel kayıtlar ayrıca cihaz arşivinde korunur. Minimum iOS sürümü 17'dir; SwiftUI ve sistem kütüphaneleri kullanılır, harici Swift paketi gerekmez.
 
-Ana ekranda oteller ve her birinin ilerlemesi bulunur. Otelden işlem grubuna, ardından görevlere geçilir. Başlangıç otelleri: Miramare Beach, Miramare Quenn, Port Nature Luxury Resort, SY Hotels, Mi Hotel ve Teona Hotel. Uygulamadan yeni otel eklenebilir ve otel adı değiştirilebilir. İşaretler geri alınabilir. Arama, Tümü / Kalan / Biten filtreleri ve yalnızca seçilen otelin tiklerini temizleyen onaylı sıfırlama vardır; notlar korunur. Her işlemin altında kişisel not önizlemesi ve not düzenleme düğmesi bulunur. Notlar, düzenleme sayfasındaki **Kaydet** ile saklanır. İşlemlerin kaynak açıklamaları “Ayrıntılar” altında gösterilir. DGTLFACE logosu ve renkleri kullanılır.
+## Kullanım ve yetkiler
 
-## Hazır olan ve gereken
+Webde kullandığın e-posta ve şifreyle giriş yap. Ayrı mobil hesap veya yeni ortam değişkeni gerekmez. Oturum en fazla 8 saattir; süresi dolduğunda veya hesap yetkileri değiştiğinde yeniden giriş gerekir.
 
-Kaynak kod, uygulama simgesi, işlem listesi ve Xcode projesi hazır. 1.1.0 (2) sürümüne otel bazında ilerleme ve not alanları eklendi. **22 veri katmanı testi** geçti; iOS cihaz ve iOS Simulator için **Release derlemeleri** başarılı. Cihaz sürümü kişisel hesapla imzalandı ve imza doğrulandı. iPhone 18 Pro / iOS 27 simülatöründe altı otel, görev gruplarına geçiş, tik koyma, çok satırlı Türkçe not yazma/kaydetme ve notun görev altında görünmesi denendi. İkinci otelde aynı görevin tikinin ve notunun boş kaldığı ekrandan, altı otelin ayrılığı kaydedilen dosyadan doğrulandı. Bağımsız kod incelemesi kayıtların korunmasını ve otel bağlamlarını kontrol etti. 13 Ekim 2026’da 1.1.0 (2) güncellemesi aynı paket kimliğiyle, uygulama silinmeden yerel ağ üzerinden iPhone 13’e yüklendi; cihazdan sürüm numarası doğrulandı. Xcode’dan yeni sürümü açma adımı telefonun ekran kilidinin açılmasını bekliyor; bu sürümün fiziksel cihaz arayüz kontrolü henüz tamamlanmadı.
+- Yönetici tüm otel ve görevleri görür; kriterleri ve durumu değiştirebilir, yorum ekleyebilir, kontrolü onaylayabilir, işi geri gönderebilir veya yeniden açabilir.
+- Personel tüm otelleri görür; yalnızca kendisine atanmış görevlerde kriter/durum değiştirir, yorum ekler ve kontrole gönderir.
+- Otel gözlemcisi yalnızca bağlı otellerini ve bunların görev/yorumlarını görüntüler; değişiklik yapamaz.
 
-Xcode 27.0 ve iOS geliştirme araçları kuruldu. 13 Ekim 2026’da kişisel Apple hesabıyla imzalanan **DGTLFACE İşler 1.0.0 (1)**, iOS 26.6.2 kullanan iPhone 13’e yüklendi. İmza denetimi ve cihazdaki paket kimliğiyle kurulum doğrulandı; kullanıcı geliştiriciye güven onayından sonra uygulamanın açıldığını bildirdi. Gerçek pil tüketimi henüz ölçülmedi. Gereken minimum iOS sürümü 17’dir.
+Ana ekranda oteller, her otelde işlem grupları, ardından görevler bulunur. Görevler öncelik puanıyla sıralanır: **1 en önce, 10 en sonra**. Görev ayrıntısında açıklama, sorumlu, otelden gerekli bilgi, tamamlanma kriterleri ve ekip yorumları gösterilir. Yeni otel, kullanıcı, kişi ataması ve öncelik düzenlemeleri web panelinden yapılır.
 
-## Mac’ten iPhone’a kurulum
+**Tik koymak bir tamamlanma kriterini işaretler.** Tüm kriterler hazır olunca iş yönetici kontrolüne gönderilir; ancak yönetici onayıyla “Tamamlandı” olur. Kontrol veya tamamlandı aşamasındaki kriterler kilitlidir. Yönetici işi geri gönderebilir veya yeniden açabilir.
 
-1. Mac App Store’dan Xcode’u kur, ilk açılışta gerekli iOS bileşenlerini tamamla. Bu Mac’te bu adım tamamlandı.
-2. Bu klasördeki `DGTLFACEChecklist.xcodeproj` dosyasını Xcode ile aç.
-3. Xcode → Settings → Apple Accounts bölümünde kendi Apple hesabınla giriş yap.
-4. Solda projeyi, ardından **DGTLFACEChecklist** hedefini seç. **Signing & Capabilities** altında **Automatically manage signing** açık olsun; **Team** alanında hesabını seç. Ücretsiz hesapta “Personal Team” görünür.
-5. Bundle Identifier başlangıçta `com.dgtlface.personalchecklist`. Kullanılamadığına dair hata çıkarsa sana özgü bir tanımlayıcı belirle ve sonraki yüklemelerde aynı tanımlayıcıyı koru.
-6. iPhone’u kabloyla bağla, kilidini aç ve bilgisayara güven isteğini telefonda onayla. Gerekirse iPhone’da Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu’nu açıp yeniden başlatma adımlarını tamamla.
-7. Xcode’un üst bölümünde çalışma hedefi olarak iPhone’unu seç ve ▶ Run’a bas. Derleme ve yükleme tamamlanınca “DGTLFACE İşler” açılır.
+**Yorum / açıklama ekle** alanı ortak ekip yorumuna yeni bir kayıt ekler. Bu notlar webde de görünür ve görevi görmeye yetkili otel gözlemcileri tarafından okunabilir. Mevcut yorum üzerine yazılmaz. Aynı gönderimin bağlantı sorunu nedeniyle tekrar denenmesi aynı yorum kaydını döndürür; yeni kopya oluşturmaz. Başka biri görevi değiştirmişse eski sürüme dayanan tik/durum işlemi uygulanmaz; güncel bilgi alınıp tekrar denenir.
 
-Paylaşılan şemanın Run ayarı günlük kullanım için optimize edilmiş **Release** derlemesini kullanır ve hata ayıklayıcı kapalıdır. Kod üzerinde hata ayıklamak gerektiğinde Product → Scheme → Edit Scheme → Run → Info altında Debug derlemesini seçip Debug executable seçeneğini açabilirsin.
+## Eşitleme ve çevrimdışı kullanım
 
-[Apple’ın cihazda çalıştırma rehberi](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) ve [Geliştirici Modu adımları](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device).
+Uygulama açıldığında, ön plana döndüğünde ve elle yenilendiğinde güncel veriler alınır. Ekran açıkken normalde **30 saniyede**, Düşük Güç Modu'nda **90 saniyede** kontrol yapılır. Bağlantı hatalarında deneme aralığı **300 saniyeye kadar** uzar. Web paneli görünürken **30 saniyede** kontrol edilir; her iki tarafta elle yenileme de vardır. Bu nedenle diğer cihazdaki değişiklikler bir sonraki başarılı kontrolde görünür; anlık push bildirimi kullanılmaz.
 
-Ücretsiz Personal Team ile kurulumun imzası **7 gün sonra sona erer**; Xcode’dan yeniden derleyip yüklemek gerekir. Apple bu yöntem için en fazla 3 cihaz ve cihaz başına 3 uygulama sınırı bildiriyor. Başka bir iPhone’a kurulumda da cihaz için geçerli imzalama gerekir; dosyayı göndermek tek başına kurulum sağlamaz. [Apple’ın hesap ve kurulum sınırları](https://developer.apple.com/help/account/basics/about-your-developer-account).
+Değişiklik yoksa ETag/304 yanıtı tüm görev listesinin yeniden indirilmesini önler. iPhone arka plana geçince düzenli kontrol durur; arka plan servisi, push bildirimi, konum takibi veya ekranı açık tutma yoktur.
 
-Bu kurulumun imzalama profili **20 Ekim 2026, 12:57 (Türkiye saati)** tarihinde sona eriyor. Uygulamayı silmeden aynı proje, Apple hesabı ve paket kimliğiyle yeniden Run yaparak imzayı yenile.
+İnternet kesilirse **son indirilen liste salt okunur** gösterilir. Sunucuya yeniden bağlanıp oturum doğrulanana kadar kriter/durum değişikliği veya yorum gönderilemez. Çevrimdışı değişiklik kuyruğu yoktur. Açık yorum taslağı bir gönderim hatasında ekranda tutulur; gönderildiği doğrulanmadan başarı gösterilmez. Başarılı sunucu kaydı ortak veritabanında saklanır.
 
-## Telefon üzerinde son kontrol
+## Oturum ve kayıtların saklanması
 
-- İlk açılışta altı oteli, her otelde 93 işlem ve 12 grubu doğrula.
-- Bir otelde birkaç işleme tik koy ve bir işleme çok satırlı not yazıp Kaydet'e dokun; başka otelde aynı işlemin boş kaldığını kontrol et. Uygulamayı kapatıp yeniden açınca ilk oteldeki tiklerin ve notun kaldığını doğrula.
-- Not değişikliğinden vazgeç; önceki notun korunduğunu kontrol et. Notu boşaltıp kaydederek kaldırmayı dene.
-- Bir otel ekle ve adını değiştir; yeniden açınca adının korunduğunu, aynı isimle ikinci otelin eklenemediğini kontrol et.
-- Uçak modunda bir tiki kaldırıp diğerini işaretle, tekrar açarak kaydı kontrol et.
-- Arama ve üç filtreyi dene. Kalan filtresinde bir grubun son işlemini tamamlamayı da kontrol et.
-- “İşaretleri sıfırla” onayında önce vazgeç, sonra onaylayarak sadece o otelin tiklerinin temizlendiğini; notlarının ve diğer otellerin kayıtlarının korunduğunu kontrol et.
-- Küçük ekran, büyük yazı boyutu ve VoiceOver ile listeyi dene.
-- İkinci iPhone’da kurulduğunda ilk telefondaki tiklerin taşınmadığını doğrula.
+Parola kalıcı olarak saklanmaz. Oturum çerezi, yalnız bu cihazda kullanılabilen ve cihaz kilidi açıkken erişilen Keychain kaydında tutulur. İstekler sabit HTTPS panel adresine gider; oturum çerezi başka sunucuya yönlendirilmez. Webdeki rol ve otel kapsamı her API isteğinde sunucuda doğrulanır.
 
-## İlerlemenin saklanması
+Ekip önbelleği `Application Support/DGTLFACETeam/team-cache-v1.json` dosyasındadır. Kullanıcı kimliğine bağlıdır, iOS dosya korumasıyla yazılır ve yedekten hariç tutulur. Çıkışta, oturum sona erdiğinde veya sunucu `401` döndürdüğünde ekip görünümü ve önbelleği temizlenir. Başka hesapla giriş yapıldığında önceki hesabın listesi kullanılmaz. Önbellek sunucudaki kayıtların yerine geçmez.
 
-Oteller, işaretler ve notlar uygulamanın kendi alanındaki `Application Support/DGTLFACEChecklist/progress-v2.json` dosyasında saklanır. Tikler değiştiği anda; otel adı ve notlar Kaydet'e basıldığında atomik olarak yazılır. Uygulama kapanınca korunur. Kayıt yazılamazsa önceki durum korunur ve hata gösterilir; not düzenleme sayfasındaki taslak kapanmaz. Bozuk kayıt kendiliğinden sıfırlanmaz.
+Önceki sürümlerin `Application Support/DGTLFACEChecklist/progress-v1.json` ve `progress-v2.json` kayıtları **Eski cihaz kayıtları** ekranında salt okunur arşiv olarak açılır. Eski tikler ve kişisel notlar otomatik olarak ortak görevlere aktarılmaz. Kaynak satırları ve görünen görev kodları aynı olsa da eski kişisel işaretler ortak yönetici onay sürecinin yerine geçirilmez. v1 kayıtlarının v2 biçimine taşınmasında kaynak v1 dosyası korunur; otelle eşleştirilmemiş tikler **Mevcut işlerim** listesinde kalır.
 
-İlk 1.1 açılışında eski `progress-v1.json` okunarak tikler taşınır; kaynak dosya değiştirilmez. Bir otelle ilişkilendirilmemiş eski tikler **Mevcut işlerim** adlı ayrı listede korunur. Yeni oteller boş başlar. Yeni kayıt mevcutsa tekrar aktarım veya başlangıç otellerini yeniden oluşturma yapılmaz.
+**Uygulamayı telefondan silmek cihaz arşivini de silebilir.** Güncellemeyi ve imza yenilemeyi mevcut uygulamayı silmeden, aynı Apple hesabı ve `com.dgtlface.personalchecklist` paket kimliğiyle yap.
 
-Uygulamayı telefondan silmek kayıtları da siler. İmza yenilerken uygulamayı silmeden, aynı tanımlayıcıyla yeniden yükle. Uygulama içinde dışa aktarma veya telefonlar arası eşitleme bulunmaz; cihazın iOS yedekleme ve geri yükleme davranışı ayrıdır.
+## Yayın ve Mac'ten iPhone'a kurulum
+
+1. Önce bu deponun web/API değişikliklerini mevcut sunucuya yayınla. Mobil uygulamanın `/api/mobile/bootstrap`, görev ve yorum uçlarına erişebilmesi gerekir. Mevcut veritabanı, hesaplar ve ortam ayarları kullanılır.
+2. Mac'te Xcode'u aç; ilk açılışta gerekli iOS bileşenlerini tamamla. Bu projede Xcode ve geliştirme araçları daha önce kurulmuştur.
+3. `ios/DGTLFACEChecklist.xcodeproj` dosyasını aç. Xcode → Settings → Apple Accounts bölümünde mevcut Apple hesabının açık olduğunu kontrol et.
+4. **DGTLFACEChecklist** hedefinin **Signing & Capabilities** bölümünde **Automatically manage signing** açık, **Team** mevcut hesabın olmalı. Bu güncellemede **Bundle Identifier değerini değiştirme**; aynı uygulamayı güncelliyoruz.
+5. iPhone'u kabloyla bağla, kilidini aç ve gerekiyorsa bilgisayara güven isteğini onayla. Gerekirse Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu'nu etkinleştirip telefonun istediği yeniden başlatma adımlarını tamamla.
+6. Xcode çalışma hedefinden iPhone'u seçip ▶ Run'a bas. Aynı kimlikle yüklenen **1.2.0 (3)** mevcut uygulamayı günceller. İlk girişte web hesabını kullan.
+
+Paylaşılan şemanın Run ayarı günlük kullanım için optimize edilmiş **Release** derlemesini kullanır ve hata ayıklayıcı kapalıdır. Geliştirme gerektiğinde Product → Scheme → Edit Scheme → Run → Info bölümünden Debug ve Debug executable seçilebilir.
+
+Kişisel Apple hesabının geliştirme imzası geçicidir. Geçerlilik bitince uygulamayı silmeden aynı proje, hesap ve paket kimliğiyle yeniden Run yap. Güncel geçerlilik tarihini Xcode'daki imzalama profilinden kontrol et. Başka iPhone'a kurulum da o cihaz için geçerli imzalama gerektirir; uygulama dosyasını göndermek tek başına yeterli değildir. [Apple cihazda çalıştırma rehberi](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices), [Geliştirici Modu adımları](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) ve [hesap sınırları](https://developer.apple.com/help/account/basics/about-your-developer-account).
+
+Bu kaynak değişikliği sunucuya yayınlama veya fiziksel iPhone'a kurulum yapmaz. **1.2.0'ın canlı uçtan uca testi**, web güncellemesi yayınlandıktan ve telefon güncellendikten sonra yapılmalıdır.
+
+## Telefonda ve webde son kontrol
+
+- Yöneticiyle giriş yap; mevcut otelleri ve sunucudaki görevleri doğrula. Başlangıç aktarımı değişmeden duruyorsa altı otelde toplam 558 görev vardır; sonradan eklenen/silinen işlere göre sayı değişebilir.
+- Açık bir görevde telefondan kriter işaretle. Webi elle yenileyerek veya görünür panelin kontrolünü bekleyerek aynı kriteri gör. Webden açıklama/öncelik değiştir ve telefonda yenileyerek kontrol et.
+- Telefonda Türkçe çok satırlı bir yorum ekle; webde aynı görevin yorumlarında bir kez göründüğünü doğrula. Yorum gönderim hatasında taslağın korunduğunu kontrol et.
+- İki cihazda aynı görevi açıp birinde değiştir; diğerindeki eski sürüme dayanan değişikliğin uyarıyla reddedildiğini, yeni verinin üzerine yazılmadığını doğrula.
+- Personel hesabıyla kendisine atanmış görevi düzenle; başka görevleri yalnızca görüntüle. Gözlemciyle yalnız bağlı otelleri gör ve değişiklik düğmelerinin kapalı olduğunu kontrol et.
+- Tüm kriterleri işaretleyip kontrole gönder; yönetici onayı sonrası tamamlandı durumunu her iki tarafta doğrula.
+- Uçak modunda kaydedilmiş listeyi gör, değişiklik yapılamadığını doğrula. Bağlantıyı açıp yeniledikten sonra devam et. Uygulamayı arka plana alınca düzenli isteklerin durduğunu kontrol et.
+- Çıkış yaptıktan sonra ekip listesinin temizlendiğini, farklı hesapla girişte önceki otel kapsamının görünmediğini kontrol et.
+- **Eski cihaz kayıtları** bölümünde önceki kişisel tik ve notları görüntüle; ortak görevlerden bağımsız ve salt okunur kaldığını doğrula.
+- Küçük ekran, büyük yazı boyutu ve VoiceOver ile liste, kriterler ve yorum formunu kontrol et.
+
+## Geliştirme ve testler
+
+Mobil uygulama web panelinden ayrı bir Xcode projesidir; ekip verisi sunucudan alınır. Paket içindeki `DGTLFACEChecklist/Resources/checklist.json` eski kişisel arşivin görev metinlerini çözmek için korunur. Kaynağı ana projenin `docs/gorev-referansi.json` dosyasıdır. Paket kataloğunu bilinçli olarak güncellerken kaynak satır kimliklerini (`sourceRow`) koru; eski kayıtlar bu kimlikleri kullanır. Aynı görünen işlem koduna sahip farklı satırlar ayrı kayıtlardır. Google Sheets ile canlı bağlantı yoktur.
+
+Depo kökünden:
+
+```sh
+# Yalnız paket/arşiv kataloğu kaynağı değiştiyse:
+python3 ios/scripts/sync-checklist.py
+
+# İzole Swift testleri:
+sh ios/scripts/test-core.sh
+sh ios/scripts/test-api.sh
+sh ios/scripts/test-team.sh
+
+# Web/API kontrolleri:
+npm run typecheck
+npm test
+npm run test:integration
+npm run build
+```
+
+Core testleri eski otel bazlı tik/not kayıtlarını, v1→v2 aktarımını ve hata halinde kayıtların korunmasını kapsar. API testleri sahte taşıma/kimlik deposuyla oturum, HTTPS, çerez, yönlendirme ve hata akışlarını denetler. Store testleri geçici önbellek ve sahte servisle hesap ayrılığını, eşzamanlı yanıtları, çevrimdışı salt okunur davranışı ve değişiklikleri doğrular. Gerçek Keychain, canlı hesaplar ve cihaz arşivi bu testlerde kullanılmaz. Web testleri otel kapsamı, ETag/304, eski sürüm çatışmaları, yorum tekrarlarının tekilleştirilmesi ve yavaş gönderim sırasında iptal edilen yetkileri de kapsar. Bunlar fiziksel cihaz testinin yerine geçmez.
 
 ## Pil ve kaynak kullanımı
 
-- Arka plan görevi, zamanlayıcı, sürekli yenileme, internet isteği, konum takibi veya sürekli animasyon yoktur. Ekranın otomatik kapanması engellenmez.
-- Aranacak metinler açılışta bir kez hazırlanır. Türkçe harf dönüşümü her satır için tekrar yapılmaz; sorgu ekran güncellemesinde bir kez hazırlanır.
-- Arama sonuçları ve grup sayaçları aynı ekran çiziminde tekrar tekrar hesaplanmaz. İşlem sayısı önceden hesaplanır; sayım sırasında geçici işlem dizileri oluşturulmaz.
-- Kayıt yalnızca veri gerçekten değiştiğinde yapılır. Küçük JSON dosyası tek atomik yazmayla hemen saklanır; değişmeyen bir notu kaydetmek veya boş listeyi tekrar sıfırlamak diske yazmaz. Not yazarken her tuşta kayıt yapılmaz; Kaydet'e basıldıktan sonra beklemek gerekmez.
-- Sistem koyu görünümü ve yerel iOS listeleri kullanılır. Günlük kullanım derlemesinde Swift optimizasyonu açıktır (`Release`, `-O`).
+Yerel iOS arayüzü ve optimize Release derlemesi kullanılır. Düzenli istekler yalnız ön planda çalışır; Düşük Güç Modu ve hata sonrası bekleme süreleri gereksiz ağ kullanımını azaltır. Değişmeyen yanıtlarda tam içerik indirilmez, değişmeyen ekip önbelleği tekrar yazılmaz. Not yazarken her tuşta sunucuya gönderim yapılmaz. Arka planda sürekli bağlantı, konum takibi veya animasyon yoktur; ekranın otomatik kapanması engellenmez.
 
-Bunlar kod düzeyinde yapılan düzenlemelerdir; belirli bir pil tasarrufu yüzdesi ölçülmüş değildir. Xcode ve iPhone hazır olduğunda Release sürümüyle açılış, 1 dakika dokunmadan bekleme, arama/tik koyma ve arka plana geçiş senaryoları ölçülmelidir. Aynı telefon, ekran parlaklığı ve koşullarla karşılaştırma yapılmalı; CPU, bellek ve disk etkinliği gözlenmelidir. iOS 26 ve sonrasında Instruments Power Profiler kullanılabilir; daha eski cihazlarda Xcode’un kullanılabilir enerji ve performans araçlarıyla kontrol gerekir. Şarj sırasında Power Profiler’ın toplam sistem enerji değeri 0 görünebildiği için pil karşılaştırması şarjdan ayrılmış cihazda yapılmalıdır. [Apple’ın pil ölçüm rehberi](https://developer.apple.com/documentation/xcode/measuring-your-app-s-power-use-with-power-profiler).
+Bu önlemler kod düzeyindedir; **gerçek pil tüketimi veya tasarruf yüzdesi ölçülmüş değildir**. Fiziksel cihazda aynı parlaklık ve koşullarla açılış, bekleme, arama/kriter değişikliği, bağlantı kesilmesi ve arka plana geçiş ölçülmelidir. Şarjdan ayrılmış cihazda CPU, bellek, ağ ve enerji etkinliği gözlenebilir. [Apple'ın pil ölçüm rehberi](https://developer.apple.com/documentation/xcode/measuring-your-app-s-power-use-with-power-profiler).
 
-## Gruplar
+## Önceki kurulumların kaydı
 
-| Grup | İşlem |
-| --- | ---: |
-| Proje Açılışı | 5 |
-| Telefon & NAC | 8 |
-| WhatsApp | 1 |
-| Connexease | 1 |
-| Erişim & Güvenlik | 8 |
-| Elektraweb & Asisia | 14 |
-| OTA & Dağıtım | 12 |
-| Marka & İçerik | 6 |
-| Web & Rezervasyon | 10 |
-| Ölçümleme & Veri | 10 |
-| Sosyal Medya | 5 |
-| Reklam & Talep | 13 |
-| **Toplam** | **93** |
+**1.0.0 (1)**, 13 Ekim 2026'da kişisel Apple hesabıyla imzalanarak iOS 26.6.2 kullanan iPhone 13'e yüklendi; kullanıcı güven onayından sonra uygulamanın açıldığını bildirdi. Bu sürüm kişisel, çevrimdışı listeydi.
 
-## Geliştirme
-
-SwiftUI arayüzü ve Foundation tabanlı yerel kayıt kullanılır. Harici paket veya sunucu bağımlılığı yoktur. Web panelinden ayrı bir Xcode projesidir.
-
-İşlem kaynağı ana projenin `docs/gorev-referansi.json` dosyasıdır. Uygulama bu dosyadan üretilen `DGTLFACEChecklist/Resources/checklist.json` kopyasını paketinde taşır. Kaynak değişirse depo kökünden çalıştır:
-
-```sh
-python3 ios/scripts/sync-checklist.py
-sh ios/scripts/test-core.sh
-```
-
-Ardından Xcode’dan yeniden derleyip telefona yükle. Canlı panel veya Google Sheets değişiklikleri telefona kendiliğinden aktarılmaz. Kaynak satır kimliklerini (`sourceRow`) mevcut işlemler için koru; ilerleme bu kimliklerle ilişkilendirilir. Aynı görünen işlem koduna sahip farklı satırlar bağımsız işaretlenir. Kaynaktaki “Kritik” önceliği 1, “Yüksek” 3, diğerleri 5 olarak gösterilir; grup ve işlem sıralaması kaynakla aynıdır.
-
-`test-core.sh`, geçici dizinde Swift ile veri katmanı testlerini derleyip çalıştırır: katalog ve Türkçe arama, otellerin bağımsız tikleri/notları, otel ekleme ve ad değiştirme, yeniden açma, notları koruyan sıfırlama, gereksiz yazmaların engellenmesi, v1'den v2'ye aktarım ve hata durumunda kayıtların korunması. Bu testler iOS arayüz derlemesinin veya cihaz testinin yerine geçmez.
+**1.1.0 (2)**, aynı gün altı otel için bağımsız tik/not alanlarıyla hazırlandı. Eski veri katmanının 22 testi ve cihaz/simülatör Release derlemeleri geçti; simülatörde otel ayrılığı, Türkçe notlar ve kayıt kalıcılığı kontrol edildi. Aynı paket kimliğiyle uygulama silinmeden yerel ağ üzerinden iPhone 13'e yüklendi; sürüm numarası cihazdan doğrulandı ve kullanıcı uygulamanın çalıştığını bildirdi. Bu geçmiş kurulum **1.2.0 ekip eşitlemesinin telefona kurulduğu anlamına gelmez**.

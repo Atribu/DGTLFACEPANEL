@@ -121,7 +121,7 @@ try {
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(45000),
     });
-    const result = await response.json();
+    const result = response.status === 304 ? null : await response.json();
     assert.equal(
       response.status,
       expected,
@@ -130,10 +130,10 @@ try {
     checks++;
     return { result, response };
   }
-  async function login(email) {
+  async function login(email, password = "Demo2026!") {
     const { response } = await request(null, "POST", "/api/login", {
       email,
-      password: "Demo2026!",
+      password,
     });
     const cookie = response.headers
       .getSetCookie()
@@ -146,14 +146,18 @@ try {
   const admin = await login("admin@dgtlface.demo");
   const staff = await login("ayse@dgtlface.demo");
   const observer = await login("otel@dgtlface.demo");
-  const { result: baseline } = await request(admin, "GET", "/api/bootstrap");
+  const { result: baseline, response: baselineResponse } = await request(admin, "GET", "/api/bootstrap");
+  assert.equal(baselineResponse.headers.get("cache-control"), "private, no-store");
+  const webConditional = { "If-None-Match": baselineResponse.headers.get("etag") };
+  await request(admin, "GET", "/api/bootstrap", undefined, 304, webConditional);
+  await request(null, "GET", "/api/bootstrap", undefined, 401, webConditional);
   assert.equal(baseline.hotels.length, 4);
   assert.equal(
     baseline.tasks.length,
     135,
     "Database must be a fresh disposable seed.",
   );
-  const { result: scoped } = await request(observer, "GET", "/api/bootstrap");
+  const { result: scoped } = await request(observer, "GET", "/api/bootstrap", undefined, 200, webConditional);
   assert.deepEqual(
     scoped.hotels.map((item) => item.id),
     ["hotel-luna"],
@@ -203,7 +207,13 @@ try {
   const task = created.task;
   const taskUrl = `/api/tasks/${task.id}`;
   assert.equal(task.priority, 1);
+  const { response: beforePriorityChange } = await request(admin, "GET", "/api/bootstrap");
   await request(admin, "PATCH", taskUrl, { action: "update", priority: 10 });
+  const { result: afterPriorityChange, response: changedWorkspace } = await request(admin, "GET", "/api/bootstrap", undefined, 200, {
+    "If-None-Match": beforePriorityChange.headers.get("etag"),
+  });
+  assert.equal(afterPriorityChange.tasks.find((item) => item.id === task.id).priority, 10);
+  assert.notEqual(changedWorkspace.headers.get("etag"), beforePriorityChange.headers.get("etag"));
   await request(admin, "PATCH", taskUrl, { action: "update", priority: 1 });
   await request(
     admin,
@@ -946,6 +956,106 @@ try {
   console.log(
     "PASS: hotel report access scope, undated-task separation, CSV headers and formula neutralization",
   );
+
+  const mobileUrl = "/api/mobile/bootstrap";
+  const { result: mobileData, response: mobileResponse } = await request(admin, "GET", mobileUrl);
+  assert.ok(mobileData.tasks.every((item) => /^[a-f0-9]{64}$/.test(mobileData.taskVersions[item.id])));
+  assert.equal(mobileData.activities, undefined);
+  assert.equal(mobileResponse.headers.get("cache-control"), "private, no-cache");
+  assert.ok(mobileResponse.headers.get("vary").split(",").map((value) => value.trim().toLowerCase()).includes("cookie"));
+  const conditional = { "If-None-Match": mobileResponse.headers.get("etag") };
+  await request(admin, "GET", mobileUrl, undefined, 304, conditional);
+  await request(null, "GET", mobileUrl, undefined, 401, conditional);
+  const { result: mobileScoped } = await request(observer, "GET", mobileUrl, undefined, 200, conditional);
+  assert.ok(mobileScoped.tasks.every((item) => item.hotelId === "hotel-luna"));
+  assert.deepEqual(Object.keys(mobileScoped.taskVersions).sort(), mobileScoped.tasks.map((item) => item.id).sort());
+  assert.ok(mobileScoped.comments.every((item) => mobileScoped.taskVersions[item.taskId]));
+
+  const { result: mobileCreated } = await request(admin, "POST", "/api/tasks", {
+    ...draft,
+    title: "Geçici mobil eşitleme testi",
+  }, 201);
+  const mobileTaskId = mobileCreated.task.id;
+  const mobileTaskUrl = `/api/mobile/tasks/${mobileTaskId}`;
+  const { result: freshMobile } = await request(staff, "GET", mobileUrl);
+  const mobilePatch = {
+    expectedVersion: freshMobile.taskVersions[mobileTaskId],
+    payload: { action: "checklist", itemId: mobileCreated.task.checklist[0].id, done: true },
+  };
+  await request(null, "PATCH", mobileTaskUrl, mobilePatch, 401);
+  await request(staff, "PATCH", mobileTaskUrl, mobilePatch, 403, { Origin: "https://example.test" });
+  await request(observer, "PATCH", mobileTaskUrl, mobilePatch, 403);
+  await request(observer, "PATCH", `/api/mobile/tasks/${foreignTask.id}`, mobilePatch, 404);
+  await request(staff, "PATCH", mobileTaskUrl, { payload: mobilePatch.payload }, 400);
+  const { result: mobileChanged } = await request(staff, "PATCH", mobileTaskUrl, mobilePatch);
+  assert.equal(mobileChanged.task.checklist[0].done, true);
+  assert.match(mobileChanged.version, /^[a-f0-9]{64}$/);
+  assert.notEqual(mobileChanged.version, mobilePatch.expectedVersion);
+  await request(staff, "PATCH", mobileTaskUrl, { ...mobilePatch, payload: { ...mobilePatch.payload, done: false } }, 409);
+  const { result: changedInWeb } = await request(admin, "GET", `/api/tasks/${mobileTaskId}`);
+  assert.equal(changedInWeb.task.checklist[0].done, true);
+  await request(admin, "PATCH", `/api/tasks/${mobileTaskId}`, { action: "update", description: "Webden güncel açıklama" });
+  await request(staff, "PATCH", mobileTaskUrl, { ...mobilePatch, expectedVersion: mobileChanged.version }, 409);
+  const { result: changedOnMobile } = await request(staff, "GET", mobileUrl);
+  assert.equal(changedOnMobile.tasks.find((item) => item.id === mobileTaskId).description, "Webden güncel açıklama");
+
+  const mobileNote = { body: "Telefondan ortak not", requestId: "http-mobile-note-1" };
+  await request(staff, "POST", `${mobileTaskUrl}/comments`, mobileNote, 403, { Origin: "https://example.test" });
+  await request(observer, "POST", `${mobileTaskUrl}/comments`, mobileNote, 403);
+  const { result: firstMobileNote } = await request(staff, "POST", `${mobileTaskUrl}/comments`, mobileNote, 201);
+  const { result: retriedMobileNote } = await request(staff, "POST", `${mobileTaskUrl}/comments`, mobileNote, 201);
+  assert.deepEqual(firstMobileNote, retriedMobileNote);
+  await request(staff, "POST", `${mobileTaskUrl}/comments`, { ...mobileNote, body: "Farklı not" }, 409);
+  const { result: notesInWeb } = await request(admin, "GET", `/api/tasks/${mobileTaskId}`);
+  assert.equal(notesInWeb.comments.filter((item) => item.id === firstMobileNote.comment.id).length, 1);
+  assert.equal(notesInWeb.comments.find((item) => item.id === firstMobileNote.comment.id).body, mobileNote.body);
+  const slowUser = {
+    name: "Geçici mobil yetki testi",
+    email: "mobile-revocation@example.test",
+    role: "admin",
+    department: "Test",
+    hotelIds: [],
+  };
+  const { result: slowAccount } = await request(admin, "POST", "/api/users", {
+    ...slowUser, password: "TemporaryMobile2026!",
+  }, 201);
+  const slowCookie = await login(slowUser.email, "TemporaryMobile2026!");
+  const delayedRequests = [];
+  const finishBodies = [];
+  for (const [method, pathname, body] of [
+    ["PATCH", mobileTaskUrl, {
+      expectedVersion: changedOnMobile.taskVersions[mobileTaskId],
+      payload: { ...mobilePatch.payload, done: false },
+    }],
+    ["POST", `${mobileTaskUrl}/comments`, { body: "Revoked upload must not be saved", requestId: "revoked-upload" }],
+  ]) {
+    const bytes = Buffer.from(JSON.stringify(body));
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(bytes.subarray(0, 1));
+        finishBodies.push(() => { controller.enqueue(bytes.subarray(1)); controller.close(); });
+      },
+    });
+    delayedRequests.push(fetch(`${origin}${pathname}`, {
+      method,
+      headers: { Cookie: slowCookie, Origin: origin, "Content-Type": "application/json" },
+      body: stream,
+      duplex: "half",
+      signal: AbortSignal.timeout(10000),
+    }));
+  }
+  await delay(100);
+  await request(admin, "PATCH", `/api/users/${slowAccount.user.id}`, { ...slowUser, active: false });
+  finishBodies.forEach((finish) => finish());
+  for (const response of await Promise.all(delayedRequests)) {
+    assert.equal(response.status, 401);
+    await response.json();
+    checks++;
+  }
+  const { result: afterRevocation } = await request(admin, "GET", `/api/tasks/${mobileTaskId}`);
+  assert.equal(afterRevocation.task.checklist[0].done, true);
+  assert.ok(afterRevocation.comments.every((item) => item.body !== "Revoked upload must not be saved"));
+  console.log("PASS: mobile authenticated ETags, scoped versions, CSRF, optimistic conflicts, web visibility and durable note retries");
   console.log(
     `PASS: ${checks} real HTTP requests verified against the disposable database.`,
   );

@@ -88,6 +88,8 @@ export default function Workspace() {
   const [showActivity, setShowActivity] = useState(false);
   const [compose, setCompose] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const workspaceETag = useRef<string | null>(null);
+  const refreshSequence = useRef(0);
   const notify = useCallback((message: string, kind = "success") => {
     setToast({ message, kind });
     if (timer.current) clearTimeout(timer.current);
@@ -107,24 +109,42 @@ export default function Workspace() {
     [router],
   );
   const refresh = useCallback(async () => {
-    const r = await fetch("/api/bootstrap", { cache: "no-store" });
+    const sequence = ++refreshSequence.current;
+    const r = await fetch("/api/bootstrap", {
+      cache: "no-store",
+      headers: workspaceETag.current
+        ? { "If-None-Match": workspaceETag.current }
+        : {},
+    });
+    if (sequence !== refreshSequence.current) return;
     if (r.status === 401) {
+      workspaceETag.current = null;
+      setData(null);
       router.replace("/login");
       return;
     }
+    if (r.status === 304) return;
     const d = await r.json();
+    if (sequence !== refreshSequence.current) return;
     if (!r.ok) throw new Error(d.error || "Veriler yüklenemedi.");
+    workspaceETag.current = r.headers.get("etag");
     setData(d);
     setLoadError("");
   }, [router]);
   useEffect(() => {
     refresh().catch((e) => setLoadError(e.message));
     const onFocus = () => {
-      refresh().catch(() => {});
+      if (document.visibilityState === "visible") refresh().catch(() => {});
     };
+    // Foreground-only refresh also picks up mobile changes while this tab stays open.
+    const interval = window.setInterval(onFocus, 30_000);
     window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
     return () => {
+      window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+      refreshSequence.current++;
       if (timer.current) clearTimeout(timer.current);
     };
   }, [refresh]);
