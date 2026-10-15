@@ -15,6 +15,37 @@ struct PanelHotel: Codable, Equatable, Identifiable, Sendable {
     let name: String
     let location: String
     let stage: String
+    let services: [String]
+    let managerId: String
+    let contactName: String
+    let contactEmail: String
+    let color: String
+    let createdAt: String
+
+    init(id: String, name: String, location: String, stage: String, services: [String] = [],
+         managerId: String = "", contactName: String = "", contactEmail: String = "",
+         color: String = "", createdAt: String = "") {
+        self.id = id; self.name = name; self.location = location; self.stage = stage
+        self.services = services; self.managerId = managerId; self.contactName = contactName
+        self.contactEmail = contactEmail; self.color = color; self.createdAt = createdAt
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, location, stage, services, managerId, contactName, contactEmail, color, createdAt
+    }
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(String.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        location = try values.decode(String.self, forKey: .location)
+        stage = try values.decode(String.self, forKey: .stage)
+        services = try values.decodeIfPresent([String].self, forKey: .services) ?? []
+        managerId = try values.decodeIfPresent(String.self, forKey: .managerId) ?? ""
+        contactName = try values.decodeIfPresent(String.self, forKey: .contactName) ?? ""
+        contactEmail = try values.decodeIfPresent(String.self, forKey: .contactEmail) ?? ""
+        color = try values.decodeIfPresent(String.self, forKey: .color) ?? ""
+        createdAt = try values.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
+    }
 }
 
 struct PanelCriterion: Codable, Equatable, Identifiable, Sendable {
@@ -62,19 +93,46 @@ struct PanelSnapshot: Codable, Equatable, Sendable {
     let checklistImportWarning: String?
 }
 
-struct PanelTaskMutation: Codable, Sendable {
+struct PanelTaskMutation: Encodable, Sendable {
     let action: String
     var itemId: String? = nil
     var done: Bool? = nil
     var status: String? = nil
     var waitingReason: String? = nil
     var reason: String? = nil
+    var details: PanelTaskDraft? = nil
 
     static func checklist(itemID: String, done: Bool) -> Self {
         Self(action: "checklist", itemId: itemID, done: done)
     }
     static func status(value: String, waitingReason: String? = nil) -> Self {
         Self(action: "status", status: value, waitingReason: waitingReason)
+    }
+    static func update(_ draft: PanelTaskDraft) -> Self { Self(action: "update", details: draft) }
+
+    private enum CodingKeys: String, CodingKey {
+        case action, itemId, done, status, waitingReason, reason
+        case title, description, department, assigneeId, priority, dueDate, hotelInput, stage
+    }
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(action, forKey: .action)
+        try values.encodeIfPresent(itemId, forKey: .itemId)
+        try values.encodeIfPresent(done, forKey: .done)
+        try values.encodeIfPresent(status, forKey: .status)
+        try values.encodeIfPresent(waitingReason, forKey: .waitingReason)
+        try values.encodeIfPresent(reason, forKey: .reason)
+        if let draft = details {
+            try values.encode(draft.title, forKey: .title)
+            try values.encode(draft.description, forKey: .description)
+            try values.encode(draft.department, forKey: .department)
+            // Explicit null clears an existing value; omission would leave it unchanged.
+            try values.encode(draft.assigneeId, forKey: .assigneeId)
+            try values.encode(draft.priority, forKey: .priority)
+            try values.encode(draft.dueDate, forKey: .dueDate)
+            try values.encode(draft.hotelInput, forKey: .hotelInput)
+            try values.encode(draft.stage, forKey: .stage)
+        }
     }
     static let submit = Self(action: "submit")
     static let approve = Self(action: "approve")
@@ -120,6 +178,8 @@ protocol PanelServicing: Sendable {
     func fetch(etag: String?) async throws -> PanelFetchResult
     func updateTask(id: String, version: String, payload: PanelTaskMutation) async throws -> PanelTaskResponse
     func addComment(taskID: String, body: String, requestID: String) async throws -> PanelComment
+    func request(path: String, method: String, body: Data?, contentType: String?) async throws -> Data
+    func uploadAttachment(taskID: String, fileName: String, data: Data, title: String) async throws -> Data
 }
 
 /// A separate, account-bound cache. Legacy personal progress is never opened here.
@@ -141,7 +201,13 @@ struct PanelCache {
     func load(userID: String) throws -> Entry? {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
         let entry = try JSONDecoder().decode(Entry.self, from: Data(contentsOf: fileURL))
-        guard entry.schemaVersion == 1, entry.snapshot.user.id == userID else { return nil }
+        guard [1, 2].contains(entry.schemaVersion), entry.snapshot.user.id == userID else { return nil }
+        if entry.schemaVersion == 1 {
+            // Version 1 omitted hotel details although its ETag represented the
+            // complete server payload. Keep its offline list but force a full
+            // fetch so an unchanged server cannot leave those details missing.
+            return Entry(schemaVersion: 1, snapshot: entry.snapshot, etag: nil, savedAt: entry.savedAt)
+        }
         return entry
     }
 
@@ -152,7 +218,7 @@ struct PanelCache {
         values.isExcludedFromBackup = true
         var mutableDirectory = directory
         try mutableDirectory.setResourceValues(values)
-        let data = try JSONEncoder().encode(Entry(schemaVersion: 1, snapshot: snapshot, etag: etag, savedAt: date))
+        let data = try JSONEncoder().encode(Entry(schemaVersion: 2, snapshot: snapshot, etag: etag, savedAt: date))
         #if os(iOS)
         try data.write(to: fileURL, options: [.atomic, .completeFileProtection])
         #else

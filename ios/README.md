@@ -1,6 +1,6 @@
 # DGTLFACE İşler — iPhone
 
-**1.2.0 (3)** sürümü, [DGTLFACE web paneline](https://panel.dgtlface.com) aynı hesapla bağlanan ekip uygulamasıdır. Oteller, görevler, kriter tikleri ve ekip yorumları sunucudaki ortak veritabanından alınır. Eski kişisel kayıtlar ayrıca cihaz arşivinde korunur. Minimum iOS sürümü 17'dir; SwiftUI ve sistem kütüphaneleri kullanılır, harici Swift paketi gerekmez.
+**1.3.0 (4)** sürümü, [DGTLFACE web paneline](https://panel.dgtlface.com) aynı hesapla bağlanan ekip uygulamasıdır. Oteller, görevler, kriter tikleri ve ekip yorumları sunucudaki ortak veritabanından alınır. Eski kişisel kayıtlar ayrıca cihaz arşivinde korunur. Minimum iOS sürümü 17'dir; SwiftUI ve sistem kütüphaneleri kullanılır, harici Swift paketi gerekmez.
 
 ## Kullanım ve yetkiler
 
@@ -10,7 +10,13 @@ Webde kullandığın e-posta ve şifreyle giriş yap. Ayrı mobil hesap veya yen
 - Personel tüm otelleri görür; yalnızca kendisine atanmış görevlerde kriter/durum değiştirir, yorum ekler ve kontrole gönderir.
 - Otel gözlemcisi yalnızca bağlı otellerini ve bunların görev/yorumlarını görüntüler; değişiklik yapamaz.
 
-Ana ekranda oteller, her otelde işlem grupları, ardından görevler bulunur. Görevler öncelik puanıyla sıralanır: **1 en önce, 10 en sonra**. Görev ayrıntısında açıklama, sorumlu, otelden gerekli bilgi, tamamlanma kriterleri ve ekip yorumları gösterilir. Yeni otel, kullanıcı, kişi ataması ve öncelik düzenlemeleri web panelinden yapılır.
+Alt menü **Genel bakış, Oteller, Görevler, Takvim ve Diğer** bölümlerinden oluşur. Otellerde işlem grupları ve görevler korunur; tüm görevlerde otel, durum, sorumlu, departman, grup ve öncelik filtresi vardır. Görevler varsayılan olarak öncelik puanıyla sıralanır: **1 en önce, 10 en sonra**. Takvim seçili gün, ay ve tarihsiz işleri gösterir. Tarih karşılaştırmaları İstanbul saat dilimindedir; Türkçe İ/i araması desteklenir.
+
+Yönetici mobilde yeni görev oluşturabilir; başlık, açıklama, departman, işlem grubu, sorumlu, 1–10 öncelik, teslim tarihi ve otelden gerekli bilgiyi düzenleyebilir. Sorumlu ve tarih kaldırılabilir. Kriter metinleri webde olduğu gibi yalnız görev oluştururken belirlenir; mevcut kriterler işaretlenir. Yeni otel (isteğe bağlı başlangıç şablonuyla), otel sorumlusu değiştirme, kullanıcı oluşturma/düzenleme, rol/otel kapsamı ve aktiflik yönetimi **Diğer** bölümündedir. İlk kullanıcı parolası oluşturma formunda girilir; parola sıfırlama ve otel/görev silme mevcut web panelinin de sunduğu işlemler değildir.
+
+**Diğer** bölümünde ekip iş yükü, bildirimler (tek tek/tümü okundu), otel ve dönem filtreli raporlar (CSV/PDF, yazdırma), son hareketler, yetki açıklamaları ve yönetici için haftalık/aylık düzenli işler bulunur. Düzenli iş oluşturma, sonraki işlerin bilgilerini düzenleme, duraklatma ve sürdürme webdeki kuralları kullanır; sunucudaki mevcut bakım/worker düzeni geçerlidir.
+
+Görev ayrıntısından **Dosyalar ve bağlantılar** ve **Görev geçmişi** açılır. Desteklenen dosyalar PDF, PNG, JPG, WEBP, TXT, CSV, DOCX, XLSX, PPTX, ZIP; dosya başına 10 MB, görev başına en fazla 20 ektir. Yetkili kullanıcı dosya veya HTTP(S) bağlantısı ekleyebilir; dosyayı sistem dosya seçicisiyle indirebilir. Açık görevlerde yönetici tüm ekleri, personel yalnız kendi eklerini kaldırabilir. Kaldırma onay ister. Dosyalar oturumla indirilir; oturum bilgisi dış bağlantılara gönderilmez.
 
 **Tik koymak bir tamamlanma kriterini işaretler.** Tüm kriterler hazır olunca iş yönetici kontrolüne gönderilir; ancak yönetici onayıyla “Tamamlandı” olur. Kontrol veya tamamlandı aşamasındaki kriterler kilitlidir. Yönetici işi geri gönderebilir veya yeniden açabilir.
 
@@ -22,13 +28,13 @@ Uygulama açıldığında, ön plana döndüğünde ve elle yenilendiğinde gün
 
 Değişiklik yoksa ETag/304 yanıtı tüm görev listesinin yeniden indirilmesini önler. iPhone arka plana geçince düzenli kontrol durur; arka plan servisi, push bildirimi, konum takibi veya ekranı açık tutma yoktur.
 
-İnternet kesilirse **son indirilen liste salt okunur** gösterilir. Sunucuya yeniden bağlanıp oturum doğrulanana kadar kriter/durum değişikliği veya yorum gönderilemez. Çevrimdışı değişiklik kuyruğu yoktur. Açık yorum taslağı bir gönderim hatasında ekranda tutulur; gönderildiği doğrulanmadan başarı gösterilmez. Başarılı sunucu kaydı ortak veritabanında saklanır.
+İnternet kesilirse **son indirilen liste salt okunur** gösterilir. Sunucuya yeniden bağlanıp oturum doğrulanana kadar kriter/durum değişikliği veya yorum gönderilemez. Çevrimdışı değişiklik kuyruğu yoktur. Yönetim, rapor, bildirim, ek ve hareket listeleri kalıcı önbelleğe yazılmaz; oturum içinde daha önce alınmış liste varsa salt okunur gösterilir. Bu ekranlar yalnız görünürken mevcut ön plan yenilemesine katılır; ayrı zamanlayıcı başlatmaz. Açık yorum taslağı bir gönderim hatasında ekranda tutulur; gönderildiği doğrulanmadan başarı gösterilmez. Başarılı sunucu kaydı ortak veritabanında saklanır.
 
 ## Oturum ve kayıtların saklanması
 
 Parola kalıcı olarak saklanmaz. Oturum çerezi, yalnız bu cihazda kullanılabilen ve cihaz kilidi açıkken erişilen Keychain kaydında tutulur. İstekler sabit HTTPS panel adresine gider; oturum çerezi başka sunucuya yönlendirilmez. Webdeki rol ve otel kapsamı her API isteğinde sunucuda doğrulanır.
 
-Ekip önbelleği `Application Support/DGTLFACETeam/team-cache-v1.json` dosyasındadır. Kullanıcı kimliğine bağlıdır, iOS dosya korumasıyla yazılır ve yedekten hariç tutulur. Çıkışta, oturum sona erdiğinde veya sunucu `401` döndürdüğünde ekip görünümü ve önbelleği temizlenir. Başka hesapla giriş yapıldığında önceki hesabın listesi kullanılmaz. Önbellek sunucudaki kayıtların yerine geçmez.
+Ekip önbelleği `Application Support/DGTLFACETeam/team-cache-v1.json` dosyasındadır. Kullanıcı kimliğine bağlıdır, iOS dosya korumasıyla yazılır ve yedekten hariç tutulur. 1.3 sürümünde önbellek şeması 2'dir; eski şema 1 önbelleği okunabilir, fakat otelin yeni yönetim alanlarını tam almak için eski ETag kullanılmadan ilk bağlantıda liste yeniden indirilir. Çıkışta, oturum sona erdiğinde veya sunucu `401` döndürdüğünde ekip görünümü ve önbelleği temizlenir. Başka hesapla giriş yapıldığında önceki hesabın listesi kullanılmaz. Önbellek sunucudaki kayıtların yerine geçmez.
 
 Önceki sürümlerin `Application Support/DGTLFACEChecklist/progress-v1.json` ve `progress-v2.json` kayıtları **Eski cihaz kayıtları** ekranında salt okunur arşiv olarak açılır. Eski tikler ve kişisel notlar otomatik olarak ortak görevlere aktarılmaz. Kaynak satırları ve görünen görev kodları aynı olsa da eski kişisel işaretler ortak yönetici onay sürecinin yerine geçirilmez. v1 kayıtlarının v2 biçimine taşınmasında kaynak v1 dosyası korunur; otelle eşleştirilmemiş tikler **Mevcut işlerim** listesinde kalır.
 
@@ -36,18 +42,18 @@ Ekip önbelleği `Application Support/DGTLFACETeam/team-cache-v1.json` dosyasın
 
 ## Yayın ve Mac'ten iPhone'a kurulum
 
-1. Önce bu deponun web/API değişikliklerini mevcut sunucuya yayınla. Mobil uygulamanın `/api/mobile/bootstrap`, görev ve yorum uçlarına erişebilmesi gerekir. Mevcut veritabanı, hesaplar ve ortam ayarları kullanılır.
+1. Mevcut web/API sürümünün yayında olması gerekir. 1.2 ekip eşitlemesi ve mevcut web yönetim API'leri zaten yayındaysa 1.3 için ek sunucu yayını veya veritabanı işlemi gerekmez. Mevcut veritabanı, hesaplar ve ortam ayarları kullanılır.
 2. Mac'te Xcode'u aç; ilk açılışta gerekli iOS bileşenlerini tamamla. Bu projede Xcode ve geliştirme araçları daha önce kurulmuştur.
 3. `ios/DGTLFACEChecklist.xcodeproj` dosyasını aç. Xcode → Settings → Apple Accounts bölümünde mevcut Apple hesabının açık olduğunu kontrol et.
 4. **DGTLFACEChecklist** hedefinin **Signing & Capabilities** bölümünde **Automatically manage signing** açık, **Team** mevcut hesabın olmalı. Bu güncellemede **Bundle Identifier değerini değiştirme**; aynı uygulamayı güncelliyoruz.
 5. iPhone'u kabloyla bağla, kilidini aç ve gerekiyorsa bilgisayara güven isteğini onayla. Gerekirse Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu'nu etkinleştirip telefonun istediği yeniden başlatma adımlarını tamamla.
-6. Xcode çalışma hedefinden iPhone'u seçip ▶ Run'a bas. Aynı kimlikle yüklenen **1.2.0 (3)** mevcut uygulamayı günceller. İlk girişte web hesabını kullan.
+6. Xcode çalışma hedefinden iPhone'u seçip ▶ Run'a bas. Aynı kimlikle yüklenen **1.3.0 (4)** mevcut uygulamayı günceller. İlk girişte web hesabını kullan.
 
 Paylaşılan şemanın Run ayarı günlük kullanım için optimize edilmiş **Release** derlemesini kullanır ve hata ayıklayıcı kapalıdır. Geliştirme gerektiğinde Product → Scheme → Edit Scheme → Run → Info bölümünden Debug ve Debug executable seçilebilir.
 
 Kişisel Apple hesabının geliştirme imzası geçicidir. Geçerlilik bitince uygulamayı silmeden aynı proje, hesap ve paket kimliğiyle yeniden Run yap. Güncel geçerlilik tarihini Xcode'daki imzalama profilinden kontrol et. Başka iPhone'a kurulum da o cihaz için geçerli imzalama gerektirir; uygulama dosyasını göndermek tek başına yeterli değildir. [Apple cihazda çalıştırma rehberi](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices), [Geliştirici Modu adımları](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) ve [hesap sınırları](https://developer.apple.com/help/account/basics/about-your-developer-account).
 
-Bu kaynak değişikliği sunucuya yayınlama veya fiziksel iPhone'a kurulum yapmaz. **1.2.0'ın canlı uçtan uca testi**, web güncellemesi yayınlandıktan ve telefon güncellendikten sonra yapılmalıdır.
+Bu kaynak değişikliği sunucuya yayınlama veya fiziksel iPhone'a kurulum yapmaz. **1.3.0 yönetim işlemlerinin canlı uçtan uca testi**, telefon güncellendikten sonra yetkili hesaplarla yapılmalıdır. Otomatik testler canlı kayıtları değiştirmez.
 
 ## Telefonda ve webde son kontrol
 
@@ -76,6 +82,7 @@ python3 ios/scripts/sync-checklist.py
 sh ios/scripts/test-core.sh
 sh ios/scripts/test-api.sh
 sh ios/scripts/test-team.sh
+sh ios/scripts/test-selection.sh
 
 # Web/API kontrolleri:
 npm run typecheck
@@ -96,4 +103,11 @@ Bu önlemler kod düzeyindedir; **gerçek pil tüketimi veya tasarruf yüzdesi �
 
 **1.0.0 (1)**, 13 Ekim 2026'da kişisel Apple hesabıyla imzalanarak iOS 26.6.2 kullanan iPhone 13'e yüklendi; kullanıcı güven onayından sonra uygulamanın açıldığını bildirdi. Bu sürüm kişisel, çevrimdışı listeydi.
 
-**1.1.0 (2)**, aynı gün altı otel için bağımsız tik/not alanlarıyla hazırlandı. Eski veri katmanının 22 testi ve cihaz/simülatör Release derlemeleri geçti; simülatörde otel ayrılığı, Türkçe notlar ve kayıt kalıcılığı kontrol edildi. Aynı paket kimliğiyle uygulama silinmeden yerel ağ üzerinden iPhone 13'e yüklendi; sürüm numarası cihazdan doğrulandı ve kullanıcı uygulamanın çalıştığını bildirdi. Bu geçmiş kurulum **1.2.0 ekip eşitlemesinin telefona kurulduğu anlamına gelmez**.
+**1.1.0 (2)**, aynı gün altı otel için bağımsız tik/not alanlarıyla hazırlandı. Eski veri katmanının 22 testi ve cihaz/simülatör Release derlemeleri geçti; simülatörde otel ayrılığı, Türkçe notlar ve kayıt kalıcılığı kontrol edildi. Aynı paket kimliğiyle uygulama silinmeden yerel ağ üzerinden iPhone 13'e yüklendi; sürüm numarası cihazdan doğrulandı ve kullanıcı uygulamanın çalıştığını bildirdi.
+
+
+**1.2.0 (3)**, 14 Ekim 2026'da aynı paket kimliğiyle fiziksel iPhone 13'e yüklendi ve açıldı. Güncellemeden önce kişisel kayıtların yerel yedeği alındı; kurulumdan sonra v1/v2 dosyalarının değişmediği doğrulandı. Kullanıcı canlı hesabıyla tüm otelleri gördüğünü ve telefondaki değişikliklerin webde göründüğünü bildirdi.
+
+**1.3.0 (4)**, 15 Ekim 2026'da iPhone 13'e aynı paket kimliğiyle yüklendi; cihazdan sürüm/build doğrulandı ve uygulama başlatıldı. Kişisel kayıtlar önceden Mac'e yedeklendi; kurulum sonrasında v1/v2 dosyalarının SHA-256 özetleri aynı kaldı. 22 arşiv/core, 20 API, 20 store ve 12 filtre/tarih kontrolü (**74 toplam**) geçti. iPhone ve simülatör Release derlemeleri ile cihaz imzası doğrulandı.
+
+Canlıya bağlanmayan, ayrı paket kimlikli geçici simülatör uygulamasında menüler, filtreler, görev ve kullanıcı formları incelendi. Reddedilen kayıtta form/taslak koruması yeniden doğrulandı. PDF testi 180 görev içeren 51 sayfada tüm görev metinlerini, Türkçe karakterleri ve taşmasız kenar boşluklarını doğruladı. Geçici QA uygulaması testten sonra simülatörden kaldırıldı. Gerçek AirPrint yazıcı denemesi ve yeni yönetim işlemlerinin canlı hesaplarla kaydı yapılmadı; canlı veride otomatik deneme kaydı oluşturulmadı.

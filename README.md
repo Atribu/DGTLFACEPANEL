@@ -79,13 +79,13 @@ E-posta ile kullanıcı daveti, şifre sıfırlama, e-posta/mesaj bildirimleri v
 
 ## iPhone ile ortak ekip takibi
 
-`ios/` içindeki **DGTLFACE İşler 1.2.0 (3)**, aynı web hesabı ve veritabanını kullanan ekip uygulamasıdır. Webin 8 saatlik oturumu ve mevcut roller geçerlidir: yönetici tüm görevlerde, personel kendisine atanmış görevlerde işlem yapar; gözlemci yalnızca bağlı otellerini okur. Telefondaki tikler tamamlanma kriterlerini günceller; görevin tamamlanması için kontrole gönderme ve yönetici onayı gerekir. Eklenen açıklamalar webde de görünen ortak yorumlardır; mevcut yorumun üzerine yazılmaz. Başka biri görevi değiştirdiyse eski veriye dayanan mobil değişiklik reddedilir ve güncel görev alınır.
+`ios/` içindeki **DGTLFACE İşler 1.3.0 (4)**, aynı web hesabı ve veritabanını kullanan ekip uygulamasıdır. Webin 8 saatlik oturumu ve mevcut roller geçerlidir: yönetici tüm görevlerde, personel kendisine atanmış görevlerde işlem yapar; gözlemci yalnızca bağlı otellerini okur. Telefondaki tikler tamamlanma kriterlerini günceller; görevin tamamlanması için kontrole gönderme ve yönetici onayı gerekir. Eklenen açıklamalar webde de görünen ortak yorumlardır; mevcut yorumun üzerine yazılmaz. Başka biri görevi değiştirdiyse eski veriye dayanan mobil değişiklik reddedilir ve güncel görev alınır.
 
 Uygulama açıkken 30 saniyede, Düşük Güç Modu'nda 90 saniyede kontrol yapılır; bağlantı hatalarında aralık 300 saniyeye kadar uzar. Web paneli görünürken 30 saniyede kontrol edilir. Her iki tarafta elle yenileme kullanılabilir; değişmemiş yanıtlarda ETag/304 ile içerik tekrar taşınmaz. Bu akış anlık sunucu bildirimi değildir; iPhone arka plandayken yenileme veya push bildirimi çalışmaz. Çevrimdışı son indirilen liste salt okunur; yeniden bağlantı doğrulanana kadar tik veya yorum gönderilemez.
 
 Oturum yalnız bu cihazda kullanılabilen Keychain kaydında saklanır. Çıkışta veya sunucunun oturumu reddetmesinde ekip önbelleği temizlenir. Eski kişisel `progress-v1.json` / `progress-v2.json` kayıtları ayrı, salt okunur cihaz arşivinde korunur; ekip verisine otomatik aktarılmaz.
 
-**Yayın sırası:** önce web/API değişikliklerini mevcut sunucuya yayınlayın, ardından iPhone'a aynı paket kimliğiyle 1.2.0 güncellemesini yükleyin; mevcut uygulamayı silmeyin. Yeni ortam değişkeni veya ayrı mobil hesap gerekmez. Bu kod güncellemesi kendiliğinden canlı sunucuya ya da telefona kurulmuş sayılmaz. Kurulum, test komutları ve cihaz kontrol listesi [ios/README.md](ios/README.md) dosyasındadır.
+**1.3.0 mobil yönetim:** görev oluşturma/düzenleme, sorumlu/öncelik/tarih atama, otel oluşturma/sorumlu değiştirme, kullanıcı ve ekip yönetimi, takvim, bildirimler, düzenli işler, rapor/CSV/PDF ve görev ekleri uygulamada bulunur. Mevcut web API'leri kullanılır; bu sürüm için yeni web kodu, veritabanı aktarımı veya ortam değişkeni yoktur. iPhone güncellemesini mevcut uygulamayı silmeden aynı paket kimliğiyle yükleyin. Kodun hazır olması telefon kurulumunun tamamlandığı anlamına gelmez. Kurulum, test komutları ve cihaz kontrol listesi [ios/README.md](ios/README.md) dosyasındadır.
 
 ## Dosyalar ve bağlantılar
 

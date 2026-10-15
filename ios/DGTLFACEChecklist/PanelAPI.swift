@@ -197,6 +197,97 @@ actor PanelAPI: PanelServicing {
         return result.comment
     }
 
+    /// Only the panel's documented resource paths are reachable through this facade.
+    /// No caller-supplied host, headers, cookie or redirect destination is accepted.
+    func request(path: String, method: String, body: Data?, contentType: String?) async throws -> Data {
+        try validateResource(path: path, method: method)
+        guard body == nil || (contentType == "application/json" && body!.count <= 256 * 1024),
+              method != "GET" || body == nil else { throw PanelAPIError.invalidResponse }
+        let credential = try requireCredential()
+        let operation = generation
+        let (data, response) = try await send(path: path, method: method, body: body,
+                                            cookie: credential.cookieValue, contentType: contentType,
+                                            generation: operation)
+        try checkResponse(response, data: data)
+        return data
+    }
+
+    func uploadAttachment(taskID: String, fileName: String, data: Data, title: String) async throws -> Data {
+        let id = try pathID(taskID)
+        guard !data.isEmpty, data.count <= 10 * 1024 * 1024 else {
+            throw PanelAPIError.http(413, "Dosya boş olmamalı ve en fazla 10 MB olabilir.")
+        }
+        let name = fileName.precomposedStringWithCanonicalMapping
+        guard !name.isEmpty, name.count <= 200,
+              !name.contains(where: { $0.isNewline || $0 == "\"" || $0 == "\\" || $0 == "/" || $0.asciiValue == 0 }),
+              title.count <= 200 else {
+            throw PanelAPIError.http(400, "Geçerli bir dosya adı ve en fazla 200 karakterlik başlık kullan.")
+        }
+        let types = ["pdf": "application/pdf", "png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                     "webp": "image/webp", "txt": "text/plain", "csv": "text/csv",
+                     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "zip": "application/zip"]
+        guard let mime = types[(name as NSString).pathExtension.lowercased()] else {
+            throw PanelAPIError.http(400, "Bu dosya biçimi desteklenmiyor. PDF, görsel, Office, TXT, CSV veya ZIP seç.")
+        }
+        let boundary = "DGTLFACE-\(UUID().uuidString)"
+        var body = Data()
+        func append(_ value: String) { body.append(Data(value.utf8)) }
+        append("--\(boundary)\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\n\(title)\r\n")
+        append("--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\(name)\"\r\nContent-Type: \(mime)\r\n\r\n")
+        body.append(data)
+        append("\r\n--\(boundary)--\r\n")
+        let credential = try requireCredential()
+        let operation = generation
+        let (result, response) = try await send(path: "/api/tasks/\(id)/attachments", method: "POST", body: body,
+                                              cookie: credential.cookieValue,
+                                              contentType: "multipart/form-data; boundary=\(boundary)",
+                                              generation: operation)
+        try checkResponse(response, data: result)
+        return result
+    }
+
+    private func validateResource(path: String, method: String) throws {
+        guard path.hasPrefix("/api/"), !path.hasPrefix("//"), !path.contains("\\"),
+              let components = URLComponents(string: path), components.scheme == nil,
+              components.host == nil, components.fragment == nil,
+              !components.percentEncodedPath.contains("%") else { throw PanelAPIError.invalidResponse }
+        let parts = components.path.split(separator: "/", omittingEmptySubsequences: false)
+        guard parts.count >= 3, parts[0].isEmpty, parts[1] == "api",
+              parts.dropFirst(2).allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." }) else {
+            throw PanelAPIError.invalidResponse
+        }
+        let route = Array(parts.dropFirst(2)).map(String.init)
+        let supported: Bool
+        switch route {
+        case ["bootstrap"]: supported = method == "GET"
+        case ["users"]: supported = ["GET", "POST"].contains(method)
+        case ["hotels"], ["tasks"]: supported = method == "POST"
+        case ["notifications"]: supported = ["GET", "PATCH"].contains(method)
+        case ["recurrences"]: supported = ["GET", "POST"].contains(method)
+        case ["reports"], ["reports", "export"]: supported = method == "GET"
+        default:
+            if route.count == 2, ["users", "hotels", "recurrences"].contains(route[0]) {
+                _ = try pathID(route[1]); supported = method == "PATCH"
+            } else if route.count == 2, route[0] == "tasks" {
+                _ = try pathID(route[1]); supported = method == "GET"
+            } else if route.count == 2, route[0] == "attachments" {
+                _ = try pathID(route[1]); supported = ["GET", "DELETE"].contains(method)
+            } else if route.count == 3, route[0] == "tasks", route[2] == "attachments" {
+                _ = try pathID(route[1]); supported = ["GET", "POST"].contains(method)
+            } else { supported = false }
+        }
+        guard supported else { throw PanelAPIError.invalidResponse }
+        if let query = components.queryItems {
+            guard route == ["reports"] || route == ["reports", "export"],
+                  Set(query.map(\.name)).count == query.count,
+                  query.allSatisfy({ ["hotelId", "from", "to", "includeUndated"].contains($0.name) && $0.value != nil }) else {
+                throw PanelAPIError.invalidResponse
+            }
+        }
+    }
+
     private func currentCredential() throws -> Credential? {
         if !didLoadCredential {
             let saved: Data?
@@ -242,18 +333,20 @@ actor PanelAPI: PanelServicing {
 
     private func send(path: String, method: String, body: Data? = nil,
                       cookie: String?, etag: String? = nil,
+                      contentType: String? = "application/json",
                       generation operation: Int) async throws -> (Data, HTTPURLResponse) {
         try checkGeneration(operation)
         guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL,
-              url.scheme == "https", url.host == baseURL.host else {
+              url.scheme == "https", url.host == baseURL.host, url.port == baseURL.port,
+              url.user == nil, url.password == nil, url.fragment == nil else {
             throw PanelAPIError.invalidResponse
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.httpBody = body
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json, text/csv, application/octet-stream", forHTTPHeaderField: "Accept")
         request.setValue(baseURL.absoluteString, forHTTPHeaderField: "Origin")
-        if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
+        if body != nil { request.setValue(contentType, forHTTPHeaderField: "Content-Type") }
         if let cookie { request.setValue("\(Self.cookieName)=\(cookie)", forHTTPHeaderField: "Cookie") }
         if let etag { request.setValue(etag, forHTTPHeaderField: "If-None-Match") }
         let data: Data
@@ -266,7 +359,7 @@ actor PanelAPI: PanelServicing {
         try checkGeneration(operation)
         guard let response = response as? HTTPURLResponse,
               response.url?.host == baseURL.host,
-              response.url?.scheme == "https" else { throw PanelAPIError.invalidResponse }
+              response.url?.scheme == "https", response.url?.port == baseURL.port else { throw PanelAPIError.invalidResponse }
         if response.statusCode == 401, cookie != nil {
             try clearCredential()
             throw PanelAPIError.sessionExpired
@@ -295,8 +388,8 @@ actor PanelAPI: PanelServicing {
     }
 
     private func pathID(_ id: String) throws -> String {
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
-        guard !id.isEmpty, id.unicodeScalars.allSatisfy({ allowed.contains($0) }) else {
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        guard !id.isEmpty, id.count <= 100, id.unicodeScalars.allSatisfy({ allowed.contains($0) }) else {
             throw PanelAPIError.invalidResponse
         }
         return id

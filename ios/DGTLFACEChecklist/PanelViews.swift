@@ -1,7 +1,7 @@
 import Combine
 import SwiftUI
 
-private enum PanelStyle {
+enum PanelStyle {
     static let purple = Color(red: 0.529, green: 0.239, blue: 0.671)
     static let dark = Color(red: 20 / 255, green: 15 / 255, blue: 37 / 255)
     static let blue = Color(red: 84 / 255, green: 124 / 255, blue: 207 / 255)
@@ -37,9 +37,8 @@ private enum PanelStyle {
     static func matches(_ task: PanelTask, query: String) -> Bool {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return true }
-        return [task.code, task.title, task.stage, task.department, task.description]
-            .joined(separator: " ")
-            .range(of: query, options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "tr_TR")) != nil
+        return PanelTaskSelection.contains([task.code, task.title, task.stage, task.department, task.description]
+            .joined(separator: " "), query: query)
     }
 
     static func assignee(_ task: PanelTask, users: [PanelUser]) -> String {
@@ -62,7 +61,7 @@ struct PanelRootView: View {
     var body: some View {
         Group {
             if store.isSignedIn {
-                if store.snapshot != nil { PanelHomeView() }
+                if let snapshot = store.snapshot { PanelHomeView().id(snapshot.user.id + snapshot.user.role + snapshot.user.hotelIds.sorted().joined(separator: ",")) }
                 else { PanelLoadingView() }
             } else if store.isLoading {
                 VStack(spacing: 24) {
@@ -80,20 +79,27 @@ struct PanelRootView: View {
             await store.start()
         }
         .onChange(of: scenePhase) { _, phase in store.setActive(phase == .active) }
-        .alert("İşlem tamamlanamadı", isPresented: Binding(
-            get: { store.errorMessage != nil },
-            set: { if !$0 { store.errorMessage = nil } }
-        )) {
-            Button("Tamam", role: .cancel) { store.errorMessage = nil }
-        } message: {
-            Text(store.errorMessage ?? "Lütfen yeniden deneyin.")
+        // A root modal alert can dismiss an editor sheet, destroying its draft.
+        // Editors show errors inline; this nonmodal banner covers list/login failures.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if let message = store.errorMessage {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
+                    Text(message).font(.subheadline).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.updatesFrequently)
+                    Spacer(minLength: 0)
+                    Button { store.errorMessage = nil } label: { Image(systemName: "xmark.circle.fill").frame(minWidth: 32, minHeight: 32) }
+                        .accessibilityLabel("Hata mesajını kapat")
+                }
+                .padding(12).background(.regularMaterial)
+            }
         }
         .modifier(PanelScenePrivacy())
     }
 }
 
 /// Keep view and editor state alive while covering app-switcher snapshots.
-private struct PanelScenePrivacy: ViewModifier {
+struct PanelScenePrivacy: ViewModifier {
     @Environment(\.scenePhase) private var scenePhase
 
     func body(content: Content) -> some View {
@@ -141,7 +147,7 @@ private struct PanelLoadingView: View {
     }
 }
 
-private struct PanelBrandHeader: View {
+struct PanelBrandHeader: View {
     let subtitle: String
 
     var body: some View {
@@ -234,7 +240,7 @@ private struct PanelLoginView: View {
     }
 }
 
-private struct PanelHomeView: View {
+struct PanelHotelsHomeView: View {
     @EnvironmentObject private var store: PanelStore
     @State private var query = ""
     @State private var showingArchive = false
@@ -297,7 +303,7 @@ private struct PanelHomeView: View {
     }
 }
 
-private struct PanelSyncSection: View {
+struct PanelSyncSection: View {
     @EnvironmentObject private var store: PanelStore
 
     var body: some View {
@@ -330,7 +336,7 @@ private struct PanelSyncSection: View {
     }
 }
 
-private struct PanelHotelRow: View {
+struct PanelHotelRow: View {
     let hotel: PanelHotel
     let tasks: [PanelTask]
 
@@ -347,10 +353,11 @@ private struct PanelHotelRow: View {
     }
 }
 
-private struct PanelHotelView: View {
+struct PanelHotelView: View {
     @EnvironmentObject private var store: PanelStore
     let hotelID: String
     @State private var query = ""
+    @State private var composing = false
 
     var body: some View {
         let tasks = PanelStyle.ordered((store.snapshot?.tasks ?? []).filter { $0.hotelId == hotelID })
@@ -360,6 +367,16 @@ private struct PanelHotelView: View {
             PanelSyncSection()
             Section {
                 PanelTaskProgress(tasks: tasks)
+            }
+            if let hotel = store.snapshot?.hotels.first(where: { $0.id == hotelID }) {
+                Section("Otel bilgileri") {
+                    if !hotel.location.isEmpty { PanelDetailField(title: "Konum", value: hotel.location) }
+                    PanelDetailField(title: "Aşama", value: hotel.stage == "operation" ? "Operasyon" : "Kurulum")
+                    PanelDetailField(title: "Sorumlu", value: store.snapshot?.users.first { $0.id == hotel.managerId }?.name ?? "Atanmamış")
+                    if !hotel.services.isEmpty { PanelDetailField(title: "Hizmetler", value: hotel.services.joined(separator: ", ")) }
+                    if !hotel.contactName.isEmpty { PanelDetailField(title: "Otel yetkilisi", value: hotel.contactName) }
+                    if !hotel.contactEmail.isEmpty { PanelDetailField(title: "İletişim", value: hotel.contactEmail) }
+                }
             }
             if tasks.isEmpty {
                 ContentUnavailableView("Henüz görev yok", systemImage: "checklist")
@@ -394,11 +411,20 @@ private struct PanelHotelView: View {
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $query, prompt: "İşlem veya grup ara")
         .refreshable { await store.refresh() }
-        .toolbar { PanelRefreshToolbar() }
+        .toolbar {
+            PanelRefreshToolbar()
+            if store.snapshot?.user.role == "admin" {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { composing = true } label: { Image(systemName: "plus") }
+                        .accessibilityLabel("Bu otele görev ekle").disabled(store.isOffline || store.isSaving)
+                }
+            }
+        }
+        .sheet(isPresented: $composing) { PanelTaskComposerView(hotelID: hotelID) }
     }
 }
 
-private struct PanelStageView: View {
+struct PanelStageView: View {
     @EnvironmentObject private var store: PanelStore
     let hotelID: String
     let stage: String
@@ -432,7 +458,7 @@ private struct PanelStageView: View {
     }
 }
 
-private struct PanelRefreshToolbar: ToolbarContent {
+struct PanelRefreshToolbar: ToolbarContent {
     @EnvironmentObject private var store: PanelStore
 
     var body: some ToolbarContent {
@@ -446,7 +472,7 @@ private struct PanelRefreshToolbar: ToolbarContent {
     }
 }
 
-private struct PanelTaskProgress: View {
+struct PanelTaskProgress: View {
     let tasks: [PanelTask]
 
     var body: some View {
@@ -460,7 +486,7 @@ private struct PanelTaskProgress: View {
     }
 }
 
-private struct PanelTaskRow: View {
+struct PanelTaskRow: View {
     @EnvironmentObject private var store: PanelStore
     let task: PanelTask
 
@@ -487,10 +513,11 @@ private enum PanelTaskSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
-private struct PanelTaskDetailView: View {
+struct PanelTaskDetailView: View {
     @EnvironmentObject private var store: PanelStore
     let taskID: String
     @State private var activeSheet: PanelTaskSheet?
+    @State private var editingTask = false
 
     var body: some View {
         Group {
@@ -501,6 +528,14 @@ private struct PanelTaskDetailView: View {
                     criteria(task)
                     workflow(task)
                     comments(task)
+                    Section("Dosyalar ve geçmiş") {
+                        NavigationLink { PanelAttachmentsView(taskID: taskID) } label: {
+                            Label("Dosyalar ve bağlantılar", systemImage: "paperclip")
+                        }
+                        NavigationLink { PanelActivityView(taskID: taskID) } label: {
+                            Label("Görev geçmişi", systemImage: "clock.arrow.circlepath")
+                        }
+                    }
                 }
                 .listStyle(.insetGrouped)
                 .refreshable { await store.refresh() }
@@ -509,7 +544,18 @@ private struct PanelTaskDetailView: View {
             }
         }
         .navigationTitle("Görev ayrıntısı").navigationBarTitleDisplayMode(.inline)
-        .toolbar { PanelRefreshToolbar() }
+        .toolbar {
+            PanelRefreshToolbar()
+            if store.snapshot?.user.role == "admin" {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Düzenle") { editingTask = true }
+                        .disabled(store.isOffline || store.isSaving)
+                }
+            }
+        }
+        .sheet(isPresented: $editingTask) {
+            if let task = store.task(id: taskID) { PanelTaskComposerView(task: task) }
+        }
         .sheet(item: $activeSheet) { sheet in
             if sheet == .comment {
                 PanelCommentEditor(taskID: taskID)
@@ -635,7 +681,7 @@ private struct PanelTaskDetailView: View {
     }
 }
 
-private struct PanelDetailField: View {
+struct PanelDetailField: View {
     let title: String
     let value: String
 
@@ -879,7 +925,7 @@ final class PanelLegacyArchiveReader: ObservableObject {
     }
 }
 
-private struct PanelLegacyArchiveView: View {
+struct PanelLegacyArchiveView: View {
     @EnvironmentObject private var archive: PanelLegacyArchiveReader
     @Environment(\.dismiss) private var dismiss
 

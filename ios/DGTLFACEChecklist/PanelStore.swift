@@ -21,6 +21,7 @@ final class PanelStore: ObservableObject {
     private var active = false
     private var epoch = 0
     private var mutation = 0
+    private var refreshRequest = 0
     private var failures = 0
     private var cacheWarning: String?
     private var polling: Task<Void, Never>?
@@ -135,11 +136,13 @@ final class PanelStore: ObservableObject {
         guard isSignedIn, !isRefreshing, !isSaving else { return }
         let generation = epoch
         let change = mutation
+        refreshRequest += 1
+        let request = refreshRequest
         isRefreshing = true
-        defer { if generation == epoch { isRefreshing = false } }
+        defer { if generation == epoch && request == refreshRequest { isRefreshing = false } }
         do {
             let result = try await api.fetch(etag: snapshot == nil ? nil : etag)
-            guard !Task.isCancelled, generation == epoch, change == mutation else { return }
+            guard !Task.isCancelled, generation == epoch, change == mutation, request == refreshRequest else { return }
             if let next = result.snapshot {
                 guard next.user.id == accountID else { throw PanelAPIError.invalidResponse }
                 let changed = next != snapshot || etag != result.etag
@@ -154,7 +157,7 @@ final class PanelStore: ObservableObject {
             lastSyncedAt = Date()
             statusMessage = snapshot?.checklistImportWarning ?? cacheWarning
         } catch {
-            guard !Task.isCancelled, generation == epoch, change == mutation else { return }
+            guard !Task.isCancelled, generation == epoch, change == mutation, request == refreshRequest else { return }
             handleFailure(error, showAlert: false)
         }
     }
@@ -170,6 +173,146 @@ final class PanelStore: ObservableObject {
         canComment(task) && task.status != "review" && task.status != "completed"
     }
 
+    var canManage: Bool {
+        isSignedIn && !isOffline && !isLoading && snapshot?.user.role == "admin" && snapshot?.user.active != false
+    }
+
+    /// Resource screens retain their own view state; account and mutation generations
+    /// prevent a delayed response from leaking into a later session or newer edit.
+    func loadResource<T: Decodable & Sendable>(path: String, as type: T.Type = T.self) async -> T? {
+        guard let data = await downloadResource(path: path) else { return nil }
+        do { return try JSONDecoder().decode(T.self, from: data) }
+        catch { errorMessage = PanelAPIError.invalidResponse.localizedDescription; return nil }
+    }
+
+    func downloadResource(path: String) async -> Data? {
+        guard isSignedIn, !isLoading else { return nil }
+        let generation = epoch
+        let change = mutation
+        do {
+            let data = try await api.request(path: path, method: "GET", body: nil, contentType: nil)
+            guard !Task.isCancelled, generation == epoch, change == mutation, isSignedIn else { return nil }
+            return data
+        } catch {
+            guard !Task.isCancelled, generation == epoch, change == mutation else { return nil }
+            handleFailure(error, showAlert: true)
+            return nil
+        }
+    }
+
+    func mutateResource<B: Encodable & Sendable, R: Decodable & Sendable>(
+        path: String, method: String, body: B, as type: R.Type = R.self
+    ) async -> R? {
+        guard ["POST", "PATCH", "DELETE"].contains(method), beginResourceMutation() else { return nil }
+        let generation = epoch
+        do {
+            let body = try JSONEncoder().encode(body)
+            let data = try await api.request(path: path, method: method, body: body, contentType: "application/json")
+            guard generation == epoch, isSignedIn else { return nil }
+            let response = try JSONDecoder().decode(R.self, from: data)
+            await finishResourceMutation()
+            guard generation == epoch, isSignedIn else { return nil }
+            return response
+        } catch {
+            guard generation == epoch else { return nil }
+            await failResourceMutation(error)
+            return nil
+        }
+    }
+
+    func uploadAttachment(taskID: String, fileURL: URL, title: String) async -> Bool {
+        guard let task = task(id: taskID), canEdit(task), beginResourceMutation() else { return false }
+        let generation = epoch
+        let scoped = fileURL.startAccessingSecurityScopedResource()
+        defer { if scoped { fileURL.stopAccessingSecurityScopedResource() } }
+        do {
+            let attributes = try fileURL.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
+            guard fileURL.isFileURL, attributes.isRegularFile == true,
+                  let size = attributes.fileSize, size > 0, size <= 10 * 1024 * 1024 else {
+                throw PanelAPIError.http(413, "Dosya boş olmamalı ve en fazla 10 MB olabilir.")
+            }
+            // Bound the read as well as the metadata check in case the file grows.
+            let handle = try FileHandle(forReadingFrom: fileURL)
+            defer { try? handle.close() }
+            let data = try handle.read(upToCount: 10 * 1024 * 1024 + 1) ?? Data()
+            _ = try await api.uploadAttachment(taskID: taskID, fileName: fileURL.lastPathComponent, data: data, title: title)
+            guard generation == epoch, isSignedIn else { return false }
+            await finishResourceMutation()
+            return generation == epoch && isSignedIn
+        } catch {
+            guard generation == epoch else { return false }
+            await failResourceMutation(error)
+            return false
+        }
+    }
+
+    private func beginResourceMutation() -> Bool {
+        guard isSignedIn, !isOffline, !isSaving, !isLoading, snapshot?.user.active != false else { return false }
+        isSaving = true
+        mutation += 1
+        errorMessage = nil
+        return true
+    }
+
+    private func finishResourceMutation() async {
+        etag = nil
+        lastSyncedAt = Date()
+        isSaving = false
+        // A pre-write refresh may still be in flight. Supersede it so this refresh
+        // cannot be skipped and the old response cannot overwrite the new state.
+        refreshRequest += 1
+        isRefreshing = false
+        await refresh()
+    }
+
+    private func failResourceMutation(_ error: Error) async {
+        isSaving = false
+        if error is CancellationError { return }
+        handleFailure(error, showAlert: true)
+        if case PanelAPIError.http(let code, _) = error, [403, 404, 409].contains(code) {
+            etag = nil
+            refreshRequest += 1
+            isRefreshing = false
+            await refresh()
+        }
+    }
+
+    private struct Acknowledgement: Decodable, Sendable {}
+    private struct ManagerUpdate: Encodable, Sendable { let managerId: String }
+
+    func createTask(_ draft: PanelTaskDraft) async -> Bool {
+        guard canManage else { return false }
+        let result: Acknowledgement? = await mutateResource(path: "/api/tasks", method: "POST", body: draft)
+        return result != nil
+    }
+
+    func updateTaskDetails(_ task: PanelTask, draft: PanelTaskDraft) async -> Bool {
+        guard canManage else { return false }
+        return await updateTask(task, payload: .update(draft))
+    }
+
+    func createHotel(_ draft: PanelHotelDraft) async -> Bool {
+        guard canManage else { return false }
+        let result: Acknowledgement? = await mutateResource(path: "/api/hotels", method: "POST", body: draft)
+        return result != nil
+    }
+
+    func updateHotelManager(hotelID: String, managerID: String) async -> Bool {
+        guard canManage else { return false }
+        let result: Acknowledgement? = await mutateResource(path: "/api/hotels/\(hotelID)", method: "PATCH",
+                                                          body: ManagerUpdate(managerId: managerID))
+        return result != nil
+    }
+
+    func saveUser(id: String?, draft: PanelUserDraft) async -> Bool {
+        guard canManage else { return false }
+        var body = draft
+        if id == nil { body.active = nil } else { body.password = nil; body.active = draft.active ?? true }
+        let result: Acknowledgement? = await mutateResource(path: id.map { "/api/users/\($0)" } ?? "/api/users",
+                                                          method: id == nil ? "POST" : "PATCH", body: body)
+        return result != nil
+    }
+
     func updateTask(_ task: PanelTask, payload: PanelTaskMutation) async -> Bool {
         guard !isSaving, canComment(task), let version = snapshot?.taskVersions[task.id] else { return false }
         guard self.task(id: task.id) == task else {
@@ -177,6 +320,7 @@ final class PanelStore: ObservableObject {
             return false
         }
         isSaving = true
+        errorMessage = nil
         mutation += 1
         let generation = epoch
         do {
@@ -189,17 +333,11 @@ final class PanelStore: ObservableObject {
             etag = nil
             lastSyncedAt = Date()
             saveCache()
-            isSaving = false
-            await refresh()
+            await finishResourceMutation()
             return true
         } catch {
             guard generation == epoch else { return false }
-            isSaving = false
-            handleFailure(error, showAlert: true)
-            if case PanelAPIError.http(let code, _) = error, code == 409 || code == 403 || code == 404 {
-                etag = nil
-                await refresh()
-            }
+            await failResourceMutation(error)
             return false
         }
     }
@@ -207,6 +345,7 @@ final class PanelStore: ObservableObject {
     func addComment(taskID: String, body: String, requestID: String) async -> Bool {
         guard !isSaving, let task = task(id: taskID), canComment(task) else { return false }
         isSaving = true
+        errorMessage = nil
         mutation += 1
         let generation = epoch
         do {
@@ -218,17 +357,11 @@ final class PanelStore: ObservableObject {
             etag = nil
             lastSyncedAt = Date()
             saveCache()
-            isSaving = false
-            await refresh()
+            await finishResourceMutation()
             return true
         } catch {
             guard generation == epoch else { return false }
-            isSaving = false
-            handleFailure(error, showAlert: true)
-            if case PanelAPIError.http(let code, _) = error, code == 403 || code == 404 {
-                etag = nil
-                await refresh()
-            }
+            await failResourceMutation(error)
             return false
         }
     }

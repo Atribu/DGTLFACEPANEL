@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A13C71B4A09E43909A21B10A /* PanelOperationsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C10A /* PanelOperationsViews.swift */; };
+		A13C71B4A09E43909A21B109 /* PanelManagementViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C109 /* PanelManagementViews.swift */; };
+		A13C71B4A09E43909A21B108 /* PanelAttachmentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C108 /* PanelAttachmentViews.swift */; };
+		A13C71B4A09E43909A21B107 /* PanelTaskSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C107 /* PanelTaskSelection.swift */; };
+		A13C71B4A09E43909A21B106 /* PanelNavigationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C106 /* PanelNavigationViews.swift */; };
+		A13C71B4A09E43909A21B105 /* PanelAdminModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C105 /* PanelAdminModels.swift */; };
 		A13C71B4A09E43909A21B101 /* PanelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C101 /* PanelModels.swift */; };
 		A13C71B4A09E43909A21B102 /* PanelAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C102 /* PanelAPI.swift */; };
 		A13C71B4A09E43909A21B103 /* PanelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13C71B4A09E43909A21C103 /* PanelStore.swift */; };
@@ -20,6 +26,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A13C71B4A09E43909A21C10A /* PanelOperationsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelOperationsViews.swift; sourceTree = "<group>"; };
+		A13C71B4A09E43909A21C109 /* PanelManagementViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelManagementViews.swift; sourceTree = "<group>"; };
+		A13C71B4A09E43909A21C108 /* PanelAttachmentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAttachmentViews.swift; sourceTree = "<group>"; };
+		A13C71B4A09E43909A21C107 /* PanelTaskSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelTaskSelection.swift; sourceTree = "<group>"; };
+		A13C71B4A09E43909A21C106 /* PanelNavigationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelNavigationViews.swift; sourceTree = "<group>"; };
+		A13C71B4A09E43909A21C105 /* PanelAdminModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAdminModels.swift; sourceTree = "<group>"; };
 		A13C71B4A09E43909A21C101 /* PanelModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelModels.swift; sourceTree = "<group>"; };
 		A13C71B4A09E43909A21C102 /* PanelAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAPI.swift; sourceTree = "<group>"; };
 		A13C71B4A09E43909A21C103 /* PanelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelStore.swift; sourceTree = "<group>"; };
@@ -63,6 +75,12 @@
 		AD936FCBED631FA67E05C3EA /* DGTLFACEChecklist */ = {
 			isa = PBXGroup;
 			children = (
+				A13C71B4A09E43909A21C105 /* PanelAdminModels.swift */,
+				A13C71B4A09E43909A21C106 /* PanelNavigationViews.swift */,
+				A13C71B4A09E43909A21C107 /* PanelTaskSelection.swift */,
+				A13C71B4A09E43909A21C108 /* PanelAttachmentViews.swift */,
+				A13C71B4A09E43909A21C109 /* PanelManagementViews.swift */,
+				A13C71B4A09E43909A21C10A /* PanelOperationsViews.swift */,
 				A13C71B4A09E43909A21C101 /* PanelModels.swift */,
 				A13C71B4A09E43909A21C102 /* PanelAPI.swift */,
 				A13C71B4A09E43909A21C103 /* PanelStore.swift */,
@@ -148,6 +166,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A13C71B4A09E43909A21B105 /* PanelAdminModels.swift in Sources */,
+				A13C71B4A09E43909A21B106 /* PanelNavigationViews.swift in Sources */,
+				A13C71B4A09E43909A21B107 /* PanelTaskSelection.swift in Sources */,
+				A13C71B4A09E43909A21B108 /* PanelAttachmentViews.swift in Sources */,
+				A13C71B4A09E43909A21B109 /* PanelManagementViews.swift in Sources */,
+				A13C71B4A09E43909A21B10A /* PanelOperationsViews.swift in Sources */,
 				A13C71B4A09E43909A21B101 /* PanelModels.swift in Sources */,
 				A13C71B4A09E43909A21B102 /* PanelAPI.swift in Sources */,
 				A13C71B4A09E43909A21B103 /* PanelStore.swift in Sources */,
@@ -183,7 +207,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = L93PMTJ54M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -193,7 +217,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dgtlface.personalchecklist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -226,7 +250,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = L93PMTJ54M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -236,7 +260,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dgtlface.personalchecklist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

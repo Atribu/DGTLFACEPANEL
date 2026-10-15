@@ -352,6 +352,102 @@ private struct PanelAPITests {
             try expect(MockProtocol.registry.recorded().allSatisfy { $0.url.host == base.host }, "External request sent")
         }
 
+        try await test("Resource facade sends authenticated same-origin requests and exact binary export bytes") {
+            let service = api()
+            let csv = Data("\u{feff}Otel;Görev\r\nMi Hotel;Deneme\r\n".utf8)
+            MockProtocol.registry.prepare([try loginStub(), Stub(status: 200, data: Data("{\"notifications\":[],\"unreadCount\":0}".utf8)),
+                                           Stub(status: 200, headers: ["Content-Type": "text/csv"], data: csv),
+                                           Stub(status: 200, data: Data("{\"ok\":true}".utf8))])
+            _ = try await service.login(email: user.email, password: "test")
+            _ = try await service.request(path: "/api/notifications", method: "GET", body: nil, contentType: nil)
+            let downloaded = try await service.request(path: "/api/reports/export?hotelId=hotel-one&from=2026-10-01&to=2026-10-31&includeUndated=true",
+                                                       method: "GET", body: nil, contentType: nil)
+            _ = try await service.request(path: "/api/attachments/attachment-one", method: "DELETE", body: Data("{}".utf8), contentType: "application/json")
+            try expect(downloaded == csv, "CSV bytes were transformed")
+            let requests = MockProtocol.registry.recorded().dropFirst()
+            try expect(requests.allSatisfy { $0.header("Cookie") == "dgtlface-session=opaque-test-session" && $0.header("Origin") == base.absoluteString },
+                       "Resource bypassed cookie or Origin protection")
+            try expect(requests.last?.method == "DELETE", "Attachment delete method changed")
+        }
+
+        try await test("Resource allowlist rejects external, traversal, credential and unversioned task write paths") {
+            let service = api()
+            MockProtocol.registry.prepare([try loginStub()])
+            _ = try await service.login(email: user.email, password: "test")
+            let paths = ["https://outside.example.test/api/users", "//outside.example.test/api/users", "/api/../api/users",
+                         "/api/%75sers", "/api/users/person/extra", "/api/login", "/api/logout", "/api/internal/maintenance",
+                         "/api/users?anything=value", "/api/reports?hotelId=a&hotelId=b", "/api/users#secret"]
+            for path in paths {
+                try await expectAPIError({ _ = try await service.request(path: path, method: "GET", body: nil, contentType: nil) }, matching: {
+                    if case .invalidResponse = $0 { return true }; return false
+                })
+            }
+            try await expectAPIError({ _ = try await service.request(path: "/api/tasks/task-one", method: "PATCH", body: Data("{}".utf8), contentType: "application/json") }, matching: {
+                if case .invalidResponse = $0 { return true }; return false
+            })
+            try expect(MockProtocol.registry.recorded().count == 1, "Unsafe resource reached transport")
+        }
+
+        try await test("Task detail edit explicitly clears nullable fields and excludes immutable fields") {
+            let draft = PanelTaskDraft(hotelId: "hotel-one", title: "Görev", description: "Açıklama", department: "Web",
+                                      assigneeId: nil, priority: 1, dueDate: nil, hotelInput: "", stage: "Kurulum", checklist: ["Kriter"])
+            let payload = try object(json(PanelTaskMutation.update(draft)))
+            try expect(payload["assigneeId"] is NSNull && payload["dueDate"] is NSNull, "Optional clearing was omitted")
+            try expect(payload["hotelId"] == nil && payload["checklist"] == nil && payload["action"] as? String == "update",
+                       "Immutable task creation fields leaked into update")
+        }
+
+        try await test("Multipart uploads preserve file bytes and enforce authenticated Origin") {
+            let service = api()
+            let file = Data("Örnek ekip dosyası\n".utf8)
+            MockProtocol.registry.prepare([try loginStub(), Stub(status: 201, data: Data("{\"attachment\":{}}".utf8))])
+            _ = try await service.login(email: user.email, password: "test")
+            _ = try await service.uploadAttachment(taskID: "task-one", fileName: "ekip.txt", data: file, title: "İş dosyası")
+            let request = MockProtocol.registry.recorded()[1]
+            let multipart = String(decoding: request.body, as: UTF8.self)
+            try expect(request.url.path == "/api/tasks/task-one/attachments" && request.method == "POST", "Wrong upload route")
+            try expect(request.header("Content-Type")?.hasPrefix("multipart/form-data; boundary=DGTLFACE-") == true,
+                       "Missing multipart boundary")
+            try expect(multipart.contains("filename=\"ekip.txt\"") && multipart.contains("name=\"title\"") && request.body.range(of: file) != nil,
+                       "File bytes, filename or title lost")
+            try expect(request.header("Cookie") != nil && request.header("Origin") == base.absoluteString, "Upload bypassed auth")
+        }
+
+        try await test("Upload size, unsupported type and multipart header injection are blocked before networking") {
+            let service = api()
+            MockProtocol.registry.prepare([try loginStub()])
+            _ = try await service.login(email: user.email, password: "test")
+            for (name, data) in [("empty.txt", Data()), ("large.txt", Data(count: 10 * 1024 * 1024 + 1)),
+                                 ("unsafe\r\nHeader.txt", Data([1])), ("code.exe", Data([1]))] {
+                try await expectAPIError({ _ = try await service.uploadAttachment(taskID: "task-one", fileName: name, data: data, title: "") }, matching: {
+                    if case .http(let status, _) = $0 { return status == 400 || status == 413 }; return false
+                })
+            }
+            try expect(MockProtocol.registry.recorded().count == 1, "Unsafe upload reached the network")
+        }
+
+        try await test("Resource unauthorized response removes session and late resource completion cannot outlive logout") {
+            let credentials = MemoryCredentials()
+            let service = api(credentials)
+            MockProtocol.registry.prepare([try loginStub(), Stub(status: 401, data: Data("{}".utf8))])
+            _ = try await service.login(email: user.email, password: "test")
+            try await expectAPIError({ _ = try await service.request(path: "/api/users", method: "GET", body: nil, contentType: nil) }, matching: {
+                if case .sessionExpired = $0 { return true }; return false
+            })
+            try expect(try credentials.load() == nil, "Resource 401 retained credential")
+            MockProtocol.registry.prepare([try loginStub(), Stub(status: 200, data: Data("{}".utf8), delay: 0.2), Stub(status: 200)])
+            _ = try await service.login(email: user.email, password: "test")
+            let pending = Task { try await service.request(path: "/api/users", method: "GET", body: nil, contentType: nil) }
+            for _ in 0..<100 {
+                if MockProtocol.registry.recorded().count >= 2 { break }
+                try await Task.sleep(for: .milliseconds(5))
+            }
+            try await service.logout()
+            do { _ = try await pending.value; throw Failure(description: "Late resource returned after logout") }
+            catch is CancellationError { }
+            try expect(try credentials.load() == nil, "Late resource restored credential")
+        }
+
         print("\(passed) API tests passed. All requests were intercepted; no real network or Keychain access.")
     }
 }
