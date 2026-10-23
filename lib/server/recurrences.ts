@@ -13,7 +13,7 @@ import type { Activity, Task, User } from "../types";
 import { getDb, type Queryable } from "./db";
 import { HttpError, requireAdmin } from "./http";
 import { notifyTaskChange } from "./notifications";
-import { isUserActive } from "./user-policies";
+import { isAssignableUser, ownerPrivacyContext, redactOwnerReferences } from "./owner-identity";
 
 export const RECURRENCE_CATCH_UP_LIMIT = 12;
 class RetryRule extends Error {}
@@ -27,7 +27,7 @@ async function lockPeople(tx: Queryable, ids: string[]) {
   ).map((row) => row.data);
 }
 function validAssignee(user: User | undefined) {
-  return !!user && isUserActive(user) && user.role !== "observer";
+  return !!user && isAssignableUser(user);
 }
 function freshAdmin(users: User[], actor: User) {
   const fresh = users.find((user) => user.id === actor.id);
@@ -77,7 +77,7 @@ export async function listRecurrences(user: User) {
       "SELECT data FROM recurrence_rules ORDER BY active DESC,next_run_on,id",
     )
   ).map((row) => row.data);
-  return { recurrences };
+  return redactOwnerReferences({ recurrences }, await ownerPrivacyContext(db, user));
 }
 export async function createRecurrence(actor: User, rawInput: unknown) {
   requireAdmin(actor);
@@ -207,7 +207,7 @@ export async function updateRecurrence(
               ? `Düzenli iş devam ettirildi; duraklama dönemleri atlandı: ${rule.title}.`
               : `Düzenli işin sonraki görevleri için bilgiler güncellendi: ${rule.title}.`,
         );
-        return { recurrence: rule };
+        return redactOwnerReferences({ recurrence: rule }, await ownerPrivacyContext(tx, fresh));
       });
     } catch (error) {
       if (!(error instanceof RetryRule)) throw error;

@@ -10,6 +10,7 @@ import { getDb, type Queryable } from "./db";
 import { HttpError } from "./http";
 import { idSchema } from "./validation";
 import { isUserActive } from "./user-policies";
+import { isAssignableUser, isProtectedOwner } from "./owner-identity";
 
 export const notificationReadSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("read"), id: idSchema }).strict(),
@@ -28,8 +29,7 @@ const labels: Record<NotificationKind, string> = {
   overdue: "Görevin hedef tarihi geçti",
 };
 
-const internal = (user: User) =>
-  isUserActive(user) && user.role !== "observer";
+const internal = isAssignableUser;
 const active = isUserActive;
 const dateLabel = (date: string | null) =>
   date
@@ -54,7 +54,7 @@ async function insertNotifications(
   for (const user of new Map(
     recipients.map((item) => [item.id, item]),
   ).values()) {
-    if (!active(user) || user.id === actor?.id) continue;
+    if (!active(user) || isProtectedOwner(user) || user.id === actor?.id) continue;
     const notification: PersonalNotification = {
       id: randomUUID(),
       userId: user.id,

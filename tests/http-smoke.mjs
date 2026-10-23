@@ -9,7 +9,7 @@ import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomBytes } from "node:crypto";
+import { randomBytes, scryptSync } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -56,6 +56,9 @@ try {
   const port = await availablePort();
   const origin = `http://127.0.0.1:${port}`;
   const jobsSecret = randomBytes(48).toString("base64url");
+  const ownerPassword = randomBytes(24).toString("base64url");
+  const ownerSalt = randomBytes(16).toString("hex");
+  const ownerHash = `scrypt:${ownerSalt}:${scryptSync(ownerPassword, ownerSalt, 64).toString("hex")}`;
   server = spawn(
     process.execPath,
     ["scripts/dev.cjs", "--webpack", "--port", String(port)],
@@ -72,6 +75,7 @@ try {
         JOBS_SECRET: jobsSecret,
         ENABLE_DEMO: "true",
         NEXT_TELEMETRY_DISABLED: "1",
+        SYSTEM_OWNER_PASSWORD_HASH: ownerHash,
       },
     },
   );
@@ -1116,6 +1120,61 @@ try {
   await downloadFile(admin, historyAttachment.id, historyBytes, "text/plain");
   await request(admin, "POST", "/api/tasks", { ...draft, assigneeId: removalId }, 400);
   console.log("PASS: user deletion authorization/CSRF, responsibility guard, revoked web/mobile sessions and preserved task/comment/file history");
+
+  const ownerEmail = "oguzkilinc.ant@gmail.com";
+  const ownerCookie = await login(ownerEmail, ownerPassword);
+  const { result: ownerWorkspace } = await request(ownerCookie, "GET", "/api/bootstrap");
+  const ownerId = ownerWorkspace.user.id;
+  assert.equal(ownerWorkspace.user.isOwner, true);
+  assert.ok(ownerWorkspace.users.every(user => user.id !== ownerId));
+  await request(null, "GET", "/api/owner/console", undefined, 401);
+  for (const cookie of [admin, staff, observer]) {
+    await request(cookie, "GET", "/api/owner/console", undefined, 403);
+  }
+  await request(admin, "DELETE", `/api/users/${ownerId}`, undefined, 404);
+  await request(admin, "PATCH", `/api/users/${ownerId}`, {
+    name: "Different", email: "different@example.test", role: "admin", department: "Test", hotelIds: [], active: true,
+  }, 404);
+  await request(admin, "POST", "/api/users", {
+    name: "Reserved", email: ownerEmail, role: "admin", department: "Test", hotelIds: [], password: ownerPassword,
+  }, 409);
+  const { result: ownerWork } = await request(ownerCookie, "POST", "/api/tasks", {
+    ...draft, title: "Sahip hesabı gizlilik denetimi",
+  }, 201);
+  await request(ownerCookie, "POST", `/api/tasks/${ownerWork.task.id}/comments`, {
+    body: "Özel yönetim kontrolü tamamlandı.",
+  }, 201);
+  const { result: trueHistory } = await request(ownerCookie, "GET", `/api/tasks/${ownerWork.task.id}`);
+  assert.ok(trueHistory.activities.some(item => item.userId === ownerId));
+  assert.ok(trueHistory.comments.some(item => item.userId === ownerId));
+  const secretValues = [ownerId, ownerEmail, "Oğuz Kılınç"];
+  for (const cookie of [admin, staff, observer]) {
+    for (const pathname of ["/api/bootstrap", "/api/mobile/bootstrap", `/api/tasks/${ownerWork.task.id}`]) {
+      const { result } = await request(cookie, "GET", pathname);
+      const serialized = JSON.stringify(result);
+      for (const value of secretValues) assert.ok(!serialized.includes(value), `Owner leaked through ${pathname}`);
+    }
+  }
+  const { result: publicUsers } = await request(admin, "GET", "/api/users");
+  for (const value of secretValues) assert.ok(!JSON.stringify(publicUsers).includes(value));
+  await request(null, "POST", "/api/login", {email: "ayse@dgtlface.demo", password: "incorrect-password"}, 401);
+  const { result: ownerDashboard, response: ownerResponse } = await request(ownerCookie, "GET", "/api/owner/console");
+  assert.equal(ownerResponse.headers.get("cache-control"), "no-store");
+  assert.ok(ownerDashboard.summary.failedLoginsToday >= 1);
+  assert.ok(ownerDashboard.team.find(user => user.id === "user-ayse").online);
+  assert.ok(ownerDashboard.team.every(user => user.id !== ownerId));
+  const {result: filteredOwnerEvents} = await request(ownerCookie,"GET",`/api/owner/console?actorId=${ownerId}&kind=operation`);
+  assert.ok(filteredOwnerEvents.events.length > 0);
+  assert.ok(filteredOwnerEvents.events.every(event => event.actorId === ownerId && event.kind === "operation"));
+  await request(ownerCookie,"GET","/api/owner/console?from=2026-02-30",undefined,400);
+  const secondStaffSession = await login("ayse@dgtlface.demo");
+  await request(secondStaffSession,"GET","/api/mobile/bootstrap");
+  await request(staff,"POST","/api/logout",{});
+  await request(staff,"GET","/api/bootstrap",undefined,401);
+  await request(secondStaffSession,"GET","/api/mobile/bootstrap");
+  const {result: withOtherDevice} = await request(ownerCookie,"GET","/api/owner/console");
+  assert.equal(withOtherDevice.team.find(user => user.id === "user-ayse").online, true);
+  console.log("PASS: exclusive hidden owner account, owner-only console, privacy across web/mobile/history, login auditing, per-device presence and revoked logout cookies");
   console.log(
     `PASS: ${checks} real HTTP requests verified against the disposable database.`,
   );

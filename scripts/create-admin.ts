@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb } from "../lib/server/db";
 import { hashPassword } from "../lib/server/password";
 import type { User } from "../lib/types";
+import { SYSTEM_OWNER_EMAIL } from "../lib/server/owner-identity";
 
 async function main() {
   if (!process.env.DATABASE_URL)
@@ -18,6 +19,8 @@ async function main() {
       name: process.env.ADMIN_NAME,
       password: process.env.ADMIN_PASSWORD,
     });
+  if (input.email === SYSTEM_OWNER_EMAIL)
+    throw new Error("This address is reserved for automatic system-owner provisioning.");
   const db = await getDb();
   try {
     await db.transaction(async (tx) => {

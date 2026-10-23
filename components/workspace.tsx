@@ -57,6 +57,7 @@ import { CalendarView } from "./calendar";
 import { NotificationBell, NotificationsView } from "./notifications";
 import { RecurrencesView } from "./recurrences";
 import { ReportsView } from "./reports";
+import { OwnerConsoleView } from "./owner-console";
 
 const names: Record<View, string> = {
   overview: "Genel Bakış",
@@ -70,6 +71,7 @@ const names: Record<View, string> = {
   reports: "Otel Raporları",
   team: "Ekip",
   users: "Kullanıcılar",
+  owner: "Sahip Paneli",
   permissions: "Yetkiler",
 };
 export default function Workspace() {
@@ -180,6 +182,7 @@ export default function Workspace() {
   const props: ViewProps = { data, refresh, notify, navigate };
   const user = data.user;
   const admin = user.role === "admin";
+  const owner = admin && user.isOwner === true;
   const observer = user.role === "observer";
   const alerts = admin
     ? data.tasks.filter((t) => t.status === "review").length
@@ -215,6 +218,9 @@ export default function Workspace() {
       : []),
     ...(admin
       ? [{ view: "users" as View, label: "Kullanıcılar", icon: UserCog }]
+      : []),
+    ...(owner
+      ? [{ view: "owner" as View, label: "Sahip Paneli", icon: ShieldCheck }]
       : []),
   ];
   const searchResults = search.trim()
@@ -298,7 +304,7 @@ export default function Workspace() {
             </button>
             <span>Çalışma Alanı</span>
             <ChevronRight size={13} />
-            <strong>{names[view] || "Genel Bakış"}</strong>
+            <strong>{view === "owner" && !owner ? "Genel Bakış" : names[view] || "Genel Bakış"}</strong>
           </div>
           <div className="topbar-right">
             <div className="global-search">
@@ -427,6 +433,8 @@ export default function Workspace() {
             <TeamView {...props} />
           ) : view === "users" && admin ? (
             <UsersView {...props} />
+          ) : view === "owner" && owner ? (
+            <OwnerConsoleView {...props} />
           ) : view === "permissions" && admin ? (
             <PermissionsView />
           ) : (

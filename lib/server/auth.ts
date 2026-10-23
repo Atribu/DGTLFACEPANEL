@@ -4,11 +4,13 @@ import type { User } from "../types";
 import { getDb } from "./db";
 import { isProduction, sessionSecret } from "./config";
 import { isUserActive, sessionVersionMatches } from "./user-policies";
+import { presenceSessionId } from "./presence";
 
 export interface SessionData {
   userId?: string;
   authenticatedAt?: number;
   authVersion?: number;
+  sessionId?: string;
 }
 export async function getSession() {
   return getIronSession<SessionData>(await cookies(), {
@@ -48,5 +50,10 @@ export async function resolveSessionUser(
     !sessionVersionMatches(row.auth_version, session.authVersion)
   )
     return null;
+  const [ended] = await db.query<{ id: string }>(
+    "SELECT id FROM account_sessions WHERE id=$1 AND ended_at IS NOT NULL",
+    [presenceSessionId(session)],
+  );
+  if (ended) return null;
   return row.data;
 }

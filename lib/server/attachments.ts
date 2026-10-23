@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { isUserActive } from "./user-policies";
+import { ownerPrivacyContext, redactOwnerReferences } from "./owner-identity";
 import { z } from "zod";
 import {
   MAX_ATTACHMENT_BYTES,
@@ -245,7 +246,10 @@ export async function listAttachments(user: User, taskId: string) {
     "SELECT data FROM task_attachments WHERE task_id=$1 AND deleted_at IS NULL ORDER BY data->>'createdAt',id",
     [taskId],
   );
-  return { attachments: rows.map((row) => row.data) };
+  return redactOwnerReferences(
+    { attachments: rows.map((row) => row.data) },
+    await ownerPrivacyContext(db, user),
+  );
 }
 
 async function insertAttachment(
@@ -350,7 +354,10 @@ export async function downloadAttachment(user: User, id: string) {
     [id],
   );
   if (!file) throw new HttpError(404, "Ek bulunamadı.");
-  return { attachment: row.data, content: new Uint8Array(file.content) };
+  return {
+    attachment: redactOwnerReferences(row.data, await ownerPrivacyContext(db, user)),
+    content: new Uint8Array(file.content),
+  };
 }
 
 export async function deleteAttachment(user: User, id: string) {

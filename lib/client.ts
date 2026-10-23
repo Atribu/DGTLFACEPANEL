@@ -11,6 +11,7 @@ export type View =
   | "reports"
   | "team"
   | "users"
+  | "owner"
   | "permissions";
 export interface ViewProps {
   data: BootstrapData;

@@ -19,7 +19,8 @@
     "import:checklist": "node --env-file-if-exists=.env.local --import tsx scripts/import-checklist.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "test:integration": "node tests/http-smoke.mjs"
+    "test:integration": "node tests/http-smoke.mjs",
+    "owner:prepare": "node --import tsx scripts/prepare-owner.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",

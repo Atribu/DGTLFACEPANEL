@@ -30,7 +30,12 @@ import {
 import type { z } from "zod";
 import { notifyTaskChange } from "./notifications";
 import { mobileCommentId, taskVersion } from "./mobile-sync";
-import { isUserActive } from "./user-policies";
+import {
+  isAssignableUser,
+  isProtectedOwner,
+  ownerPrivacyContext,
+  redactOwnerReferences,
+} from "./owner-identity";
 
 export async function audit(
   tx: Queryable,
@@ -86,7 +91,7 @@ export async function bootstrap(user: User): Promise<BootstrapData> {
     await db.query<{ data: User }>(
       "SELECT data FROM app_users ORDER BY data->>'name'",
     )
-  ).map((row) => row.data);
+  ).map((row) => row.data).filter((person) => !isProtectedOwner(person));
   if (scope) {
     const visibleUsers = new Set([
       user.id,
@@ -107,7 +112,10 @@ export async function bootstrap(user: User): Promise<BootstrapData> {
             },
       );
   }
-  return { user, users, hotels, tasks, activities, comments, demo: isDemo() };
+  return redactOwnerReferences(
+    { user, users, hotels, tasks, activities, comments, demo: isDemo() },
+    await ownerPrivacyContext(db, user),
+  );
 }
 
 async function findTask(
@@ -139,7 +147,10 @@ export async function taskDetail(user: User, taskId: string) {
       [taskId],
     )
   ).map((row) => row.data);
-  return { task, comments, activities };
+  return redactOwnerReferences(
+    { task, comments, activities },
+    await ownerPrivacyContext(db, user),
+  );
 }
 async function validateAssignee(
   tx: Queryable,
@@ -151,7 +162,7 @@ async function validateAssignee(
     "SELECT data FROM app_users WHERE id=$1 FOR UPDATE",
     [id],
   );
-  if (!row || row.data.role === "observer" || !isUserActive(row.data))
+  if (!row || !isAssignableUser(row.data))
     throw new HttpError(400, errorMessage);
 }
 

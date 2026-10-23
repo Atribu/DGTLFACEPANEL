@@ -7,6 +7,9 @@ import { migrateUserSchema } from "./user-schema";
 import { migrateAttachmentSchema } from "./attachment-schema";
 import { migrateNotificationSchema } from "./notification-schema";
 import { migrateRecurrenceSchema } from "./recurrence-schema";
+import { migrateOwnerSchema, provisionSystemOwner } from "./owner-schema";
+import { migrateOwnerConsoleSchema } from "./owner-console-schema";
+import { ownerBootstrapPasswordHash } from "./owner-bootstrap";
 
 export interface Queryable {
   query<T = Record<string, unknown>>(
@@ -114,6 +117,8 @@ async function connect(): Promise<Database> {
       await migrateAttachmentSchema(tx);
       await migrateNotificationSchema(tx);
       await migrateRecurrenceSchema(tx);
+      await migrateOwnerSchema(tx);
+      await migrateOwnerConsoleSchema(tx);
     });
     if (
       isProduction() &&
@@ -128,6 +133,7 @@ async function connect(): Promise<Database> {
       const { seedDemo } = await import("./seed");
       await seedDemo(db);
     }
+    await provisionSystemOwner(db, ownerBootstrapPasswordHash(process.env.SYSTEM_OWNER_PASSWORD_HASH));
     return db;
   } catch (error) {
     await db.close().catch(() => {});

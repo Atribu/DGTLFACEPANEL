@@ -7,6 +7,7 @@ import { migrateUserSchema } from "../lib/server/user-schema";
 import { migrateNotificationSchema } from "../lib/server/notification-schema";
 import { migrateRecurrenceSchema } from "../lib/server/recurrence-schema";
 import { migrateAttachmentSchema } from "../lib/server/attachment-schema";
+import { migrateOwnerConsoleSchema } from "../lib/server/owner-console-schema";
 import {
   createUser,
   createUserSchema,
@@ -88,13 +89,14 @@ before(async () => {
   await migrateNotificationSchema(db);
   await migrateRecurrenceSchema(db);
   await migrateAttachmentSchema(db);
+  await migrateOwnerConsoleSchema(db);
   passwordHash = await hashPassword(password);
   globals.dgtlDatabase = Promise.resolve(db);
 });
 
 beforeEach(async () => {
   await local.exec(
-    "TRUNCATE task_attachments,recurrence_occurrences,recurrence_rules,personal_notifications,user_events,activities,task_comments,tasks,hotels,app_users",
+    "TRUNCATE account_sessions,account_events,task_attachments,recurrence_occurrences,recurrence_rules,personal_notifications,user_events,activities,task_comments,tasks,hotels,app_users",
   );
   for (const user of [admin, secondAdmin, owner, otherStaff, observer]) {
     await db.query(

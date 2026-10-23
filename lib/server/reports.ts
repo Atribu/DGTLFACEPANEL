@@ -8,6 +8,7 @@ import {
 import { getDb } from "./db";
 import { HttpError } from "./http";
 import { canViewHotel } from "./policies";
+import { ownerPrivacyContext, SYSTEM_OWNER_ALIAS } from "./owner-identity";
 
 export function parseReportQuery(search: URLSearchParams): ReportFilters {
   for (const key of ["hotelId", "from", "to", "includeUndated"]) {
@@ -72,10 +73,11 @@ export async function getHotelReport(
         [ids],
       )
     : [];
+  const privacy = await ownerPrivacyContext(db, user);
   return buildHotelReport(
     hotel.data,
     tasks,
-    new Map(people.map((person) => [person.id, person.name])),
+    new Map(people.map((person) => [person.id, privacy.owners.has(person.id) ? SYSTEM_OWNER_ALIAS : person.name])),
     filters,
     now,
   );

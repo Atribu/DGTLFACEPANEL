@@ -137,6 +137,35 @@ Kendi hesabınızı silemezsiniz; sistemde aktif yönetici kalması zorunludur. 
 
 iPhone kaynak kodundaki kullanıcı listesi de silinen hesapları gizler; geçmiş ekranları için kimlik bilgilerini korur. Önbellek sürümü 3'e yükseltilmiştir: önceki önbelleklerin içeriği korunur, ilk bağlantıda silinme bilgisi dahil tam veri alınır. Bu görünüm düzeltmesi telefona yeni uygulama kurulunca etkinleşir; bu çalışma kapsamında cihazlara yükleme yapılmamıştır. Eski uygulama silinen hesabı pasif olarak gösterebilir, ancak sunucu bu hesabın girişini ve yeni görev atanmasını engeller.
 
+## Özel sahip hesabı ve Sahip Paneli
+
+Sistem sahibi için tek bir hesap ayrılmıştır. Bu hesap normal kullanıcı/ekip listelerinde, görev atamalarında, otel sorumlusu seçiminde ve diğer hesapların API yanıtlarında gösterilmez. Standart yöneticiler hesabı değiştiremez, silemez veya aynı e-postayı kullanarak başka bir hesap açamaz. Yetki yalnız sunucuda oluşturulan sahip işaretiyle verilir; normal kullanıcı formu veya e-posta değişikliği sahip yetkisi vermez. Veritabanındaki tekillik kuralı ikinci sahip hesabını engeller.
+
+Sahip kendi hesabıyla giriş yaptığında **Sahip Paneli** menüsünü görür. Ekran şunları içerir:
+
+- Web ve iPhone için çevrimiçi/çevrimdışı durumu, son görülme ve son giriş zamanı; açık ve geciken görev sayıları.
+- Otellere göre gecikmiş, bekleyen ve yönetici kontrolündeki işler.
+- İşlem, kullanıcı yönetimi ve giriş/çıkış kayıtları; kişi, tür, tarih aralığı ve metin filtreleri; sayfa başına 50 kayıt ve gösterilen sayfanın CSV çıktısı.
+- Türkiye saatiyle saniyesine kadar işlem zamanları ve kayıtlı hesaplara ait bugünkü başarısız giriş denemeleri.
+
+**Çevrimiçi**, geçerli oturumlardan birinin son 90 saniyede panel verisini almış olmasıdır; çalışma süresi veya insanın ekrana baktığı anlamına gelmez. Mevcut web/iPhone ön plan yenilemeleri kullanılır; ayrıca sürekli bir bağlantı veya arka plan takibi eklenmez. Aynı hesabın cihazları ayrı izlenir; birinden çıkınca diğeri çevrimiçi kalabilir. Bağlantı doğrulanamadığında ekranda güncel durum bilinmiyor uyarısı gösterilir. Giriş/çıkış/son görülme verileri bu güncellemeden itibaren kaydedilir; önceki görev ve kullanıcı işlem kayıtları mevcut olduğu kadarıyla gösterilir. Bilinmeyen e-posta denemeleri, parolalar, IP adresleri ve tarayıcı parmak izleri kayıt altına alınmaz. Başarısız girişte gösterilen isim, giriş denenmiş hesaptır; denemeyi yapan kişinin kimliği değildir.
+
+Sahibin yaptığı işlemler normal geçmiş ekranlarında **Sistem yönetimi** adıyla gösterilir. Gerçek kimlik veritabanı denetim kayıtlarında ve özel sahip ekranında korunur. Kullanıcının kendi yazdığı yorum/metinler veya yüklediği dosyaların içeriği değiştirilmez; sahibi kendi adını yorumuna yazarsa bu metin doğal olarak görünür. Sahip hesabı otel/görev sorumlusu olarak atanamaz. İlk içerik aktarımını mevcut standart yönetici tamamlamalıdır.
+
+### Sahip hesabını etkinleştirme
+
+**Hesap kodla birlikte otomatik kurulur; bu hesap için ek ortam değişkeni gerekmez.** `lib/server/owner-bootstrap.ts`, rastgele güçlü parolanın tuzlanmış scrypt özetini yalnız sunucu tarafında tutar. Açık şifre kaynak kodda, testlerde veya tarayıcı dosyalarında bulunmaz.
+
+1. Güncel kodu yayınlayıp web ve worker servislerini yeniden başlatın. Sahip hesabı ilk veritabanı bağlantısında bir kez oluşturulur; mevcut kayıtlar korunur.
+2. Yerel bilgisayardaki `.data/system-owner-setup/hesap-bilgileri.txt` dosyasında verilen bilgilerle normal giriş ekranından bağlanın. **Sahip Paneli** menüsünü doğrulayın.
+3. Sonraki yayınlar hesabı çoğaltmaz, şifresini veya verilerini sıfırlamaz. Hesap daha önce farklı bir parolayla oluşturulduysa mevcut parola geçerlidir. Aynı e-postayla standart bir hesap varsa otomatik yetki yükseltilmez; kurulum açık bir sunucu hatasıyla durur ve mevcut kayıt incelenmelidir.
+
+`SYSTEM_OWNER_PASSWORD_HASH` yalnız farklı bir **ilk kurulum** özeti seçmek için isteğe bağlıdır; doluysa kodla gelen özete önceliklidir. Boş veya tanımsızsa kodla gelen özet kullanılır. Oluşturulmuş hesabın şifresi bu değişkenle değiştirilmez. Normal yayın için `.data/system-owner-setup/server.env` dosyasını sunucuya taşımak gerekmez. Giriş bilgilerinin bulunduğu `.data` klasörü Git dışında kalmalıdır.
+
+İsteğe bağlı `npm run owner:prepare` komutu, farklı bir ilk kurulum için `.data/system-owner-setup/` altında özel dosyalar hazırlar; veri tabanına bağlanmaz, mevcut dosyaları ve kodla gelen özeti değiştirmez, parolayı terminale yazmaz. Mevcut kurulum bilgilerini kullanıyorsanız bu komutu yeniden çalıştırmanız gerekmez.
+
+Bu ekran mobil tarayıcıdan da kullanılabilir. Mevcut native iPhone uygulaması bağlantı durumunu mevcut veri yenilemeleriyle bildirir; özel Sahip Paneli ekranı native uygulamaya eklenmemiştir.
+
 ## 23 Ekim 2026 güvenlik güncellemesi
 
 - Node.js **24.20.0 → 24.22.1 LTS**: [21 Ekim resmî güvenlik yamaları](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).

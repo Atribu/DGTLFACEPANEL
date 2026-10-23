@@ -10,6 +10,8 @@ export interface User {
   hotelIds: string[];
   active?: boolean;
   deletedAt?: string;
+  /** Provisioned only on the server; ordinary user management cannot grant it. */
+  isOwner?: boolean;
 }
 export interface Hotel {
   id: string;

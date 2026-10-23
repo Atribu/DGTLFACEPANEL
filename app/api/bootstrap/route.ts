@@ -5,11 +5,14 @@ import { getDb } from "../../../lib/server/db";
 import { isDemo } from "../../../lib/server/config";
 import { initializeBundledChecklist } from "../../../lib/server/checklist-initialization";
 import { workspaceResponse } from "../../../lib/server/sync-response";
+import { getSession } from "../../../lib/server/auth";
+import { touchPresence } from "../../../lib/server/presence";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   return handle(async () => {
     const user = await requireUser();
+    await touchPresence(await getDb(), user, await getSession(), "web");
     const checklistImportWarning = await initializeBundledChecklist(
       await getDb(),
       user,

@@ -6,6 +6,12 @@ import { HttpError, requireAdmin } from "./http";
 import { hashPassword } from "./password";
 import { idSchema } from "./validation";
 import { isUserActive, permissionsChanged } from "./user-policies";
+import {
+  isProtectedOwner,
+  ownerPrivacyContext,
+  redactOwnerReferences,
+  SYSTEM_OWNER_EMAIL,
+} from "./owner-identity";
 
 const fields = {
   name: z.string().trim().min(1).max(200),
@@ -149,6 +155,8 @@ export async function createUser(
 ) {
   requireAdmin(actor);
   const input = createUserSchema.parse(rawInput);
+  if (input.email === SYSTEM_OWNER_EMAIL)
+    throw new HttpError(409, "Bu e-posta adresiyle kullanıcı oluşturulamaz.");
   const passwordHash = await hashPassword(input.password);
   const db = await getDb();
   try {
@@ -198,8 +206,10 @@ export async function updateUser(
     return await db.transaction(async (tx) => {
       const rows = await lockUsers(tx, actor);
       const target = rows.find((row) => row.data.id === targetId);
-      if (!target || target.data.deletedAt)
+      if (!target || target.data.deletedAt || isProtectedOwner(target.data))
         throw new HttpError(404, "Kullanıcı bulunamadı.");
+      if (input.email === SYSTEM_OWNER_EMAIL)
+        throw new HttpError(409, "Bu e-posta adresi kullanılamaz.");
       if (
         targetId === actor.id &&
         (!input.active || input.role !== target.data.role)
@@ -286,7 +296,8 @@ export async function deleteUser(actor: User, targetId: string) {
   return db.transaction(async (tx) => {
     const rows = await lockUsers(tx, actor);
     const target = rows.find((row) => row.data.id === targetId);
-    if (!target) throw new HttpError(404, "Kullanıcı bulunamadı.");
+    if (!target || isProtectedOwner(target.data))
+      throw new HttpError(404, "Kullanıcı bulunamadı.");
     if (targetId === actor.id)
       throw new HttpError(409, "Kendi hesabınızı silemezsiniz.");
     // Repeating a successful delete must not create another event or revoke
@@ -332,7 +343,7 @@ export async function listUsers(actor: User) {
     throw new HttpError(403, "Yönetici yetkisi gerekiyor.");
   const users = (
     await db.query<{ data: User }>(
-      "SELECT data FROM app_users WHERE COALESCE(data->>'deletedAt','')='' ORDER BY data->>'name'",
+      "SELECT data FROM app_users WHERE COALESCE(data->>'deletedAt','')='' AND COALESCE(data->>'isOwner','false')<>'true' ORDER BY data->>'name'",
     )
   ).map((row) => row.data);
   const events = (
@@ -340,5 +351,8 @@ export async function listUsers(actor: User) {
       "SELECT data FROM user_events ORDER BY data->>'createdAt' DESC LIMIT 250",
     )
   ).map((row) => row.data);
-  return { users, events };
+  return redactOwnerReferences(
+    { users, events },
+    await ownerPrivacyContext(db, fresh.data),
+  );
 }

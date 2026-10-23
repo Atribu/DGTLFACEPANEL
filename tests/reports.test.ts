@@ -62,6 +62,7 @@ class ReportsDatabase implements Database {
   }
   async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
     this.queries.push({ sql, params });
+    if (sql === "SELECT data FROM app_users WHERE data->>'isOwner'='true'") return [];
     if (sql === "SELECT data FROM hotels WHERE id=$1")
       return this.hotels
         .filter((item) => item.id === params[0])
