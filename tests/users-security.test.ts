@@ -5,9 +5,12 @@ import type { Database, Queryable } from "../lib/server/db";
 import type { User } from "../lib/types";
 import { migrateUserSchema } from "../lib/server/user-schema";
 import { migrateNotificationSchema } from "../lib/server/notification-schema";
+import { migrateRecurrenceSchema } from "../lib/server/recurrence-schema";
+import { migrateAttachmentSchema } from "../lib/server/attachment-schema";
 import {
   createUser,
   createUserSchema,
+  deleteUser,
   listUsers,
   updateUser,
   updateUserSchema,
@@ -28,7 +31,19 @@ import {
   createTaskSchema,
   patchTaskSchema,
 } from "../lib/server/validation";
-import { admin, hotel, observer, otherStaff, owner, task } from "./fixtures";
+import { createRecurrence, updateRecurrence } from "../lib/server/recurrences";
+import { istanbulToday } from "../lib/recurrence";
+import { canManage, canViewTask } from "../lib/server/policies";
+import {
+  activity,
+  admin,
+  comment,
+  hotel,
+  observer,
+  otherStaff,
+  owner,
+  task,
+} from "./fixtures";
 
 // A real, isolated in-memory PostgreSQL engine. Never opens or modifies .data.
 const globals = globalThis as typeof globalThis & {
@@ -71,13 +86,15 @@ before(async () => {
   `);
   await migrateUserSchema(db);
   await migrateNotificationSchema(db);
+  await migrateRecurrenceSchema(db);
+  await migrateAttachmentSchema(db);
   passwordHash = await hashPassword(password);
   globals.dgtlDatabase = Promise.resolve(db);
 });
 
 beforeEach(async () => {
   await local.exec(
-    "TRUNCATE personal_notifications,user_events,activities,task_comments,tasks,hotels,app_users",
+    "TRUNCATE task_attachments,recurrence_occurrences,recurrence_rules,personal_notifications,user_events,activities,task_comments,tasks,hotels,app_users",
   );
   for (const user of [admin, secondAdmin, owner, otherStaff, observer]) {
     await db.query(
@@ -125,6 +142,18 @@ const draft = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   });
 const patch = (input: unknown) => patchTaskSchema.parse(input);
+const recurrenceDraft = (assigneeId: string) => ({
+  hotelId: "hotel-a",
+  title: "Düzenli kontrol",
+  description: "Kontrol görevi",
+  department: "SEO",
+  assigneeId,
+  priority: 2,
+  checklist: ["Kontrol edildi"],
+  frequency: "weekly",
+  startsOn: istanbulToday(),
+  dueOffsetDays: 2,
+});
 
 test("additive user migration preserves legacy users and accepts their version-one sessions", async () => {
   await migrateUserSchema(db);
@@ -479,4 +508,263 @@ test("user forms reject extra fields and short passwords rather than accepting p
     updateUserSchema.safeParse({ ...edit(owner), active: "false" }).success,
     false,
   );
+});
+
+test("deletion requires a current active administrator and rejects self-deletion", async () => {
+  for (const actor of [owner, observer, { ...admin, active: false }])
+    await assert.rejects(deleteUser(actor, otherStaff.id), { status: 403 });
+  await assert.rejects(deleteUser(admin, admin.id), {
+    status: 409,
+    message: /Kendi hesabınızı/,
+  });
+  await assert.rejects(deleteUser(admin, "missing-user"), { status: 404 });
+  await updateUser(admin, secondAdmin.id, edit(secondAdmin, { role: "staff" }));
+  await assert.rejects(deleteUser(secondAdmin, otherStaff.id), { status: 403 });
+});
+
+test("deletion revokes login and cookies, hides management entries, preserves lookup identity and cannot be undone through PATCH", async () => {
+  const initial = await authenticate(observer.email, password);
+  const cookie = {
+    userId: observer.id,
+    authenticatedAt: Date.now(),
+    authVersion: initial.authVersion,
+  };
+  const { user } = await deleteUser(admin, observer.id);
+  assert.equal(user.active, false);
+  assert.equal(Number.isFinite(Date.parse(user.deletedAt!)), true);
+  assert.equal(await resolveSessionUser(cookie), null);
+  await assert.rejects(authenticate(observer.email, password), { status: 401 });
+  await assert.rejects(
+    updateUser(admin, observer.id, edit(observer, { active: true })),
+    { status: 404 },
+  );
+  await assert.rejects(updateUser(admin, observer.id, edit(observer)), {
+    status: 404,
+  });
+  const listed = await listUsers(admin);
+  assert.equal(listed.users.some((item) => item.id === observer.id), false);
+  assert.equal(listed.events.length, 1);
+  assert.equal(listed.events[0].targetId, observer.id);
+  assert.match(listed.events[0].message, /silindi/);
+  assert.deepEqual(
+    (await bootstrap(admin)).users.find((item) => item.id === observer.id),
+    user,
+  );
+  const repeated = await deleteUser(admin, observer.id);
+  assert.deepEqual(repeated.user, user);
+  assert.equal((await listUsers(admin)).events.length, 1);
+  const [stored] = await db.query<{ auth_version: number }>(
+    "SELECT auth_version FROM app_users WHERE id=$1",
+    [observer.id],
+  );
+  assert.equal(stored.auth_version, initial.authVersion + 1);
+  // The old identity still owns its email; it cannot accidentally be reused
+  // for a new person while historic work retains that identity.
+  await assert.rejects(createUser(admin, draft({ email: observer.email })), {
+    status: 409,
+  });
+});
+
+test("competing administrator deletions leave one active administrator and stale deleted actors have no authority", async () => {
+  const results = await Promise.allSettled([
+    deleteUser(admin, secondAdmin.id),
+    deleteUser(secondAdmin, admin.id),
+  ]);
+  assert.equal(
+    results.filter((result) => result.status === "fulfilled").length,
+    1,
+  );
+  const rows = await db.query<{ data: User }>("SELECT data FROM app_users");
+  const survivor = rows.find(
+    ({ data }) =>
+      data.role === "admin" && data.active !== false && !data.deletedAt,
+  )!.data;
+  const removed = survivor.id === admin.id ? secondAdmin : admin;
+  assert.equal(
+    rows.filter(
+      ({ data }) =>
+        data.role === "admin" && !data.deletedAt && data.active !== false,
+    ).length,
+    1,
+  );
+  await assert.rejects(deleteUser(survivor, survivor.id), { status: 409 });
+  await assert.rejects(deleteUser(removed, survivor.id), { status: 403 });
+  await assert.rejects(createUser(removed, draft()), { status: 403 });
+});
+
+test("deletion requires open work and hotel responsibility to be transferred without changing those records on failure", async () => {
+  await assert.rejects(deleteUser(admin, owner.id), {
+    status: 409,
+    message: /açık görevleri/,
+  });
+  const completed = task({ status: "completed" });
+  await db.query("UPDATE tasks SET data=$2::jsonb WHERE id=$1", [
+    completed.id,
+    JSON.stringify(completed),
+  ]);
+  await assert.rejects(deleteUser(admin, owner.id), {
+    status: 409,
+    message: /otel sorumlusu/,
+  });
+  assert.equal((await listUsers(admin)).events.length, 0);
+  const [stored] = await db.query<{ data: User; auth_version: number }>(
+    "SELECT data,auth_version FROM app_users WHERE id=$1",
+    [owner.id],
+  );
+  assert.deepEqual(stored.data, owner);
+  assert.equal(stored.auth_version, 1);
+  assert.deepEqual((await taskDetail(admin, completed.id)).task, completed);
+});
+
+test("active recurrence assignments block deletion, deactivation and observer conversion until paused or reassigned", async () => {
+  const { recurrence } = await createRecurrence(
+    admin,
+    recurrenceDraft(otherStaff.id),
+  );
+  for (const change of [
+    () => deleteUser(admin, otherStaff.id),
+    () => updateUser(admin, otherStaff.id, edit(otherStaff, { active: false })),
+    () =>
+      updateUser(
+        admin,
+        otherStaff.id,
+        edit(otherStaff, { role: "observer", hotelIds: ["hotel-a"] }),
+      ),
+  ])
+    await assert.rejects(change(), {
+      status: 409,
+      message: /aktif düzenli işleri/,
+    });
+  await updateRecurrence(admin, recurrence.id, { action: "pause" });
+  const { user } = await deleteUser(admin, otherStaff.id);
+  assert.equal(user.active, false);
+  await assert.rejects(
+    updateRecurrence(admin, recurrence.id, { action: "resume" }),
+    { status: 409 },
+  );
+});
+
+test("deletion preserves completed tasks, comments, activity, attachments, notifications and paused recurrence records", async () => {
+  const completed = task({ status: "completed" });
+  await db.query("UPDATE tasks SET data=$2::jsonb WHERE id=$1", [
+    completed.id,
+    JSON.stringify(completed),
+  ]);
+  await updateHotelManager(admin, "hotel-a", otherStaff.id);
+  await updateHotelManager(admin, "hotel-b", otherStaff.id);
+  const note = comment(completed.id);
+  const event = activity(completed.hotelId, completed.id);
+  await db.query(
+    "INSERT INTO task_comments(id,task_id,data) VALUES ($1,$2,$3::jsonb)",
+    [note.id, completed.id, JSON.stringify(note)],
+  );
+  await db.query(
+    "INSERT INTO activities(id,hotel_id,task_id,data) VALUES ($1,$2,$3,$4::jsonb)",
+    [event.id, completed.hotelId, completed.id, JSON.stringify(event)],
+  );
+  await db.query(
+    "INSERT INTO task_attachments(id,task_id,uploader_id,data,deleted_by) VALUES ($1,$2,$3,$4::jsonb,$3)",
+    [
+      "historic-attachment",
+      completed.id,
+      owner.id,
+      JSON.stringify({
+        kind: "link",
+        uploaderName: owner.name,
+        url: "https://example.test/report",
+      }),
+    ],
+  );
+  await db.query(
+    "INSERT INTO personal_notifications(id,user_id,task_id,hotel_id,event_key,data) VALUES ($1,$2,$3,$4,$5,$6::jsonb)",
+    [
+      "historic-notification",
+      owner.id,
+      completed.id,
+      completed.hotelId,
+      "historic",
+      JSON.stringify({ message: "Görev tamamlandı." }),
+    ],
+  );
+  const { recurrence } = await createRecurrence(
+    admin,
+    recurrenceDraft(owner.id),
+  );
+  await updateRecurrence(admin, recurrence.id, { action: "pause" });
+  const preservedTables = [
+    "tasks",
+    "task_comments",
+    "activities",
+    "task_attachments",
+    "personal_notifications",
+    "recurrence_rules",
+  ];
+  const before = await Promise.all(
+    preservedTables.map((table) => db.query(`SELECT * FROM ${table} ORDER BY id`)),
+  );
+  await deleteUser(admin, owner.id);
+  for (const [index, table] of preservedTables.entries())
+    assert.deepEqual(
+      await db.query(`SELECT * FROM ${table} ORDER BY id`),
+      before[index],
+    );
+  const snapshot = await bootstrap(admin);
+  assert.equal(
+    snapshot.users.find((item) => item.id === owner.id)?.name,
+    owner.name,
+  );
+  assert.equal(
+    snapshot.tasks.find((item) => item.id === completed.id)?.assigneeId,
+    owner.id,
+  );
+  assert.equal(
+    (await listUsers(admin)).users.some((item) => item.id === owner.id),
+    false,
+  );
+  await assert.rejects(
+    updateTask(admin, completed.id, patch({ action: "reopen" })),
+    { status: 400, message: /aktif bir personele atayın/ },
+  );
+});
+
+test("a deletion marker rejects login, authority and assignments even if a stored active flag is accidentally true", async () => {
+  const deleted: User = {
+    ...otherStaff,
+    active: true,
+    deletedAt: new Date().toISOString(),
+  };
+  await db.query("UPDATE app_users SET data=$2::jsonb WHERE id=$1", [
+    deleted.id,
+    JSON.stringify(deleted),
+  ]);
+  assert.equal(
+    await resolveSessionUser({
+      userId: deleted.id,
+      authenticatedAt: Date.now(),
+      authVersion: 1,
+    }),
+    null,
+  );
+  await assert.rejects(authenticate(deleted.email, password), { status: 401 });
+  assert.equal(canManage({ ...deleted, role: "admin" }), false);
+  assert.equal(canViewTask(deleted, task()), false);
+  await assert.rejects(deleteUser({ ...deleted, role: "admin" }, observer.id), {
+    status: 403,
+  });
+  await assert.rejects(
+    createTask(admin, createTaskSchema.parse({
+      hotelId: "hotel-a",
+      title: "Yeni görev",
+      department: "SEO",
+      priority: 2,
+      assigneeId: deleted.id,
+    })),
+    { status: 400 },
+  );
+  await assert.rejects(updateHotelManager(admin, "hotel-a", deleted.id), {
+    status: 400,
+  });
+  await assert.rejects(createRecurrence(admin, recurrenceDraft(deleted.id)), {
+    status: 409,
+  });
 });

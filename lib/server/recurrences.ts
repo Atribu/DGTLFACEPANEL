@@ -13,6 +13,7 @@ import type { Activity, Task, User } from "../types";
 import { getDb, type Queryable } from "./db";
 import { HttpError, requireAdmin } from "./http";
 import { notifyTaskChange } from "./notifications";
+import { isUserActive } from "./user-policies";
 
 export const RECURRENCE_CATCH_UP_LIMIT = 12;
 class RetryRule extends Error {}
@@ -26,7 +27,7 @@ async function lockPeople(tx: Queryable, ids: string[]) {
   ).map((row) => row.data);
 }
 function validAssignee(user: User | undefined) {
-  return !!user && user.active !== false && user.role !== "observer";
+  return !!user && isUserActive(user) && user.role !== "observer";
 }
 function freshAdmin(users: User[], actor: User) {
   const fresh = users.find((user) => user.id === actor.id);

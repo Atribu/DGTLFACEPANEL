@@ -1,7 +1,8 @@
 import type { Task, TaskStatus, User } from "../types";
+import { isUserActive } from "./user-policies";
 
 export function canViewHotel(user: User, hotelId: string): boolean {
-  if (user.active === false) return false;
+  if (!isUserActive(user)) return false;
   return (
     user.role === "admin" ||
     user.role === "staff" ||
@@ -12,7 +13,7 @@ export function canViewTask(user: User, task: Task): boolean {
   return canViewHotel(user, task.hotelId);
 }
 export function canManage(user: User): boolean {
-  return user.role === "admin" && user.active !== false;
+  return user.role === "admin" && isUserActive(user);
 }
 export function canWorkOnTask(user: User, task: Task): boolean {
   return (

@@ -30,6 +30,7 @@ import {
 import type { z } from "zod";
 import { notifyTaskChange } from "./notifications";
 import { mobileCommentId, taskVersion } from "./mobile-sync";
+import { isUserActive } from "./user-policies";
 
 export async function audit(
   tx: Queryable,
@@ -150,7 +151,7 @@ async function validateAssignee(
     "SELECT data FROM app_users WHERE id=$1 FOR UPDATE",
     [id],
   );
-  if (!row || row.data.role === "observer" || row.data.active === false)
+  if (!row || row.data.role === "observer" || !isUserActive(row.data))
     throw new HttpError(400, errorMessage);
 }
 

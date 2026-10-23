@@ -9,6 +9,7 @@ export interface User {
   department: string;
   hotelIds: string[];
   active?: boolean;
+  deletedAt?: string;
 }
 export interface Hotel {
   id: string;

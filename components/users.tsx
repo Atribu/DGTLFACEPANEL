@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, type FormEvent } from "react";
+import { useId, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   Building2,
   Check,
@@ -8,10 +8,12 @@ import {
   Eye,
   EyeOff,
   KeyRound,
+  LoaderCircle,
   Pencil,
   Plus,
   Search,
   ShieldCheck,
+  Trash2,
   UserCheck,
   UserRound,
   Users,
@@ -26,6 +28,7 @@ import {
   PageHeader,
   SubmitButton,
 } from "./ui";
+import styles from "./users.module.css";
 
 const roles: Role[] = ["admin", "staff", "observer"];
 const isActive = (user: User & { active?: boolean }) => user.active !== false;
@@ -50,6 +53,12 @@ export function UsersView(props: ViewProps) {
   );
   const [composerOpen, setComposerOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
+  const [deletingUser, setDeletingUser] = useState<User | undefined>(undefined);
+  const [deletedUserIds, setDeletedUserIds] = useState<string[]>([]);
+  const selfDeleteHintId = useId();
+  const managedUsers = data.users.filter(
+    (user) => !user.deletedAt && !deletedUserIds.includes(user.id),
+  );
   const hotelById = useMemo(
     () => new Map(data.hotels.map((hotel) => [hotel.id, hotel])),
     [data.hotels],
@@ -64,7 +73,7 @@ export function UsersView(props: ViewProps) {
     }
     return counts;
   }, [data.tasks]);
-  const visibleUsers = data.users
+  const visibleUsers = managedUsers
     .filter((user) => {
       const searchable = [
         user.name,
@@ -87,21 +96,21 @@ export function UsersView(props: ViewProps) {
         Number(isActive(b)) - Number(isActive(a)) ||
         a.name.localeCompare(b.name, "tr"),
     );
-  const activeCount = data.users.filter(isActive).length;
-  const inactiveCount = data.users.length - activeCount;
+  const activeCount = managedUsers.filter(isActive).length;
+  const inactiveCount = managedUsers.length - activeCount;
   const tabs: {
     value: typeof stateFilter;
     label: string;
     count: number;
   }[] = [
-    { value: "all", label: "Tüm kullanıcılar", count: data.users.length },
+    { value: "all", label: "Tüm kullanıcılar", count: managedUsers.length },
     { value: "active", label: "Aktif", count: activeCount },
     { value: "inactive", label: "Pasif", count: inactiveCount },
   ];
   const metrics = [
     {
       label: "Toplam kullanıcı",
-      count: data.users.length,
+      count: managedUsers.length,
       hint: "Ekip ve otel yetkilileri",
       Icon: Users,
       color: "blue",
@@ -115,7 +124,7 @@ export function UsersView(props: ViewProps) {
     },
     {
       label: "Otel gözlemcisi",
-      count: data.users.filter((user) => user.role === "observer").length,
+      count: managedUsers.filter((user) => user.role === "observer").length,
       hint: "Seçilen otelleri görüntüler",
       Icon: Eye,
       color: "blue",
@@ -358,16 +367,36 @@ export function UsersView(props: ViewProps) {
                         </span>
                       </td>
                       <td>
-                        <button
-                          className="btn btn-small btn-secondary"
-                          aria-label={`${user.name} kullanıcısını düzenle`}
-                          onClick={() => {
-                            setEditingUser(user);
-                            setComposerOpen(true);
-                          }}
-                        >
-                          <Pencil size={14} /> Düzenle
-                        </button>
+                        <div className={styles.rowActions}>
+                          <button
+                            className="btn btn-small btn-secondary"
+                            aria-label={`${user.name} kullanıcısını düzenle`}
+                            onClick={() => {
+                              setEditingUser(user);
+                              setComposerOpen(true);
+                            }}
+                          >
+                            <Pencil size={14} /> Düzenle
+                          </button>
+                          <button
+                            className={`btn btn-small ${styles.deleteButton}`}
+                            aria-label={`${user.name} kullanıcısını sil`}
+                            aria-describedby={
+                              user.id === data.user.id
+                                ? selfDeleteHintId
+                                : undefined
+                            }
+                            disabled={user.id === data.user.id}
+                            onClick={() => setDeletingUser(user)}
+                          >
+                            <Trash2 size={14} /> Sil
+                          </button>
+                        </div>
+                        {user.id === data.user.id && (
+                          <span className="subtext" id={selfDeleteHintId}>
+                            Kendi hesabınızı silemezsiniz.
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -389,8 +418,8 @@ export function UsersView(props: ViewProps) {
         <div className="task-table-footer">
           <ShieldCheck size={14} />
           <span>
-            Pasif hesapların sisteme girişi kapatılır; görevleri ve işlem
-            geçmişi korunur.
+            Pasif hesapların sisteme girişi kapatılır. Silinen hesaplar ayrıca
+            bu listeden kaldırılır; görev ve yorum geçmişi korunur.
           </span>
         </div>
       </section>
@@ -401,7 +430,119 @@ export function UsersView(props: ViewProps) {
           onClose={() => setComposerOpen(false)}
         />
       )}
+      {deletingUser && (
+        <UserDeleteConfirmation
+          {...props}
+          user={deletingUser}
+          onDeleted={(id) =>
+            setDeletedUserIds((current) => [...current, id])
+          }
+          onClose={() => setDeletingUser(undefined)}
+        />
+      )}
     </>
+  );
+}
+
+function UserDeleteConfirmation({
+  data,
+  refresh,
+  notify,
+  user,
+  onDeleted,
+  onClose,
+}: ViewProps & {
+  user: User;
+  onDeleted: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState("");
+  const pending = useRef(false);
+
+  async function remove(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending.current || data.user.role !== "admin" || user.id === data.user.id)
+      return;
+    pending.current = true;
+    setBusy(true);
+    setFormError("");
+    try {
+      await api(`/api/users/${user.id}`, {}, "DELETE");
+      onDeleted(user.id);
+      try {
+        await refresh();
+        notify(`${user.name} silindi. Görev ve yorum geçmişi korundu.`);
+      } catch {
+        notify(
+          "Kullanıcı silindi; diğer panel verileri yenilenemedi. Sayfayı yenileyin.",
+          "error",
+        );
+      }
+      onClose();
+    } catch (error) {
+      setFormError(errorMessage(error));
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
+
+  if (data.user.role !== "admin" || user.id === data.user.id) return null;
+
+  return (
+    <Modal
+      title="Kullanıcıyı sil"
+      subtitle={`${user.name} · ${user.email}`}
+      onClose={() => {
+        if (!pending.current) onClose();
+      }}
+    >
+      <form onSubmit={remove} aria-busy={busy}>
+        {formError && (
+          <div className="notice notice-warning" role="alert">
+            {formError}
+          </div>
+        )}
+        <div className="notice notice-warning">
+          <Trash2 size={18} aria-hidden="true" className={styles.noticeIcon} />
+          <div>
+            <strong>{user.name} kullanıcısını silmek istiyor musunuz?</strong>
+            <p>
+              Hesabın sisteme erişimi kapatılır ve kullanıcı bu listeden
+              kaldırılır. Görev ve yorum geçmişi, kullanıcının adıyla birlikte
+              korunur.
+            </p>
+          </div>
+        </div>
+        <p className={styles.deleteHint}>
+          Kullanıcının açık görevlerini, otel sorumluluklarını ve aktif
+          tekrarlayan görevlerini silmeden önce başka bir sorumluya aktarın.
+        </p>
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Vazgeç
+          </button>
+          <button
+            type="submit"
+            className={`btn ${styles.deleteButton}`}
+            disabled={busy}
+          >
+            {busy ? (
+              <LoaderCircle size={16} className="spin" aria-hidden="true" />
+            ) : (
+              <Trash2 size={16} aria-hidden="true" />
+            )}
+            {busy ? "Siliniyor…" : "Kullanıcıyı sil"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

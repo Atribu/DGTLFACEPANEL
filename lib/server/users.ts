@@ -110,6 +110,39 @@ function duplicateEmail(error: unknown): never {
   throw error;
 }
 
+async function requireResponsibilitiesReassigned(
+  tx: Queryable,
+  targetId: string,
+) {
+  const openTasks = await tx.query<{ id: string }>(
+    "SELECT id FROM tasks WHERE assignee_id=$1 AND data->>'status'<>'completed' LIMIT 1",
+    [targetId],
+  );
+  if (openTasks.length)
+    throw new HttpError(
+      409,
+      "Bu kullanıcının açık görevleri var. Önce görevleri başka bir aktif personele atayın.",
+    );
+  const managedHotels = await tx.query<{ id: string }>(
+    "SELECT id FROM hotels WHERE data->>'managerId'=$1 LIMIT 1",
+    [targetId],
+  );
+  if (managedHotels.length)
+    throw new HttpError(
+      409,
+      "Bu kullanıcı otel sorumlusu. Önce otel detayından sorumluyu başka bir aktif personelle değiştirin.",
+    );
+  const activeRecurrences = await tx.query<{ id: string }>(
+    "SELECT id FROM recurrence_rules WHERE assignee_id=$1 AND active=true LIMIT 1",
+    [targetId],
+  );
+  if (activeRecurrences.length)
+    throw new HttpError(
+      409,
+      "Bu kullanıcının aktif düzenli işleri var. Önce düzenli işleri başka bir aktif personele atayın veya duraklatın.",
+    );
+}
+
 export async function createUser(
   actor: User,
   rawInput: z.infer<typeof createUserSchema>,
@@ -165,7 +198,8 @@ export async function updateUser(
     return await db.transaction(async (tx) => {
       const rows = await lockUsers(tx, actor);
       const target = rows.find((row) => row.data.id === targetId);
-      if (!target) throw new HttpError(404, "Kullanıcı bulunamadı.");
+      if (!target || target.data.deletedAt)
+        throw new HttpError(404, "Kullanıcı bulunamadı.");
       if (
         targetId === actor.id &&
         (!input.active || input.role !== target.data.role)
@@ -198,24 +232,7 @@ export async function updateUser(
         throw new HttpError(409, "Sistemde en az bir aktif yönetici kalmalı.");
       }
       if (!input.active || input.role === "observer") {
-        const openTasks = await tx.query<{ id: string }>(
-          "SELECT id FROM tasks WHERE assignee_id=$1 AND data->>'status'<>'completed' LIMIT 1",
-          [targetId],
-        );
-        if (openTasks.length)
-          throw new HttpError(
-            409,
-            "Bu kullanıcının açık görevleri var. Önce görevleri başka bir aktif personele atayın.",
-          );
-        const managedHotels = await tx.query<{ id: string }>(
-          "SELECT id FROM hotels WHERE data->>'managerId'=$1 LIMIT 1",
-          [targetId],
-        );
-        if (managedHotels.length)
-          throw new HttpError(
-            409,
-            "Bu kullanıcı otel sorumlusu. Önce otel detayından sorumluyu başka bir aktif personelle değiştirin.",
-          );
+        await requireResponsibilitiesReassigned(tx, targetId);
       }
       const user: User = {
         id: targetId,
@@ -263,6 +280,47 @@ export async function updateUser(
   }
 }
 
+export async function deleteUser(actor: User, targetId: string) {
+  requireAdmin(actor);
+  const db = await getDb();
+  return db.transaction(async (tx) => {
+    const rows = await lockUsers(tx, actor);
+    const target = rows.find((row) => row.data.id === targetId);
+    if (!target) throw new HttpError(404, "Kullanıcı bulunamadı.");
+    if (targetId === actor.id)
+      throw new HttpError(409, "Kendi hesabınızı silemezsiniz.");
+    // Repeating a successful delete must not create another event or revoke
+    // another version; its original timestamp is also preserved.
+    if (target.data.deletedAt) return { user: target.data };
+    if (
+      isUserActive(target.data) &&
+      target.data.role === "admin" &&
+      rows.filter((row) => isUserActive(row.data) && row.data.role === "admin")
+        .length <= 1
+    )
+      throw new HttpError(409, "Sistemde en az bir aktif yönetici kalmalı.");
+    await requireResponsibilitiesReassigned(tx, targetId);
+    const user: User = {
+      ...target.data,
+      active: false,
+      deletedAt: new Date().toISOString(),
+    };
+    // Keep the identity row so completed work, comments, attachments and audit
+    // records retain their original author and foreign-key relationships.
+    await tx.query(
+      "UPDATE app_users SET data=$2::jsonb,auth_version=$3 WHERE id=$1",
+      [targetId, JSON.stringify(user), target.auth_version + 1],
+    );
+    await userEvent(
+      tx,
+      rows.find((row) => row.data.id === actor.id)!.data,
+      user,
+      "Kullanıcı silindi. Sisteme erişimi kapatıldı; iş ve işlem geçmişi korundu.",
+    );
+    return { user };
+  });
+}
+
 export async function listUsers(actor: User) {
   requireAdmin(actor);
   const db = await getDb();
@@ -274,7 +332,7 @@ export async function listUsers(actor: User) {
     throw new HttpError(403, "Yönetici yetkisi gerekiyor.");
   const users = (
     await db.query<{ data: User }>(
-      "SELECT data FROM app_users ORDER BY data->>'name'",
+      "SELECT data FROM app_users WHERE COALESCE(data->>'deletedAt','')='' ORDER BY data->>'name'",
     )
   ).map((row) => row.data);
   const events = (

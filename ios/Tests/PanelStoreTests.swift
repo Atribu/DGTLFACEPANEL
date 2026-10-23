@@ -19,6 +19,7 @@ private actor FakePanelAPI: PanelServicing {
     var held: CheckedContinuation<PanelFetchResult, Error>?
     var waiting: CheckedContinuation<Void, Never>?
     var fetched = 0
+    var requestedETags: [String?] = []
     var saved = 0
     var resourceData = Data("{}".utf8)
     var resourceFailure = false
@@ -38,6 +39,7 @@ private actor FakePanelAPI: PanelServicing {
     func configureTask(_ result: PanelTaskResponse?, conflict: Bool = false) { taskResult = result; self.conflict = conflict }
     func fetch(etag: String?) async throws -> PanelFetchResult {
         fetched += 1
+        requestedETags.append(etag)
         let step = steps.isEmpty ? .unchanged : steps.removeFirst()
         switch step {
         case .data(let data): return PanelFetchResult(snapshot: data, etag: "etag")
@@ -132,8 +134,34 @@ struct PanelStoreTests {
         let upgradedCache = cache("upgraded-cache.json")
         try upgradedCache.save(snapshot: fullDetails, etag: "current-server-etag", date: Date())
         let upgradedEntry = try upgradedCache.load(userID: initial.user.id)
-        check(upgradedEntry?.schemaVersion == 2 && upgradedEntry?.snapshot == fullDetails && upgradedEntry?.etag == "current-server-etag",
-              "v2 cache persists complete hotel details and reuses its matching ETag")
+        check(upgradedEntry?.schemaVersion == 3 && upgradedEntry?.snapshot == fullDetails && upgradedEntry?.etag == "current-server-etag",
+              "v3 cache persists complete hotel details and reuses its matching ETag")
+
+        var version2JSON = legacyJSON
+        var deletedUser: [String: Any] = [
+            "id": "deleted-user", "name": "Eski ekip üyesi", "email": "old@example.test",
+            "role": "staff", "department": "Web", "hotelIds": [], "active": false
+        ]
+        version2JSON["users"] = [deletedUser]
+        let version2Cache = cache("v2-cache.json")
+        try JSONSerialization.data(withJSONObject: [
+            "schemaVersion": 2, "snapshot": version2JSON, "etag": "unchanged-user-etag", "savedAt": 0
+        ]).write(to: version2Cache.fileURL)
+        let version2Entry = try version2Cache.load(userID: initial.user.id)
+        check(version2Entry?.snapshot.users.first?.name == "Eski ekip üyesi" && version2Entry?.etag == nil,
+              "v2 cache keeps historical identities but drops an ETag that omitted deletion metadata")
+        deletedUser["deletedAt"] = "2026-10-23T09:00:00Z"
+        version2JSON["users"] = [deletedUser]
+        let deletionSnapshot = try JSONDecoder().decode(PanelSnapshot.self, from: JSONSerialization.data(withJSONObject: version2JSON))
+        let upgradeAPI = FakePanelAPI(deletionSnapshot, steps: [.data(deletionSnapshot)], restored: true)
+        let upgradeStore = PanelStore(api: upgradeAPI, cache: version2Cache)
+        await upgradeStore.start()
+        let upgradeETags = await upgradeAPI.requestedETags
+        check(upgradeETags == [nil] && upgradeStore.snapshot?.managedUsers.isEmpty == true,
+              "v2 upgrade requests a full snapshot and removes deleted identities from management")
+        let deletionCache = try version2Cache.load(userID: initial.user.id)
+        check(deletionCache?.schemaVersion == 3 && deletionCache?.snapshot == deletionSnapshot && deletionCache?.etag == "etag",
+              "v3 cache persists deletion markers and historical identities with a reusable ETag")
 
         let offlineCache = cache("offline.json")
         try offlineCache.save(snapshot: initial, etag: "etag", date: Date())

@@ -9,6 +9,7 @@ import type { Task, User } from "../types";
 import { getDb, type Queryable } from "./db";
 import { HttpError } from "./http";
 import { idSchema } from "./validation";
+import { isUserActive } from "./user-policies";
 
 export const notificationReadSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("read"), id: idSchema }).strict(),
@@ -28,8 +29,8 @@ const labels: Record<NotificationKind, string> = {
 };
 
 const internal = (user: User) =>
-  user.active !== false && user.role !== "observer";
-const active = (user: User) => user.active !== false;
+  isUserActive(user) && user.role !== "observer";
+const active = isUserActive;
 const dateLabel = (date: string | null) =>
   date
     ? new Intl.DateTimeFormat("tr-TR", {

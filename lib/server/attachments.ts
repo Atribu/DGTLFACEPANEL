@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isUserActive } from "./user-policies";
 import { z } from "zod";
 import {
   MAX_ATTACHMENT_BYTES,
@@ -218,7 +219,7 @@ async function currentActor(tx: Queryable, user: User) {
     "SELECT data FROM app_users WHERE id=$1",
     [user.id],
   );
-  if (!row || row.data.active === false)
+  if (!row || !isUserActive(row.data))
     throw new HttpError(403, "Bu işlem için aktif hesap gerekiyor.");
   return row.data;
 }

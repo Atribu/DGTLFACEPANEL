@@ -1,7 +1,7 @@
 import type { User } from "../types";
 
 export function isUserActive(user: User): boolean {
-  return user.active !== false;
+  return user.active !== false && !user.deletedAt;
 }
 
 export function sessionVersionMatches(

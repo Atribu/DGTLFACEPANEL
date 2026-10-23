@@ -39,6 +39,7 @@ try {
     "scripts",
     "package.json",
     "package-lock.json",
+    ".node-version",
     "next.config.ts",
     "tsconfig.json",
     "next-env.d.ts",
@@ -1056,6 +1057,65 @@ try {
   assert.equal(afterRevocation.task.checklist[0].done, true);
   assert.ok(afterRevocation.comments.every((item) => item.body !== "Revoked upload must not be saved"));
   console.log("PASS: mobile authenticated ETags, scoped versions, CSRF, optimistic conflicts, web visibility and durable note retries");
+
+  const removableUser = {
+    name: "Geçmişi korunacak ekip üyesi",
+    email: "removal-history@example.test",
+    role: "staff",
+    department: "Test",
+    hotelIds: [],
+  };
+  const removalPassword = "TemporaryRemoval2026!";
+  const { result: removable } = await request(admin, "POST", "/api/users", {
+    ...removableUser, password: removalPassword,
+  }, 201);
+  const removalId = removable.user.id;
+  const removalUrl = `/api/users/${removalId}`;
+  const removalCookie = await login(removableUser.email, removalPassword);
+  await request(null, "DELETE", removalUrl, undefined, 401);
+  await request(staff, "DELETE", removalUrl, undefined, 403);
+  await request(observer, "DELETE", removalUrl, undefined, 403);
+  await request(admin, "DELETE", removalUrl, undefined, 403, { Origin: "https://example.test" });
+  await request(admin, "DELETE", `/api/users/${baseline.user.id}`, undefined, 409);
+  const { result: removalTask } = await request(admin, "POST", "/api/tasks", {
+    ...draft, title: "Silinen hesabın tamamlanmış işi", assigneeId: removalId,
+    checklist: ["Teslim kontrolü"],
+  }, 201);
+  const removalTaskUrl = `/api/tasks/${removalTask.task.id}`;
+  await request(admin, "DELETE", removalUrl, undefined, 409);
+  await request(removalCookie, "POST", `${removalTaskUrl}/comments`, {
+    body: "Hesap kapatılsa da bu teslim notu korunmalı.",
+  }, 201);
+  const historyBytes = Buffer.from("Silme sonrası korunacak teslim dosyası.");
+  const { attachment: historyAttachment } = await uploadFile(
+    removalCookie, `${removalTaskUrl}/attachments`, historyBytes,
+    "teslim-gecmisi.txt", "text/plain",
+  );
+  await request(removalCookie, "PATCH", removalTaskUrl, {
+    action: "checklist", itemId: removalTask.task.checklist[0].id, done: true,
+  });
+  await request(removalCookie, "PATCH", removalTaskUrl, { action: "submit" });
+  await request(admin, "PATCH", removalTaskUrl, { action: "approve" });
+  const { result: historyBeforeDelete } = await request(admin, "GET", removalTaskUrl);
+  const { result: deleted } = await request(admin, "DELETE", removalUrl);
+  assert.equal(deleted.user.active, false);
+  assert.ok(deleted.user.deletedAt);
+  await request(admin, "DELETE", removalUrl);
+  await request(removalCookie, "GET", "/api/bootstrap", undefined, 401);
+  await request(removalCookie, "GET", "/api/mobile/bootstrap", undefined, 401);
+  await request(null, "POST", "/api/login", {
+    email: removableUser.email, password: removalPassword,
+  }, 401);
+  await request(admin, "PATCH", removalUrl, { ...removableUser, active: true }, 404);
+  const { result: remainingUsers } = await request(admin, "GET", "/api/users");
+  assert.equal(remainingUsers.users.some((user) => user.id === removalId), false);
+  const { result: historicalBootstrap } = await request(admin, "GET", "/api/bootstrap");
+  assert.equal(historicalBootstrap.users.find((user) => user.id === removalId).name, removableUser.name);
+  const { result: historyAfterDelete } = await request(admin, "GET", removalTaskUrl);
+  assert.deepEqual(historyAfterDelete, historyBeforeDelete);
+  await downloadFile(admin, historyAttachment.id, historyBytes, "text/plain");
+  await request(admin, "POST", "/api/tasks", { ...draft, assigneeId: removalId }, 400);
+  console.log("PASS: user deletion authorization/CSRF, responsibility guard, revoked web/mobile sessions and preserved task/comment/file history");
   console.log(
     `PASS: ${checks} real HTTP requests verified against the disposable database.`,
   );

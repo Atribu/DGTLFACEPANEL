@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Activity, Hotel, Task, User } from "../types";
 import type { Database, Queryable } from "./db";
 import { buildTemplateTasks, sourceTasks } from "./template";
+import { isUserActive } from "./user-policies";
 
 export class ChecklistImportError extends Error {
   constructor(message: string) {
@@ -107,7 +108,7 @@ async function findAdmin(db: Queryable, adminEmail: string, lock = false) {
     !row ||
     row.data.id !== row.id ||
     row.data.role !== "admin" ||
-    row.data.active === false
+    !isUserActive(row.data)
   )
     throw new ChecklistImportError(
       "Aktarım için mevcut, aktif bir yönetici hesabı gerekiyor.",

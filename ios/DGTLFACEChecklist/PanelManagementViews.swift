@@ -379,7 +379,7 @@ struct PanelUsersView: View {
     @State private var editingUser: PanelUser?
 
     private var users: [PanelUser] {
-        (store.snapshot?.users ?? []).filter { user in
+        (store.snapshot?.managedUsers ?? []).filter { user in
             let hotels = user.hotelIds.compactMap { id in store.snapshot?.hotels.first { $0.id == id }?.name }
             return (role == "all" || user.role == role) && (state == "all" || (state == "active" ? user.active != false : user.active == false)) && PanelManagement.matches([user.name, user.email, user.department, PanelStyle.role(user.role)] + hotels, query: query)
         }.sorted {

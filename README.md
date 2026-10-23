@@ -4,10 +4,12 @@ Otellerin kurulum işlerini, ekip sorumluluklarını ve yönetici onayını taki
 
 ## Yerelde çalıştırma
 
-Geliştirmede Node.js 24 ve npm kullanılıyor.
+Geliştirme ve üretimde **Node.js 24.22.1 LTS veya aynı 24.x hattındaki daha yeni kararlı sürüm** ve npm kullanılıyor. `.node-version` / `.nvmrc` başlangıç sürümünü belirtir; `package.json` engines ve `.npmrc` eski veya desteklenmeyen ana sürümle kurulumu reddeder. Geliştirme, build, start ve worker npm komutları da başlamadan sürümü kontrol eder.
 
 ```sh
-npm install
+node --version
+npm ci
+npm run check:runtime
 npm run dev
 ```
 
@@ -71,7 +73,7 @@ Her otelin görev ve kriter kayıtları bağımsız kimlikler alır. Kaynaktaki 
 - Yöneticiye özel haftalık/aylık düzenli işler ve otomatik görev oluşturma.
 - Dönem ve otel filtreli güncel durum raporu, Excel için CSV ve tarayıcıdan yazdırma/PDF kaydı.
 - Ekip iş yükü görünümü ve mevcut rol kurallarını gösteren yetkiler sayfası.
-- Yöneticiye özel kullanıcı oluşturma/düzenleme, rol ve gözlemci otel erişimi yönetimi, hesap pasifleştirme.
+- Yöneticiye özel kullanıcı oluşturma/düzenleme, rol ve gözlemci otel erişimi yönetimi, hesap pasifleştirme ve geçmişi koruyarak silme.
 - Otel koordinasyon sorumlusunu değiştirme; görev sorumlularını görev düzenleyicisinden devretme.
 - Kalıcı veritabanı, e-posta/şifre girişi ve 8 saatlik sunucu doğrulamalı oturum.
 
@@ -128,6 +130,29 @@ Yönetici, **Kullanıcılar → Kullanıcı ekle** formundan ad, e-posta, ilk gi
 Kullanıcının adını, e-postasını, ekibini, rolünü ve otel erişimlerini düzenleyebilirsiniz. Pasif hesaplar giriş yapamaz ve yeni görev atamalarında görünmez. Mevcut görev ve yorum geçmişleri korunur. Pasifleştirmeden veya gözlemci rolüne geçirmeden önce açık görevleri başka bir aktif kişiye devredin; otel koordinasyon sorumluluğu varsa otel detayındaki **Sorumluyu değiştir** seçeneğini kullanın. Görev devri ayrıca yapılır.
 
 Kendi yönetici hesabınızı pasifleştiremez veya kendi yönetici rolünüzü kaldıramazsınız. Hesap durumu, rolü veya otel erişimi değişen kullanıcının yeniden giriş yapması gerekir. Pasifleştirildikten sonra tekrar açılan hesapların eski oturumları yeniden geçerli olmaz.
+
+**Kullanıcılar → Sil** işlemi ad ve e-posta gösteren bir onaydan sonra hesabı kullanıcı listesinden kaldırır ve web/iPhone oturumlarını geçersiz kılar. Tamamlanmış görevler, yorumlar, dosyalar ve işlem geçmişi kullanıcının adıyla korunur. Bunun için kimlik satırı veritabanında `deletedAt` ile saklanır; fiziksel kayıt silme veya geçmişi anonimleştirme yapılmaz. Silinen hesap düzenleme yoluyla tekrar açılamaz ve e-posta adresi bu tarihî kayıtta rezerve kalır. Geçici olarak kapatılacak hesaplar için **Hesap aktif** seçeneğini kullanın.
+
+Kendi hesabınızı silemezsiniz; sistemde aktif yönetici kalması zorunludur. Silme ve pasifleştirme öncesinde açık görevler ve otel sorumlulukları devredilmelidir. Aktif düzenli işler de başka bir sorumluya aktarılmalı veya duraklatılmalıdır. Bu kontroller API'de de uygulanır; yeni veritabanı aktarımı gerektirmez. Sil düğmesi web panelindedir; mevcut iPhone uygulaması silinen hesabın erişiminin kapatılmasını aynı API üzerinden uygular.
+
+iPhone kaynak kodundaki kullanıcı listesi de silinen hesapları gizler; geçmiş ekranları için kimlik bilgilerini korur. Önbellek sürümü 3'e yükseltilmiştir: önceki önbelleklerin içeriği korunur, ilk bağlantıda silinme bilgisi dahil tam veri alınır. Bu görünüm düzeltmesi telefona yeni uygulama kurulunca etkinleşir; bu çalışma kapsamında cihazlara yükleme yapılmamıştır. Eski uygulama silinen hesabı pasif olarak gösterebilir, ancak sunucu bu hesabın girişini ve yeni görev atanmasını engeller.
+
+## 23 Ekim 2026 güvenlik güncellemesi
+
+- Node.js **24.20.0 → 24.22.1 LTS**: [21 Ekim resmî güvenlik yamaları](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+- Next.js **16.3.8 → 16.4.2**, React/React DOM **19.3.0 → 19.3.1**: [14 Ekim resmî güvenlik duyurusu](https://nextjs.org/blog/nextjs-security-update-october-14-2026). Bağımlılık ve kilit dosyası birlikte güncellenmiştir.
+
+**Kodun yüklenmesi veya Mac'teki Node'un güncellenmesi, canlı sunucunun Node'unu otomatik değiştirmez.** Hosting panelinde, container imajında veya servis yöneticisinde web ve worker için Node **24.22.1 veya daha yeni 24.x** seçin. Eski Node ile bu sürümün npm kurulum/build/start işlemleri güvenlik amacıyla durur. Mevcut ortam değişkenleri ve PostgreSQL verileri korunarak:
+
+```sh
+node --version
+npm ci
+npm run check:runtime
+npm run build
+# Web ve worker servislerini kendi servis yöneticinizden yeniden başlatın.
+```
+
+Kontrolleri yalnız SSH terminalindeki varsayılan Node'da değil, **web ve worker servislerinin çalıştığı ortamda** yapın; servisler farklı Node yolları kullanabilir. Hosting sağlayıcısı veya servis konfigürasyonu bu depoda bulunmadığından canlı runtime sürümü burada doğrulanmış değildir. `npm audit` bağımlılıkları denetler; Node çekirdeği güncellemeleri ayrıca takip edilmelidir.
 
 ## PostgreSQL ve üretim ayarları
 

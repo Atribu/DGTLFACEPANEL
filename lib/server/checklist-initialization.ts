@@ -1,5 +1,6 @@
 import type { User } from "../types";
 import type { Database } from "./db";
+import { isUserActive } from "./user-policies";
 import {
   ChecklistImportError,
   ensureChecklistImport,
@@ -12,7 +13,7 @@ export async function initializeBundledChecklist(
   user: User,
   demo: boolean,
 ): Promise<string | undefined> {
-  if (demo || user.role !== "admin" || user.active === false) return;
+  if (demo || user.role !== "admin" || !isUserActive(user)) return;
   try {
     await ensureChecklistImport(db, user.email);
   } catch (error) {

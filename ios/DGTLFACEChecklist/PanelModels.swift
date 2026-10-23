@@ -8,6 +8,14 @@ struct PanelUser: Codable, Equatable, Identifiable, Sendable {
     let department: String
     let hotelIds: [String]
     let active: Bool?
+    let deletedAt: String?
+
+    init(id: String, name: String, email: String, role: String, department: String,
+         hotelIds: [String], active: Bool?, deletedAt: String? = nil) {
+        self.id = id; self.name = name; self.email = email; self.role = role
+        self.department = department; self.hotelIds = hotelIds; self.active = active
+        self.deletedAt = deletedAt
+    }
 }
 
 struct PanelHotel: Codable, Equatable, Identifiable, Sendable {
@@ -91,6 +99,9 @@ struct PanelSnapshot: Codable, Equatable, Sendable {
     var taskVersions: [String: String]
     let demo: Bool
     let checklistImportWarning: String?
+
+    // Keep all identities in users for historical task and comment attribution.
+    var managedUsers: [PanelUser] { users.filter { $0.deletedAt == nil } }
 }
 
 struct PanelTaskMutation: Encodable, Sendable {
@@ -201,12 +212,12 @@ struct PanelCache {
     func load(userID: String) throws -> Entry? {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
         let entry = try JSONDecoder().decode(Entry.self, from: Data(contentsOf: fileURL))
-        guard [1, 2].contains(entry.schemaVersion), entry.snapshot.user.id == userID else { return nil }
-        if entry.schemaVersion == 1 {
-            // Version 1 omitted hotel details although its ETag represented the
-            // complete server payload. Keep its offline list but force a full
-            // fetch so an unchanged server cannot leave those details missing.
-            return Entry(schemaVersion: 1, snapshot: entry.snapshot, etag: nil, savedAt: entry.savedAt)
+        guard [1, 2, 3].contains(entry.schemaVersion), entry.snapshot.user.id == userID else { return nil }
+        if entry.schemaVersion < 3 {
+            // Versions 1/2 omitted hotel details/user deletion markers although
+            // their ETags represented the complete server payload. Keep the
+            // offline list but fetch every field before reusing an ETag.
+            return Entry(schemaVersion: entry.schemaVersion, snapshot: entry.snapshot, etag: nil, savedAt: entry.savedAt)
         }
         return entry
     }
@@ -218,7 +229,7 @@ struct PanelCache {
         values.isExcludedFromBackup = true
         var mutableDirectory = directory
         try mutableDirectory.setResourceValues(values)
-        let data = try JSONEncoder().encode(Entry(schemaVersion: 2, snapshot: snapshot, etag: etag, savedAt: date))
+        let data = try JSONEncoder().encode(Entry(schemaVersion: 3, snapshot: snapshot, etag: etag, savedAt: date))
         #if os(iOS)
         try data.write(to: fileURL, options: [.atomic, .completeFileProtection])
         #else

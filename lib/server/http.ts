@@ -1,6 +1,7 @@
 import { ZodError, type ZodType } from "zod";
 import { getCurrentUser } from "./auth";
 import type { User } from "../types";
+import { isUserActive } from "./user-policies";
 
 export class HttpError extends Error {
   constructor(
@@ -39,7 +40,7 @@ export async function requireUser(): Promise<User> {
   return user;
 }
 export function requireAdmin(user: User) {
-  if (user.role !== "admin" || user.active === false)
+  if (user.role !== "admin" || !isUserActive(user))
     throw new HttpError(403, "Bu işlem için yönetici yetkisi gerekiyor.");
 }
 export function assertSameOrigin(request: Request) {

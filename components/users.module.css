@@ -1,0 +1,29 @@
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.deleteButton {
+  color: #974c3d;
+  border-color: #e3beb4;
+  background: #fff;
+}
+
+.deleteButton:hover:not(:disabled) {
+  color: #863e31;
+  background: #faebe7;
+  border-color: #d7a499;
+}
+
+.noticeIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.deleteHint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin-bottom: 18px;
+}

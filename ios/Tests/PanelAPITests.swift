@@ -153,6 +153,32 @@ private struct PanelAPITests {
         let comment = PanelComment(id: "comment-one", taskId: task.id, userId: user.id,
                                    userName: user.name, body: "Türkçe ekip notu", createdAt: task.createdAt)
 
+        try await test("Legacy users decode without deletion metadata") {
+            var payload = try object(json(user))
+            payload.removeValue(forKey: "deletedAt")
+            let decoded = try JSONDecoder().decode(PanelUser.self, from: JSONSerialization.data(withJSONObject: payload))
+            try expect(decoded == user && decoded.deletedAt == nil, "Legacy account decoding changed")
+        }
+
+        try await test("Deleted users are hidden from management while history identities remain") {
+            var deleted = try object(json(user))
+            deleted["id"] = "deleted-user"
+            deleted["name"] = "Eski ekip üyesi"
+            deleted["active"] = false
+            deleted["deletedAt"] = "2026-10-23T09:00:00Z"
+            var inactive = try object(json(user))
+            inactive["id"] = "inactive-user"
+            inactive["active"] = false
+            var payload = try object(json(snapshot))
+            payload["users"] = [try object(json(user)), inactive, deleted]
+            let decoded = try JSONDecoder().decode(PanelSnapshot.self, from: JSONSerialization.data(withJSONObject: payload))
+            try expect(decoded.managedUsers.map(\.id) == [user.id, "inactive-user"], "Management must hide deleted users but retain inactive accounts")
+            try expect(decoded.users.count == 3, "Historical identities were removed")
+            try expect(decoded.users.first { $0.id == "deleted-user" }?.name == "Eski ekip üyesi", "Historical user name was lost")
+            let restored = try JSONDecoder().decode(PanelSnapshot.self, from: json(decoded))
+            try expect(restored.managedUsers == decoded.managedUsers && restored.users == decoded.users, "Cache round-trip lost deletion metadata or historical identity")
+        }
+
         try await test("Login keeps only the bounded cookie session, never the password") {
             let credentials = MemoryCredentials()
             let service = api(credentials)
