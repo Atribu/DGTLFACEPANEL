@@ -80,19 +80,21 @@ class MemoryQueries implements Database {
     if (sql.startsWith("SELECT data FROM tasks WHERE id=$1")) {
       const found = this.tasks.get(String(params[0]));
       rows = found ? [{ data: found }] : [];
-    } else if (sql.startsWith("SELECT data FROM tasks ")) {
+    } else if ((sql.startsWith("SELECT data FROM tasks ") || sql.startsWith("SELECT t.data FROM tasks t JOIN hotels"))) {
       const visible = [...this.tasks.values()].filter(
         (item) =>
-          !sql.includes("hotel_id=ANY") ||
-          (params[0] as string[]).includes(item.hotelId),
+          (!sql.includes("hotel_id=ANY") ||
+          (params[0] as string[]).includes(item.hotelId)) &&
+          (!sql.includes("archivedAt") || !this.hotels.find((h) => h.id === item.hotelId)?.archivedAt),
       );
       rows = visible.map((data) => ({ data }));
     } else if (sql.startsWith("SELECT data FROM hotels ")) {
       rows = this.hotels
         .filter(
           (item) =>
-            !sql.includes("id=ANY") ||
-            (params[0] as string[]).includes(item.id),
+            (!sql.includes("id=ANY") || (params[0] as string[]).includes(item.id)) &&
+            (!sql.includes("WHERE id=$1") || item.id === params[0]) &&
+            (!sql.includes("archivedAt") || !item.archivedAt),
         )
         .map((data) => ({ data }));
     } else if (sql.startsWith("SELECT data FROM app_users")) {
@@ -103,23 +105,23 @@ class MemoryQueries implements Database {
       rows = this.comments
         .filter(
           (item) =>
-            !sql.includes("hotel_id=ANY") ||
-            (params[0] as string[]).includes(
-              this.tasks.get(item.taskId)!.hotelId,
-            ),
+            (!sql.includes("hotel_id=ANY") ||
+            (params[0] as string[]).includes(this.tasks.get(item.taskId)!.hotelId)) &&
+            (!sql.includes("archivedAt") || !this.hotels.find((h) => h.id === this.tasks.get(item.taskId)!.hotelId)?.archivedAt),
         )
         .map((data) => ({ data }));
     } else if (sql.startsWith("SELECT data FROM task_comments")) {
       rows = this.comments
         .filter((item) => item.taskId === params[0])
         .map((data) => ({ data }));
-    } else if (sql.startsWith("SELECT data FROM activities")) {
+    } else if ((sql.startsWith("SELECT data FROM activities") || sql.startsWith("SELECT a.data FROM activities a JOIN hotels"))) {
       rows = this.activities
         .filter(
           (item) =>
             (!sql.includes("hotel_id=ANY") ||
               (params[0] as string[]).includes(item.hotelId)) &&
-            (!sql.includes("WHERE task_id=$1") || item.taskId === params[0]),
+            (!sql.includes("WHERE task_id=$1") || item.taskId === params[0]) &&
+            (!sql.includes("archivedAt") || !this.hotels.find((h) => h.id === item.hotelId)?.archivedAt),
         )
         .map((data) => ({ data }));
     } else if (sql.startsWith("UPDATE tasks SET")) {

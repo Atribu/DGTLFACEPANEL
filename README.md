@@ -44,6 +44,7 @@ Aşağıdaki hesapların ortak şifresi: **`Demo2026!`**
 | --- | --- | --- | --- |
 | Otel ve görevleri görme | Tümü | Tümü | Yalnızca bağlı oteller |
 | Otel/görev oluşturma; görev bilgilerini, sorumluyu ve önceliği düzenleme | Var | Yok | Yok |
+| Otel arşivleme, geri alma ve arşivden kalıcı silme | Var | Yok | Yok |
 | Durum/kriter güncelleme; yorum yazma; kontrole gönderme | Tüm görevler | Yalnızca kendisine atanmış görevler | Yok |
 | Kontrolü onaylama, gerekçeyle geri gönderme, işi yeniden açma | Var | Yok | Yok |
 
@@ -63,7 +64,7 @@ Her otelin görev ve kriter kayıtları bağımsız kimlikler alır. Kaynaktaki 
 
 - Role göre genel bakış, görev sayıları, geciken işler ve kontrol bekleyen işler.
 - Otel listesi, arama, kurulum/operasyon filtreleri, ilerleme ve aşama bazlı görev takibi.
-- Otel oluşturma, otel bilgileri ve hareket geçmişi.
+- Otel oluşturma, otel bilgileri ve hareket geçmişi; arşivleme, geri alma ve arşivden kalıcı silme.
 - Görev listesi ve durum sütunlarıyla pano; otel, ekip, durum, kişisel işler, bugün ve gecikenler filtreleri.
 - Görev oluşturma/düzenleme, kişi atama, öncelik ve hedef tarih belirleme.
 - Tamamlanma kriterleri, bekleme nedeni, yorumlar ve yönetici onay akışı.
@@ -78,6 +79,18 @@ Her otelin görev ve kriter kayıtları bağımsız kimlikler alır. Kaynaktaki 
 - Kalıcı veritabanı, e-posta/şifre girişi ve 8 saatlik sunucu doğrulamalı oturum.
 
 E-posta ile kullanıcı daveti, şifre sıfırlama, e-posta/mesaj bildirimleri ve Google Sheets/PMS/OTA entegrasyonları sonraki kapsam için ayrılmıştır. Ekip ekranı güncel iş yükünü, Yetkiler ekranı rol kurallarını gösterir. Hesaplar yöneticiye özel Kullanıcılar ekranından yönetilir. Üst çubuktaki hareket listesi uygulama içi kayıtları gösterir.
+
+## Otel arşivi ve kalıcı silme
+
+Yönetici, otel detayındaki **Arşivle** düğmesiyle oteli aktif iş akışından çıkarır. Görevler, tikler, yorumlar, ekler ve geçmiş veritabanında korunur. Otel; normal listelerden, raporlardan, iş yükü sayımlarından ve bildirimlerden çıkar. Eski görev/dosya adresleri ve düzenleme istekleri de sunucuda engellenir. Düzenli iş kuralları duraklatılır; arşivde yeni görev veya hatırlatma üretilmez.
+
+**Oteller → Arşiv** sekmesinde **Geri al**, oteli ve içeriğini tekrar görünür yapar. Düzenli işler kendiliğinden başlamaz; yönetici ilgili kuralı ayrıca devam ettirir. Arşivdeki otel sorumlulukları ve açık görev atamaları korunur: ilgili kullanıcıyı pasifleştirmek/silmek için oteli geri alıp sorumlulukları devretmek veya oteli kalıcı silmek gerekir. Mevcut gözlemci üyeliği geri alma için saklanır; arşivdeki otele yeni üyelik verilemez.
+
+**Kalıcı sil**, yalnızca arşivde kullanılabilir. Onay ekranında otelin adı yazılır; görev, yorum, ek ve düzenli iş adetleri gösterilir. İşlem tek transaction içinde oteli ve bağlı görevleri, yorumları, dosya içeriklerini/bağlantılarını (önceden kaldırılmış ekler dahil), hareketlerini, bildirimlerini ve düzenli iş kayıtlarını kalıcı siler. Panelde geri alma seçeneği yoktur. Diğer oteller ve kullanıcı hesapları korunur. Otel erişimi kaldırılan kullanıcıların eski oturumları iptal edilir; yeniden giriş yapmaları gerekir.
+
+Sahip panelinde kimin, hangi oteli, ne zaman arşivlediği/geri aldığı/sildiği ve içerik adetleri ayrı bir denetim kaydında kalır; görev, not ve dosya içerikleri bu kayıtta tutulmaz. Otomatik aktarımın tamamlanma işareti korunur, sonraki yayın silinen oteli yeniden oluşturmaz. Yeni `hotel_events` tablosu uygulama veritabanı açılışında otomatik eklenir; ek ortam değişkeni veya elle veri aktarımı gerekmez.
+
+Mevcut iPhone uygulaması sonraki başarılı senkronizasyonda arşivlenmiş/silinmiş oteli listeden çıkarır. Çevrimdışı cihazdaki önceki salt okunur önbellek bağlantı kurulana kadar kalabilir. Arşivleme ve kalıcı silme düğmeleri web panelindedir; telefonda tarayıcıdan da kullanılabilir.
 
 ## iPhone ile ortak ekip takibi
 
@@ -268,6 +281,8 @@ Testler rol sınırlarını, otel kapsamını, sunucu tarafındaki yetkisiz işl
 Ek testleri gerçek bellek içi PGlite üzerinde 10 MiB sınırını, eşzamanlı 20 ek sınırını, yükleme sırasında yeniden yetki kontrolünü ve kaydı koruyan kaldırmayı doğrular. Takvim testleri Pazartesi başlangıcını, artık yılları, yıl geçişlerini, tarih sıralamasını ve filtrelerin mevcut otel kapsamını korumasını kapsar.
 
 Yeni özellik testleri kişisel bildirim sahipliğini ve otel kapsamını, yinelenen hatırlatmaların önlenmesini, haftalık/aylık tarih hesaplarını, eşzamanlı görev üretiminde tekillik ve işlem bütünlüğünü, rapor dönemi/yetkileri ve CSV güvenliğini kapsar.
+
+Otel yaşam döngüsü testleri arşiv/geri alma, yetki sınırları, eski web/mobil adreslerinin engellenmesi, dosya içeriklerinin korunması, düzenli işlerin duraklaması, ad ve güncel arşiv zamanı onayı, bağlı kayıtların kalıcı silinmesi, gözlemci oturumlarının iptali ve silme denetim kaydının korunmasını kapsar. PostgreSQL satır kilidi sırası kullanıcı → otel → düzenli iş/görev → ek şeklindedir; PGlite testleri gerçek PostgreSQL süreçleri arasındaki kilit yarışlarının yerini tutmaz.
 
 ## Gerçek ekip pilotu öncesi
 

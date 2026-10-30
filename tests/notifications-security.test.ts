@@ -248,6 +248,53 @@ test("hotel scope and active status are reloaded from persisted user data for ev
   await assert.rejects(markNotificationRead(owner), { status: 403 });
 });
 
+test("archiving hides personal notifications and read counts without altering them, and restore reveals them", async () => {
+  await changed(admin, null, task());
+  await changed(owner, task(), task({ status: "waiting", waitingReason: "Hotel feedback" }));
+  const snapshots = await Promise.all([owner, observer].map(async (user) => ({
+    user,
+    list: await listNotifications(user),
+  })));
+  for (const { list } of snapshots) assert.equal(list.unreadCount, 1);
+  await db.query(
+    "UPDATE hotels SET data=data||jsonb_build_object('archivedAt',$2::text) WHERE id=$1",
+    ["hotel-a", new Date().toISOString()],
+  );
+  for (const { user, list } of snapshots) {
+    assert.deepEqual(await listNotifications(user), { notifications: [], unreadCount: 0 });
+    await assert.rejects(markNotificationRead(user, list.notifications[0].id), { status: 404 });
+    assert.deepEqual(await markNotificationRead(user), { ok: true, updated: 0 });
+  }
+  assert.equal((await db.query("SELECT id FROM personal_notifications WHERE read_at IS NOT NULL")).length, 0);
+  await assert.rejects(
+    changed(admin, null, task(), { eventKey: "archived-task-change" }),
+    { status: 404 },
+  );
+  await db.query("UPDATE hotels SET data=data-'archivedAt' WHERE id=$1", ["hotel-a"]);
+  for (const { user, list } of snapshots)
+    assert.deepEqual(await listNotifications(user), list);
+});
+
+test("deadline generation excludes archived hotels while preserving active hotel reminders", async () => {
+  await db.query(
+    "UPDATE hotels SET data=data||jsonb_build_object('archivedAt',$2::text) WHERE id=$1",
+    ["hotel-a", new Date().toISOString()],
+  );
+  assert.deepEqual(await generateDueNotifications("2026-10-03"), { created: 3 });
+  assert.deepEqual(await listNotifications(owner), { notifications: [], unreadCount: 0 });
+  assert.equal((await listNotifications(otherStaff)).unreadCount, 1);
+  const created = await db.query<{ hotel_id: string }>(
+    "SELECT hotel_id FROM personal_notifications",
+  );
+  assert.equal(created.length, 3);
+  assert.ok(created.every((row) => row.hotel_id === "hotel-b"));
+  assert.deepEqual(await generateDueNotifications("2026-10-03"), { created: 0 });
+  await db.query("UPDATE hotels SET data=data-'archivedAt' WHERE id=$1", ["hotel-a"]);
+  assert.deepEqual(await generateDueNotifications("2026-10-03"), { created: 3 });
+  assert.equal((await listNotifications(owner)).unreadCount, 1);
+  assert.equal((await listNotifications(otherStaff)).unreadCount, 1);
+});
+
 test("deadline reminders are date-keyed, skip closed/undated/future tasks and observers, and stay unique across concurrent runs", async () => {
   const runs = await Promise.all([
     generateDueNotifications("2026-10-03"),

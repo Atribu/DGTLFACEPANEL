@@ -275,6 +275,15 @@ test("administrators and staff can report another hotel while nonexistent hotels
   );
 });
 
+test("archived hotels cannot be exported even by administrators until restored", async () => {
+  memory.hotels[0].archivedAt = now.toISOString();
+  for (const user of [admin, owner, observer])
+    await assert.rejects(getHotelReport(user, filters, now), { status: 404 });
+  assert.equal(memory.queries.some(({ sql }) => sql.includes("FROM tasks")), false);
+  delete memory.hotels[0].archivedAt;
+  assert.equal((await getHotelReport(admin, filters, now)).summary.total, 5);
+});
+
 test("query parsing rejects duplicate/invalid filters and missing hotel selection", () => {
   assert.equal(
     parseReportQuery(

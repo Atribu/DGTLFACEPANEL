@@ -9,6 +9,7 @@ import { migrateNotificationSchema } from "./notification-schema";
 import { migrateRecurrenceSchema } from "./recurrence-schema";
 import { migrateOwnerSchema, provisionSystemOwner } from "./owner-schema";
 import { migrateOwnerConsoleSchema } from "./owner-console-schema";
+import { migrateHotelSchema } from "./hotel-schema";
 import { ownerBootstrapPasswordHash } from "./owner-bootstrap";
 
 export interface Queryable {
@@ -119,6 +120,7 @@ async function connect(): Promise<Database> {
       await migrateRecurrenceSchema(tx);
       await migrateOwnerSchema(tx);
       await migrateOwnerConsoleSchema(tx);
+      await migrateHotelSchema(tx);
     });
     if (
       isProduction() &&

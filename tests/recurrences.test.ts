@@ -173,6 +173,80 @@ test("only managers manage or list plans and new plans reject past dates and ina
   );
   await assert.rejects(createRecurrence(admin, input()), { status: 409 });
 });
+test("archived hotels hide rules and reject direct creation or updates without leaving pending work", async () => {
+  const { recurrence } = await createRecurrence(admin, input());
+  // Keep the rule active to verify the worker independently checks its hotel.
+  await db.query(
+    "UPDATE hotels SET data=data||jsonb_build_object('archivedAt',$2::text) WHERE id=$1",
+    [recurrence.hotelId, new Date().toISOString()],
+  );
+  assert.deepEqual((await listRecurrences(admin)).recurrences, []);
+  await assert.rejects(createRecurrence(admin, input()), { status: 404 });
+  for (const action of ["pause", "resume"])
+    await assert.rejects(updateRecurrence(admin, recurrence.id, { action }), {
+      status: 404,
+    });
+  await assert.rejects(
+    updateRecurrence(admin, recurrence.id, { action: "update", title: "Blocked" }),
+    { status: 404 },
+  );
+  assert.deepEqual(await runDueRecurrences(today), {
+    created: 0,
+    processedRules: 0,
+    blockedRules: 0,
+    hasMore: false,
+  });
+  assert.deepEqual(await tasks(), []);
+  const [stored] = await db.query<{ data: RecurrenceRule }>(
+    "SELECT data FROM recurrence_rules WHERE id=$1",
+    [recurrence.id],
+  );
+  assert.deepEqual(stored.data, recurrence);
+  await db.query("UPDATE hotels SET data=data-'archivedAt' WHERE id=$1", [
+    recurrence.hotelId,
+  ]);
+  assert.deepEqual((await listRecurrences(admin)).recurrences, [recurrence]);
+});
+test("a candidate archived before its transaction acquires locks is skipped without writes or hasMore", async () => {
+  const { recurrence } = await createRecurrence(admin, input());
+  let archivedAfterSelection = false;
+  const interleaved: Database = {
+    ...db,
+    transaction: async <T>(fn: (tx: Queryable) => Promise<T>) => {
+      if (!archivedAfterSelection) {
+        archivedAfterSelection = true;
+        // Deterministic committed-state interleaving, not a PostgreSQL lock test:
+        // candidates were read outside the per-rule transaction that follows.
+        await db.query(
+          "UPDATE hotels SET data=data||jsonb_build_object('archivedAt',$2::text) WHERE id=$1",
+          [recurrence.hotelId, new Date().toISOString()],
+        );
+      }
+      return db.transaction(fn);
+    },
+  };
+  globals.dgtlDatabase = Promise.resolve(interleaved);
+  try {
+    assert.deepEqual(await runDueRecurrences(today), {
+      created: 0,
+      processedRules: 1,
+      blockedRules: 0,
+      hasMore: false,
+    });
+  } finally {
+    globals.dgtlDatabase = Promise.resolve(db);
+  }
+  assert.equal(archivedAfterSelection, true);
+  assert.deepEqual(await tasks(), []);
+  assert.equal((await db.query("SELECT rule_id FROM recurrence_occurrences")).length, 0);
+  assert.equal((await db.query("SELECT id FROM personal_notifications")).length, 0);
+  assert.equal((await db.query("SELECT id FROM activities WHERE task_id IS NOT NULL")).length, 0);
+  const [stored] = await db.query<{ data: RecurrenceRule }>(
+    "SELECT data FROM recurrence_rules WHERE id=$1",
+    [recurrence.id],
+  );
+  assert.deepEqual(stored.data, recurrence);
+});
 test("parallel workers produce a single independent task, audit, notification and occurrence", async () => {
   const { recurrence } = await createRecurrence(admin, input());
   const outcomes = await Promise.all([

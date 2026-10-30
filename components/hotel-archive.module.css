@@ -1,0 +1,69 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.archiveInfo {
+  margin: 18px 22px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notice p {
+  margin: 8px 0 0;
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.counts div {
+  background: var(--surface-soft, #f5f7f7);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.counts strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.deleteButton {
+  color: #974c3d;
+  border-color: #e3beb4;
+  background: #fff;
+}
+
+.deleteButton:hover:not(:disabled) {
+  color: #863e31;
+  background: #faebe7;
+  border-color: #d7a499;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}

@@ -1175,6 +1175,179 @@ try {
   const {result: withOtherDevice} = await request(ownerCookie,"GET","/api/owner/console");
   assert.equal(withOtherDevice.team.find(user => user.id === "user-ayse").online, true);
   console.log("PASS: exclusive hidden owner account, owner-only console, privacy across web/mobile/history, login auditing, per-device presence and revoked logout cookies");
+
+  // A disposable hotel exercises the entire archive lifecycle without changing
+  // the seeded hotels or the earlier user/owner privacy assertions.
+  const lifecycleName = "HTTP arşiv yaşam döngüsü oteli";
+  const { result: lifecycleCreated } = await request(admin, "POST", "/api/hotels", {
+    name: lifecycleName,
+    location: "Antalya",
+    services: ["SEO"],
+    managerId: "user-ayse",
+    contactName: "Arşiv Testi",
+    contactEmail: "hotel-lifecycle@example.test",
+    template: false,
+  }, 201);
+  const lifecycleId = lifecycleCreated.hotel.id;
+  const lifecycleUrl = `/api/hotels/${lifecycleId}`;
+  const { result: lifecycleObserverCreated } = await request(admin, "POST", "/api/users", {
+    name: "Arşiv oteli gözlemcisi",
+    email: "hotel-lifecycle-observer@example.test",
+    password: "TemporaryHotelObserver2026!",
+    role: "observer",
+    department: "Test",
+    hotelIds: [lifecycleId],
+  }, 201);
+  const lifecycleObserver = await login("hotel-lifecycle-observer@example.test", "TemporaryHotelObserver2026!");
+  const { result: lifecycleTaskCreated } = await request(admin, "POST", "/api/tasks", {
+    ...draft, hotelId: lifecycleId, title: "Arşivde korunacak görev",
+  }, 201);
+  const lifecycleTask = lifecycleTaskCreated.task;
+  const lifecycleTaskUrl = `/api/tasks/${lifecycleTask.id}`;
+  await request(secondStaffSession, "POST", `${lifecycleTaskUrl}/comments`, {
+    body: "Arşivden geri alındığında aynı kalacak açıklama.",
+  }, 201);
+  const lifecycleBytes = Buffer.from("Arşivde korunacak, kalıcı silmede kaldırılacak dosya.");
+  const { attachment: lifecycleFile } = await uploadFile(secondStaffSession,
+    `${lifecycleTaskUrl}/attachments`, lifecycleBytes, "arsiv-kaniti.txt", "text/plain");
+  const { result: lifecycleLink } = await request(secondStaffSession, "POST", `${lifecycleTaskUrl}/attachments`, {
+    kind: "link", title: "Arşiv bağlantısı", url: "https://example.test/archive-evidence",
+  }, 201);
+  const { result: lifecycleRecurrenceCreated } = await request(admin, "POST", "/api/recurrences", {
+    ...recurrenceDraft, hotelId: lifecycleId, title: "Arşivde duracak düzenli iş",
+  }, 201);
+  const lifecycleRuleId = lifecycleRecurrenceCreated.recurrence.id;
+  const lifecycleRuleUrl = `/api/recurrences/${lifecycleRuleId}`;
+  const { result: lifecycleDetailBefore } = await request(admin, "GET", lifecycleTaskUrl);
+  const { result: lifecycleAttachmentsBefore } = await request(admin, "GET", `${lifecycleTaskUrl}/attachments`);
+  await downloadFile(lifecycleObserver, lifecycleFile.id, lifecycleBytes, "text/plain");
+  const { response: lifecycleWebBefore } = await request(admin, "GET", "/api/bootstrap");
+  const { result: lifecycleMobileBefore, response: lifecycleMobileResponse } = await request(admin, "GET", "/api/mobile/bootstrap");
+  const { result: lifecycleNotificationsBefore } = await request(secondStaffSession, "GET", "/api/notifications");
+  assert.ok(lifecycleNotificationsBefore.notifications.some(item => item.hotelId === lifecycleId));
+  const activeDeleteBody = { confirmationName: lifecycleName, archivedAt: new Date().toISOString() };
+  await request(null, "GET", "/api/hotels/archived", undefined, 401);
+  await request(null, "PATCH", lifecycleUrl, { action: "archive" }, 401);
+  await request(null, "DELETE", lifecycleUrl, activeDeleteBody, 401);
+  for (const cookie of [secondStaffSession, lifecycleObserver]) {
+    await request(cookie, "GET", "/api/hotels/archived", undefined, 403);
+    await request(cookie, "PATCH", lifecycleUrl, { action: "archive" }, 403);
+    await request(cookie, "PATCH", lifecycleUrl, { action: "restore" }, 403);
+    await request(cookie, "DELETE", lifecycleUrl, activeDeleteBody, 403);
+  }
+  await request(admin, "PATCH", lifecycleUrl, { action: "archive" }, 403, { Origin: "https://example.test" });
+  await request(admin, "DELETE", lifecycleUrl, activeDeleteBody, 409);
+  const { result: firstArchive } = await request(admin, "PATCH", lifecycleUrl, { action: "archive" });
+  const firstArchivedAt = firstArchive.hotel.archivedAt;
+  assert.ok(firstArchivedAt);
+  const { result: repeatedArchive } = await request(admin, "PATCH", lifecycleUrl, { action: "archive" });
+  assert.equal(repeatedArchive.hotel.archivedAt, firstArchivedAt, "Archiving twice must preserve its original timestamp.");
+  for (const [pathname, etag] of [
+    ["/api/bootstrap", lifecycleWebBefore.headers.get("etag")],
+    ["/api/mobile/bootstrap", lifecycleMobileResponse.headers.get("etag")],
+  ]) {
+    const { result } = await request(admin, "GET", pathname, undefined, 200, { "If-None-Match": etag });
+    assert.ok(result.hotels.every(item => item.id !== lifecycleId));
+    assert.ok(result.tasks.every(item => item.hotelId !== lifecycleId));
+    assert.ok(result.comments.every(item => item.taskId !== lifecycleTask.id));
+    assert.ok((result.activities || []).every(item => item.hotelId !== lifecycleId));
+    assert.equal(result.taskVersions?.[lifecycleTask.id], undefined);
+  }
+  for (const cookie of [admin, secondStaffSession, lifecycleObserver]) {
+    await request(cookie, "GET", lifecycleTaskUrl, undefined, 404);
+    await request(cookie, "GET", `${lifecycleTaskUrl}/attachments`, undefined, 404);
+    await request(cookie, "GET", `/api/attachments/${lifecycleFile.id}`, undefined, 404);
+  }
+  const { result: archivedObserverWorkspace } = await request(lifecycleObserver, "GET", "/api/mobile/bootstrap");
+  assert.equal(archivedObserverWorkspace.hotels.length, 0);
+  assert.equal(archivedObserverWorkspace.tasks.length, 0);
+  await request(admin, "PATCH", lifecycleUrl, { managerId: "user-admin" }, 404);
+  await request(admin, "POST", "/api/tasks", { ...draft, hotelId: lifecycleId }, 404);
+  await request(admin, "PATCH", lifecycleTaskUrl, { action: "update", title: "Arşivde değişmemeli" }, 404);
+  await request(secondStaffSession, "PATCH", lifecycleTaskUrl, {
+    action: "checklist", itemId: lifecycleTask.checklist[0].id, done: true,
+  }, 404);
+  await request(secondStaffSession, "POST", `${lifecycleTaskUrl}/comments`, { body: "Arşivde eklenmemeli" }, 404);
+  await request(secondStaffSession, "PATCH", `/api/mobile/tasks/${lifecycleTask.id}`, {
+    expectedVersion: lifecycleMobileBefore.taskVersions[lifecycleTask.id],
+    payload: { action: "checklist", itemId: lifecycleTask.checklist[0].id, done: true },
+  }, 404);
+  await request(secondStaffSession, "POST", `/api/mobile/tasks/${lifecycleTask.id}/comments`, {
+    body: "Arşivde mobil not eklenmemeli", requestId: "archived-hotel-note",
+  }, 404);
+  await request(admin, "POST", `${lifecycleTaskUrl}/attachments`, {
+    kind: "link", title: "Arşivde eklenmemeli", url: "https://example.test/forbidden",
+  }, 404);
+  await uploadFile(admin, `${lifecycleTaskUrl}/attachments`, Buffer.from("Arşivde eklenmemeli"), "blocked.txt", "text/plain", 404);
+  await request(admin, "DELETE", `/api/attachments/${lifecycleFile.id}`, undefined, 404);
+  const archivedReport = new URLSearchParams({ hotelId: lifecycleId, from: today, to: plusDays(today, 30), includeUndated: "true" });
+  await request(admin, "GET", `/api/reports?${archivedReport}`, undefined, 404);
+  await request(admin, "GET", `/api/reports/export?${archivedReport}`, undefined, 404);
+  await request(admin, "POST", "/api/recurrences", { ...recurrenceDraft, hotelId: lifecycleId }, 404);
+  await request(admin, "PATCH", lifecycleRuleUrl, { action: "resume" }, 404);
+  const { result: archivedRules } = await request(admin, "GET", "/api/recurrences");
+  assert.ok(archivedRules.recurrences.every(item => item.hotelId !== lifecycleId));
+  const { result: archivedNotifications } = await request(secondStaffSession, "GET", "/api/notifications");
+  assert.ok(archivedNotifications.notifications.every(item => item.hotelId !== lifecycleId));
+  const { result: archivedOwnerConsole } = await request(ownerCookie, "GET", "/api/owner/console");
+  assert.ok(archivedOwnerConsole.hotels.every(item => item.id !== lifecycleId));
+  const { result: firstArchiveList, response: archiveListResponse } = await request(admin, "GET", "/api/hotels/archived");
+  assert.match(archiveListResponse.headers.get("cache-control"), /no-store/);
+  const archiveEntryBeforeMaintenance = firstArchiveList.hotels.find(item => item.hotel.id === lifecycleId);
+  assert.equal(archiveEntryBeforeMaintenance.hotel.archivedAt, firstArchivedAt);
+  assert.ok(archiveEntryBeforeMaintenance.counts.tasks >= 1);
+  assert.equal(archiveEntryBeforeMaintenance.counts.comments, 1);
+  assert.equal(archiveEntryBeforeMaintenance.counts.attachments, 2);
+  assert.equal(archiveEntryBeforeMaintenance.counts.recurrences, 1);
+  await runMaintenance();
+  const { result: archiveAfterMaintenance } = await request(admin, "GET", "/api/hotels/archived");
+  assert.deepEqual(archiveAfterMaintenance.hotels.find(item => item.hotel.id === lifecycleId).counts,
+    archiveEntryBeforeMaintenance.counts, "Maintenance must not generate tasks for archived hotels.");
+  await request(admin, "DELETE", lifecycleUrl, { ...activeDeleteBody, archivedAt: firstArchivedAt, confirmationName: "Yanlış otel" }, 400);
+  await request(admin, "DELETE", lifecycleUrl, { ...activeDeleteBody, archivedAt: firstArchivedAt }, 403, { Origin: "https://example.test" });
+  await request(admin, "PATCH", lifecycleUrl, { action: "restore" });
+  const { result: restoredDetail } = await request(admin, "GET", lifecycleTaskUrl);
+  assert.deepEqual(restoredDetail, lifecycleDetailBefore, "Restore must preserve the task, checklist, notes and task history.");
+  const { result: restoredAttachments } = await request(lifecycleObserver, "GET", `${lifecycleTaskUrl}/attachments`);
+  assert.deepEqual(restoredAttachments, lifecycleAttachmentsBefore);
+  assert.ok(restoredAttachments.attachments.some(item => item.id === lifecycleLink.attachment.id));
+  await downloadFile(lifecycleObserver, lifecycleFile.id, lifecycleBytes, "text/plain");
+  const { result: restoredRules } = await request(admin, "GET", "/api/recurrences");
+  const restoredRule = restoredRules.recurrences.find(item => item.id === lifecycleRuleId);
+  assert.equal(restoredRule.active, false, "Restore must not silently resume a recurring job.");
+  const { result: restoredWorkspace } = await request(admin, "GET", "/api/bootstrap");
+  assert.ok(restoredWorkspace.hotels.some(item => item.id === lifecycleId && !item.archivedAt));
+  await request(admin, "DELETE", lifecycleUrl, { confirmationName: lifecycleName, archivedAt: firstArchivedAt }, 409);
+  const { result: secondArchive } = await request(admin, "PATCH", lifecycleUrl, { action: "archive" });
+  assert.notEqual(secondArchive.hotel.archivedAt, firstArchivedAt);
+  await request(admin, "DELETE", lifecycleUrl, { confirmationName: lifecycleName, archivedAt: firstArchivedAt }, 409);
+  const { result: unrelatedBeforePurge } = await request(admin, "GET", `/api/tasks/${mobileTaskId}`);
+  const { result: purgedHotel } = await request(ownerCookie, "DELETE", lifecycleUrl, {
+    confirmationName: lifecycleName, archivedAt: secondArchive.hotel.archivedAt,
+  });
+  assert.equal(purgedHotel.deleted, true);
+  assert.equal(purgedHotel.hotelId, lifecycleId);
+  assert.deepEqual(purgedHotel.counts, archiveEntryBeforeMaintenance.counts);
+  await request(admin, "PATCH", lifecycleUrl, { action: "restore" }, 404);
+  await request(admin, "GET", lifecycleTaskUrl, undefined, 404);
+  await request(admin, "GET", `/api/attachments/${lifecycleFile.id}`, undefined, 404);
+  await request(admin, "PATCH", lifecycleRuleUrl, { action: "resume" }, 404);
+  const { result: finalArchive } = await request(admin, "GET", "/api/hotels/archived");
+  assert.ok(finalArchive.hotels.every(item => item.hotel.id !== lifecycleId));
+  const { result: unrelatedAfterPurge } = await request(admin, "GET", `/api/tasks/${mobileTaskId}`);
+  assert.deepEqual(unrelatedAfterPurge, unrelatedBeforePurge, "Purging a hotel must not change other hotels' data.");
+  const { result: usersAfterHotelPurge } = await request(admin, "GET", "/api/users");
+  assert.deepEqual(usersAfterHotelPurge.users.find(item => item.id === lifecycleObserverCreated.user.id).hotelIds, []);
+  await request(lifecycleObserver, "GET", "/api/bootstrap", undefined, 401);
+  const { result: lifecycleAudit } = await request(ownerCookie, "GET", `/api/owner/console?q=${encodeURIComponent(lifecycleName)}`);
+  assert.ok(lifecycleAudit.events.some(event => event.hotelId === lifecycleId && event.actorId === ownerId && /sil/i.test(event.message)),
+    "Owner audit must preserve who permanently deleted the hotel.");
+  await runMaintenance();
+  const { result: afterPurgeMaintenance } = await request(admin, "GET", "/api/bootstrap");
+  assert.ok(afterPurgeMaintenance.hotels.every(item => item.id !== lifecycleId));
+  assert.ok(afterPurgeMaintenance.tasks.every(item => item.hotelId !== lifecycleId));
+  assert.ok(afterPurgeMaintenance.hotels.some(item => item.id === "hotel-luna"));
+  console.log("PASS: hotel archive authorization/CSRF, web/mobile/task/file/report isolation, paused scheduling, restore preservation, stale deletion guards, complete purge and retained owner audit");
   console.log(
     `PASS: ${checks} real HTTP requests verified against the disposable database.`,
   );

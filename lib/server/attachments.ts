@@ -12,6 +12,7 @@ import { getDb, type Queryable } from "./db";
 import { HttpError } from "./http";
 import { canEditChecklist, canManage, canViewTask } from "./policies";
 import { audit } from "./repository";
+import { lockActiveUsers, requireActiveHotel } from "./hotel-access";
 
 export const linkAttachmentSchema = z
   .object({
@@ -206,23 +207,27 @@ async function attachmentTask(
   taskId: string,
   lock = false,
 ) {
-  const [row] = await tx.query<{ data: Task }>(
-    `SELECT data FROM tasks WHERE id=$1${lock ? " FOR UPDATE" : ""}`,
-    [taskId],
+  const [snapshot] = await tx.query<{ data: Task }>(
+    "SELECT data FROM tasks WHERE id=$1", [taskId],
   );
-  if (!row || !canViewTask(user, row.data))
+  if (!snapshot || !canViewTask(user, snapshot.data))
+    throw new HttpError(404, "Görev bulunamadı.");
+  // Mutations always lock users, then hotel, then task; archiving uses that order too.
+  await requireActiveHotel(tx, snapshot.data.hotelId, lock);
+  if (!lock) return snapshot.data;
+  const [row] = await tx.query<{ data: Task }>(
+    "SELECT data FROM tasks WHERE id=$1 FOR UPDATE", [taskId],
+  );
+  if (!row || row.data.hotelId !== snapshot.data.hotelId || !canViewTask(user, row.data))
     throw new HttpError(404, "Görev bulunamadı.");
   return row.data;
 }
 
 async function currentActor(tx: Queryable, user: User) {
-  const [row] = await tx.query<{ data: User }>(
-    "SELECT data FROM app_users WHERE id=$1",
-    [user.id],
-  );
-  if (!row || !isUserActive(row.data))
+  const actor = (await lockActiveUsers(tx)).find((person) => person.id === user.id);
+  if (!actor || !isUserActive(actor))
     throw new HttpError(403, "Bu işlem için aktif hesap gerekiyor.");
-  return row.data;
+  return actor;
 }
 
 function requireEditable(user: User, task: Task) {
@@ -264,8 +269,8 @@ async function insertAttachment(
   const db = await getDb();
   return db.transaction(async (tx) => {
     // The task lock also serializes task approval and other attachment changes.
-    const task = await attachmentTask(tx, user, taskId, true);
     const actor = await currentActor(tx, user);
+    const task = await attachmentTask(tx, actor, taskId, true);
     requireEditable(actor, task);
     const [count] = await tx.query<{ count: number }>(
       "SELECT count(*)::int AS count FROM task_attachments WHERE task_id=$1 AND deleted_at IS NULL",
@@ -368,8 +373,8 @@ export async function deleteAttachment(user: User, id: string) {
       [id],
     );
     if (!initial) throw new HttpError(404, "Ek bulunamadı.");
-    const task = await attachmentTask(tx, user, initial.task_id, true);
     const actor = await currentActor(tx, user);
+    const task = await attachmentTask(tx, actor, initial.task_id, true);
     requireEditable(actor, task);
     const [row] = await tx.query<{ data: TaskAttachment }>(
       "SELECT data FROM task_attachments WHERE id=$1 AND deleted_at IS NULL FOR UPDATE",

@@ -5,6 +5,7 @@ import { MAX_ATTACHMENT_BYTES, MAX_TASK_ATTACHMENTS } from "../lib/attachments";
 import type { Database, Queryable } from "../lib/server/db";
 import {
   attachmentDisposition,
+  assertCanAttach,
   createFileAttachment,
   createLinkAttachment,
   deleteAttachment,
@@ -133,6 +134,26 @@ test("observer hotel isolation covers metadata, direct downloads, removal and cr
   await assert.rejects(createFileAttachment(otherStaff, "task-a", upload()), {
     status: 403,
   });
+});
+
+test("archived hotels deny attachment metadata, downloads and writes until restored, preserving bytes", async () => {
+  const { attachment } = await createFileAttachment(owner, "task-a", upload());
+  const archived = { ...hotel("hotel-a"), archivedAt: new Date().toISOString() };
+  await db.query("UPDATE hotels SET data=$2::jsonb WHERE id=$1", [archived.id, JSON.stringify(archived)]);
+  for (const actor of [admin, owner, observer]) {
+    await assert.rejects(listAttachments(actor, "task-a"), { status: 404 });
+    await assert.rejects(downloadAttachment(actor, attachment.id), { status: 404 });
+    await assert.rejects(assertCanAttach(actor, "task-a"), { status: 404 });
+    await assert.rejects(createLinkAttachment(actor, "task-a", link()), { status: 404 });
+    await assert.rejects(createFileAttachment(actor, "task-a", upload()), { status: 404 });
+    await assert.rejects(deleteAttachment(actor, attachment.id), { status: 404 });
+  }
+  const [stored] = await db.query<{ content: Uint8Array; deleted_at: null }>("SELECT content,deleted_at FROM task_attachments WHERE id=$1", [attachment.id]);
+  assert.deepEqual(Buffer.from(stored.content), pdf);
+  assert.equal(stored.deleted_at, null);
+  await db.query("UPDATE hotels SET data=data-'archivedAt' WHERE id=$1", [archived.id]);
+  assert.deepEqual(Buffer.from((await downloadAttachment(observer, attachment.id)).content), pdf);
+  assert.deepEqual((await listAttachments(owner, "task-a")).attachments, [attachment]);
 });
 
 test("review and completed tasks reject additions and removals even by administrators", async () => {

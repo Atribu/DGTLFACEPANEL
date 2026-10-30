@@ -14,18 +14,11 @@ import { getDb, type Queryable } from "./db";
 import { HttpError, requireAdmin } from "./http";
 import { notifyTaskChange } from "./notifications";
 import { isAssignableUser, ownerPrivacyContext, redactOwnerReferences } from "./owner-identity";
+import { lockActiveUsers, requireActiveHotel } from "./hotel-access";
 
 export const RECURRENCE_CATCH_UP_LIMIT = 12;
 class RetryRule extends Error {}
 
-async function lockPeople(tx: Queryable, ids: string[]) {
-  return (
-    await tx.query<{ data: User }>(
-      "SELECT data FROM app_users WHERE id=ANY($1::text[]) ORDER BY id FOR UPDATE",
-      [[...new Set(ids)].sort()],
-    )
-  ).map((row) => row.data);
-}
 function validAssignee(user: User | undefined) {
   return !!user && isAssignableUser(user);
 }
@@ -74,7 +67,7 @@ export async function listRecurrences(user: User) {
   const db = await getDb();
   const recurrences = (
     await db.query<{ data: RecurrenceRule }>(
-      "SELECT data FROM recurrence_rules ORDER BY active DESC,next_run_on,id",
+      "SELECT r.data FROM recurrence_rules r JOIN hotels h ON h.id=r.hotel_id WHERE h.data->>'archivedAt' IS NULL ORDER BY r.active DESC,r.next_run_on,r.id",
     )
   ).map((row) => row.data);
   return redactOwnerReferences({ recurrences }, await ownerPrivacyContext(db, user));
@@ -89,18 +82,14 @@ export async function createRecurrence(actor: User, rawInput: unknown) {
     );
   const db = await getDb();
   return db.transaction(async (tx) => {
-    const people = await lockPeople(tx, [actor.id, input.assigneeId]);
+    const people = await lockActiveUsers(tx);
     const fresh = freshAdmin(people, actor);
     if (!validAssignee(people.find((user) => user.id === input.assigneeId)))
       throw new HttpError(
         409,
         "Sorumlu, aktif bir personel veya yönetici olmalı.",
       );
-    if (
-      !(await tx.query("SELECT id FROM hotels WHERE id=$1", [input.hotelId]))
-        .length
-    )
-      throw new HttpError(404, "Otel bulunamadı.");
+    await requireActiveHotel(tx, input.hotelId, true);
     const now = new Date().toISOString();
     const recurrence: RecurrenceRule = {
       ...input,
@@ -151,14 +140,9 @@ export async function updateRecurrence(
           [ruleId],
         );
         if (!snapshot) throw new HttpError(404, "Düzenli iş bulunamadı.");
-        const people = await lockPeople(tx, [
-          actor.id,
-          snapshot.data.assigneeId,
-          ...(input.action === "update" && input.assigneeId
-            ? [input.assigneeId]
-            : []),
-        ]);
+        const people = await lockActiveUsers(tx);
         const fresh = freshAdmin(people, actor);
+        await requireActiveHotel(tx, snapshot.data.hotelId, true);
         const [locked] = await tx.query<{ data: RecurrenceRule }>(
           "SELECT data FROM recurrence_rules WHERE id=$1 FOR UPDATE",
           [ruleId],
@@ -223,7 +207,7 @@ export async function runDueRecurrences(today = istanbulToday()) {
   if (!isCalendarDay(today)) throw new Error("Geçerli işlem tarihi gerekiyor.");
   const db = await getDb();
   const candidates = await db.query<{ id: string }>(
-    "SELECT id FROM recurrence_rules WHERE active=true AND next_run_on<=$1::date ORDER BY (data->>'blockedReason' IS NOT NULL),next_run_on,id LIMIT 100",
+    "SELECT r.id FROM recurrence_rules r JOIN hotels h ON h.id=r.hotel_id WHERE r.active=true AND r.next_run_on<=$1::date AND h.data->>'archivedAt' IS NULL ORDER BY (r.data->>'blockedReason' IS NOT NULL),r.next_run_on,r.id LIMIT 100",
     [today],
   );
   let created = 0,
@@ -237,7 +221,16 @@ export async function runDueRecurrences(today = istanbulToday()) {
             [id],
           );
           if (!snapshot) return { created: 0, blocked: false };
-          const people = await lockPeople(tx, [snapshot.data.assigneeId]);
+          // Share the user -> hotel -> rule order with hotel lifecycle changes.
+          // A candidate may have been archived or deleted since it was selected.
+          const people = await lockActiveUsers(tx);
+          try {
+            await requireActiveHotel(tx, snapshot.data.hotelId, true);
+          } catch (error) {
+            if (error instanceof HttpError && error.status === 404)
+              return { created: 0, blocked: false };
+            throw error;
+          }
           const [locked] = await tx.query<{ data: RecurrenceRule }>(
             "SELECT data FROM recurrence_rules WHERE id=$1 FOR UPDATE",
             [id],
@@ -344,7 +337,7 @@ export async function runDueRecurrences(today = istanbulToday()) {
     }
   }
   const remaining = await db.query(
-    "SELECT id FROM recurrence_rules WHERE active=true AND next_run_on<=$1::date AND data->>'blockedReason' IS NULL LIMIT 1",
+    "SELECT r.id FROM recurrence_rules r JOIN hotels h ON h.id=r.hotel_id WHERE r.active=true AND r.next_run_on<=$1::date AND r.data->>'blockedReason' IS NULL AND h.data->>'archivedAt' IS NULL LIMIT 1",
     [today],
   );
   return {

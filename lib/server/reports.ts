@@ -1,4 +1,4 @@
-import type { Hotel, Task, User } from "../types";
+import type { Task, User } from "../types";
 import {
   buildHotelReport,
   ReportValidationError,
@@ -9,6 +9,7 @@ import { getDb } from "./db";
 import { HttpError } from "./http";
 import { canViewHotel } from "./policies";
 import { ownerPrivacyContext, SYSTEM_OWNER_ALIAS } from "./owner-identity";
+import { requireActiveHotel } from "./hotel-access";
 
 export function parseReportQuery(search: URLSearchParams): ReportFilters {
   for (const key of ["hotelId", "from", "to", "includeUndated"]) {
@@ -45,11 +46,7 @@ export async function getHotelReport(
   if (!canViewHotel(user, filters.hotelId))
     throw new HttpError(404, "Otel bulunamadı.");
   const db = await getDb();
-  const [hotel] = await db.query<{ data: Hotel }>(
-    "SELECT data FROM hotels WHERE id=$1",
-    [filters.hotelId],
-  );
-  if (!hotel) throw new HttpError(404, "Otel bulunamadı.");
+  const hotel = await requireActiveHotel(db, filters.hotelId);
   const tasks = (
     await db.query<{ data: Task }>("SELECT data FROM tasks WHERE hotel_id=$1", [
       filters.hotelId,
@@ -75,7 +72,7 @@ export async function getHotelReport(
     : [];
   const privacy = await ownerPrivacyContext(db, user);
   return buildHotelReport(
-    hotel.data,
+    hotel,
     tasks,
     new Map(people.map((person) => [person.id, privacy.owners.has(person.id) ? SYSTEM_OWNER_ALIAS : person.name])),
     filters,

@@ -66,17 +66,18 @@ async function lockUsers(tx: Queryable, actor: User): Promise<UserRow[]> {
 async function hotelMembership(
   tx: Queryable,
   input: { role: User["role"]; hotelIds: string[] },
+  retainedHotelIds: string[] = [],
 ) {
   if (input.role !== "observer") return [];
   const ids = [...new Set(input.hotelIds)];
   if (!ids.length)
     throw new HttpError(400, "Otel gözlemcisine en az bir otel seçin.");
   const hotels = await tx.query<{ id: string }>(
-    "SELECT id FROM hotels WHERE id=ANY($1::text[])",
-    [ids],
+    "SELECT id FROM hotels WHERE id=ANY($1::text[]) AND (data->>'archivedAt' IS NULL OR id=ANY($2::text[]))",
+    [ids, retainedHotelIds],
   );
   if (hotels.length !== ids.length)
-    throw new HttpError(400, "Seçilen otellerden biri bulunamadı.");
+    throw new HttpError(400, "Seçilen otellerden biri bulunamadı veya arşivlenmiş.");
   return ids;
 }
 
@@ -127,7 +128,7 @@ async function requireResponsibilitiesReassigned(
   if (openTasks.length)
     throw new HttpError(
       409,
-      "Bu kullanıcının açık görevleri var. Önce görevleri başka bir aktif personele atayın.",
+      "Bu kullanıcının açık görevleri var. Önce görevleri başka bir aktif personele atayın. Otel arşivdeyse önce geri alın; arşivdeki görevlerin sorumluluğu da korunur.",
     );
   const managedHotels = await tx.query<{ id: string }>(
     "SELECT id FROM hotels WHERE data->>'managerId'=$1 LIMIT 1",
@@ -136,7 +137,7 @@ async function requireResponsibilitiesReassigned(
   if (managedHotels.length)
     throw new HttpError(
       409,
-      "Bu kullanıcı otel sorumlusu. Önce otel detayından sorumluyu başka bir aktif personelle değiştirin.",
+      "Bu kullanıcı otel sorumlusu. Önce otel detayından sorumluyu başka bir aktif personelle değiştirin. Otel arşivdeyse önce geri alın.",
     );
   const activeRecurrences = await tx.query<{ id: string }>(
     "SELECT id FROM recurrence_rules WHERE assignee_id=$1 AND active=true LIMIT 1",
@@ -250,7 +251,7 @@ export async function updateUser(
         email: input.email,
         role: input.role,
         department: input.department,
-        hotelIds: await hotelMembership(tx, input),
+        hotelIds: await hotelMembership(tx, input, target.data.hotelIds),
         active: input.active,
       };
       const changedPermissions = permissionsChanged(target.data, user);

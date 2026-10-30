@@ -11,6 +11,7 @@ import { HttpError } from "./http";
 import { idSchema } from "./validation";
 import { isUserActive } from "./user-policies";
 import { isAssignableUser, isProtectedOwner } from "./owner-identity";
+import { lockActiveUsers, requireActiveHotel } from "./hotel-access";
 
 export const notificationReadSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("read"), id: idSchema }).strict(),
@@ -83,7 +84,7 @@ async function insertNotifications(
   return created;
 }
 
-/** Call inside the task mutation transaction, after its INSERT or UPDATE. */
+/** Call after the mutation has locked users, its active hotel and task. */
 export async function notifyTaskChange(
   tx: Queryable,
   actor: User | null,
@@ -91,6 +92,7 @@ export async function notifyTaskChange(
   after: Task,
   detail: { reason?: string; eventKey?: string } = {},
 ) {
+  await requireActiveHotel(tx, after.hotelId);
   const users = (
     await tx.query<{ data: User }>("SELECT data FROM app_users")
   ).map((row) => row.data);
@@ -181,14 +183,15 @@ export async function generateDueNotifications(today?: string) {
     throw new HttpError(400, "Geçerli bir tarih gerekiyor.");
   const db = await getDb();
   return db.transaction(async (tx) => {
+    const users = await lockActiveUsers(tx);
+    const hotels = await tx.query<{ id: string }>(
+      "SELECT id FROM hotels WHERE data->>'archivedAt' IS NULL ORDER BY id FOR UPDATE",
+    );
     const tasks = (
       await tx.query<{ data: Task }>(
-        "SELECT data FROM tasks WHERE data->>'dueDate' <= $1 AND data->>'status' <> 'completed' FOR UPDATE",
-        [day],
+        "SELECT data FROM tasks WHERE hotel_id=ANY($2::text[]) AND data->>'dueDate' <= $1 AND data->>'status' <> 'completed' ORDER BY id FOR UPDATE",
+        [day, hotels.map((hotel) => hotel.id)],
       )
-    ).map((row) => row.data);
-    const users = (
-      await tx.query<{ data: User }>("SELECT data FROM app_users")
     ).map((row) => row.data);
     const admins = users.filter(
       (user) => active(user) && user.role === "admin",
@@ -232,17 +235,17 @@ export async function listNotifications(user: User): Promise<NotificationList> {
   const db = await getDb();
   return db.transaction(async (tx) => {
     const { owner, scope } = await ownerAndScope(tx, user);
-    const where = `n.user_id=$1${scope ? " AND t.hotel_id=ANY($2::text[])" : ""}`;
+    const where = `n.user_id=$1 AND h.data->>'archivedAt' IS NULL${scope ? " AND t.hotel_id=ANY($2::text[])" : ""}`;
     const values = scope ? [owner.id, scope] : [owner.id];
     const rows = await tx.query<{
       data: PersonalNotification;
       read_at: string | Date | null;
     }>(
-      `SELECT n.data,n.read_at FROM personal_notifications n JOIN tasks t ON t.id=n.task_id WHERE ${where} ORDER BY (n.read_at IS NULL) DESC,n.created_at DESC,n.id DESC LIMIT 100`,
+      `SELECT n.data,n.read_at FROM personal_notifications n JOIN tasks t ON t.id=n.task_id JOIN hotels h ON h.id=t.hotel_id WHERE ${where} ORDER BY (n.read_at IS NULL) DESC,n.created_at DESC,n.id DESC LIMIT 100`,
       values,
     );
     const [total] = await tx.query<{ count: number }>(
-      `SELECT count(*)::int AS count FROM personal_notifications n JOIN tasks t ON t.id=n.task_id WHERE ${where} AND n.read_at IS NULL`,
+      `SELECT count(*)::int AS count FROM personal_notifications n JOIN tasks t ON t.id=n.task_id JOIN hotels h ON h.id=t.hotel_id WHERE ${where} AND n.read_at IS NULL`,
       values,
     );
     return {
@@ -258,9 +261,11 @@ export async function listNotifications(user: User): Promise<NotificationList> {
 export async function markNotificationRead(user: User, id?: string) {
   const db = await getDb();
   return db.transaction(async (tx) => {
+    // Serialize the read-state write with archive/delete before checking scope.
+    await lockActiveUsers(tx);
     const { owner, scope } = await ownerAndScope(tx, user);
     const values: unknown[] = [owner.id];
-    let where = "n.user_id=$1";
+    let where = "n.user_id=$1 AND h.data->>'archivedAt' IS NULL";
     if (scope) {
       values.push(scope);
       where += ` AND t.hotel_id=ANY($${values.length}::text[])`;
@@ -270,7 +275,7 @@ export async function markNotificationRead(user: User, id?: string) {
       where += ` AND n.id=$${values.length}`;
     } else where += " AND n.read_at IS NULL";
     const rows = await tx.query<{ id: string }>(
-      `UPDATE personal_notifications n SET read_at=COALESCE(n.read_at,now()) FROM tasks t WHERE t.id=n.task_id AND ${where} RETURNING n.id`,
+      `UPDATE personal_notifications n SET read_at=COALESCE(n.read_at,now()) FROM tasks t JOIN hotels h ON h.id=t.hotel_id WHERE t.id=n.task_id AND ${where} RETURNING n.id`,
       values,
     );
     if (id && !rows.length) throw new HttpError(404, "Bildirim bulunamadı.");

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  Archive,
   ArrowLeft,
   ArrowRight,
   Building2,
@@ -37,6 +38,7 @@ import {
   SubmitButton,
 } from "./ui";
 import { TaskComposer } from "./tasks";
+import { HotelArchiveDialog, HotelArchivePanel } from "./hotel-archive";
 
 const serviceOptions = [
   "Web",
@@ -118,7 +120,7 @@ function Progress({
 export function HotelsView(props: ViewProps) {
   const { data, navigate } = props;
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | Hotel["stage"]>("all");
+  const [filter, setFilter] = useState<"all" | "archive" | Hotel["stage"]>("all");
   const [composing, setComposing] = useState(false);
   const isAdmin = data.user.role === "admin";
   const filtered = data.hotels.filter((hotel) => {
@@ -170,7 +172,7 @@ export function HotelsView(props: ViewProps) {
       />
       <section className="panel">
         <div className="toolbar" style={{ gap: 16, flexWrap: "wrap" }}>
-          <div className="tabs" aria-label="Otelleri aşamaya göre filtrele">
+          <div className="tabs" aria-label="Otelleri filtrele" style={{ flexWrap: "wrap" }}>
             {tabs.map((tab) => (
               <button
                 key={tab.value}
@@ -184,6 +186,15 @@ export function HotelsView(props: ViewProps) {
                 </span>
               </button>
             ))}
+            {isAdmin && (
+              <button
+                className={`tab ${filter === "archive" ? "active" : ""}`}
+                aria-pressed={filter === "archive"}
+                onClick={() => setFilter("archive")}
+              >
+                <Archive size={15} aria-hidden="true" /> Arşiv
+              </button>
+            )}
           </div>
           <label
             style={{
@@ -214,6 +225,10 @@ export function HotelsView(props: ViewProps) {
             />
           </label>
         </div>
+        {filter === "archive" && isAdmin ? (
+          <HotelArchivePanel {...props} search={search} />
+        ) : (
+          <>
         {filtered.length ? (
           <div className="table-wrap">
             <table className="data-table">
@@ -432,6 +447,8 @@ export function HotelsView(props: ViewProps) {
             kontrol bekleyen işler dahildir.
           </div>
         )}
+          </>
+        )}
       </section>
       {composing && (
         <HotelComposer {...props} onClose={() => setComposing(false)} />
@@ -444,6 +461,7 @@ export function HotelDetail(props: ViewProps & { hotelId: string }) {
   const { data, hotelId, navigate } = props;
   const [tab, setTab] = useState<"setup" | "activity" | "info">("setup");
   const [changingManager, setChangingManager] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [stage, setStage] = useState("all");
   const [filter, setFilter] = useState<"all" | "open" | "completed" | "review">(
     "all",
@@ -467,6 +485,7 @@ export function HotelDetail(props: ViewProps & { hotelId: string }) {
     setFilter("all");
     setComposing(false);
     setChangingManager(false);
+    setArchiving(false);
   }, [hotelId]);
 
   if (!hotel)
@@ -537,13 +556,22 @@ export function HotelDetail(props: ViewProps & { hotelId: string }) {
         description={`${hotel.location || "Konum eklenmedi"} · ${stageLabel(hotel.stage)} süreci`}
         actions={
           data.user.role === "admin" && (
-            <button
-              className="btn btn-primary"
-              onClick={() => setComposing(true)}
-            >
-              <Plus size={17} />
-              Görev ekle
-            </button>
+            <>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setArchiving(true)}
+              >
+                <Archive size={17} />
+                Arşivle
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setComposing(true)}
+              >
+                <Plus size={17} />
+                Görev ekle
+              </button>
+            </>
           )
         }
       />
@@ -1146,6 +1174,13 @@ export function HotelDetail(props: ViewProps & { hotelId: string }) {
           {...props}
           hotelId={hotelId}
           onClose={() => setComposing(false)}
+        />
+      )}
+      {archiving && data.user.role === "admin" && (
+        <HotelArchiveDialog
+          {...props}
+          hotel={hotel}
+          onClose={() => setArchiving(false)}
         />
       )}
       {changingManager && data.user.role === "admin" && (

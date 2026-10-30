@@ -9,6 +9,7 @@ import type {
 } from "../types";
 import { STATUS_LABELS } from "../types";
 import { getDb, type Queryable } from "./db";
+import { lockActiveActor, requireActiveHotel } from "./hotel-access";
 import { isDemo } from "./config";
 import { HttpError, requireAdmin } from "./http";
 import {
@@ -65,25 +66,25 @@ export async function bootstrap(user: User): Promise<BootstrapData> {
   const scope = user.role === "observer" ? user.hotelIds : null;
   const hotels = (
     await db.query<{ data: Hotel }>(
-      `SELECT data FROM hotels ${scope ? "WHERE id=ANY($1::text[])" : ""} ORDER BY data->>'createdAt',id`,
+      `SELECT data FROM hotels WHERE data->>'archivedAt' IS NULL ${scope ? "AND id=ANY($1::text[])" : ""} ORDER BY data->>'createdAt',id`,
       scope ? [scope] : [],
     )
   ).map((row) => row.data);
   const tasks = (
     await db.query<{ data: Task }>(
-      `SELECT data FROM tasks ${scope ? "WHERE hotel_id=ANY($1::text[])" : ""} ORDER BY (data->>'priority')::int,data->>'dueDate' NULLS LAST,data->>'title'`,
+      `SELECT t.data FROM tasks t JOIN hotels h ON h.id=t.hotel_id WHERE h.data->>'archivedAt' IS NULL ${scope ? "AND t.hotel_id=ANY($1::text[])" : ""} ORDER BY (t.data->>'priority')::int,t.data->>'dueDate' NULLS LAST,t.data->>'title'`,
       scope ? [scope] : [],
     )
   ).map((row) => row.data);
   const activities = (
     await db.query<{ data: Activity }>(
-      `SELECT data FROM activities ${scope ? "WHERE hotel_id=ANY($1::text[])" : ""} ORDER BY data->>'createdAt' DESC LIMIT 250`,
+      `SELECT a.data FROM activities a JOIN hotels h ON h.id=a.hotel_id WHERE h.data->>'archivedAt' IS NULL ${scope ? "AND a.hotel_id=ANY($1::text[])" : ""} ORDER BY a.data->>'createdAt' DESC LIMIT 250`,
       scope ? [scope] : [],
     )
   ).map((row) => row.data);
   const comments = (
     await db.query<{ data: TaskComment }>(
-      `SELECT c.data FROM task_comments c JOIN tasks t ON t.id=c.task_id ${scope ? "WHERE t.hotel_id=ANY($1::text[])" : ""} ORDER BY c.data->>'createdAt'`,
+      `SELECT c.data FROM task_comments c JOIN tasks t ON t.id=c.task_id JOIN hotels h ON h.id=t.hotel_id WHERE h.data->>'archivedAt' IS NULL ${scope ? "AND t.hotel_id=ANY($1::text[])" : ""} ORDER BY c.data->>'createdAt'`,
       scope ? [scope] : [],
     )
   ).map((row) => row.data);
@@ -124,9 +125,15 @@ async function findTask(
   taskId: string,
   lock = false,
 ): Promise<Task> {
+  const [snapshot] = await tx.query<{ data: Task }>(
+    "SELECT data FROM tasks WHERE id=$1", [taskId],
+  );
+  if (!snapshot || !canViewTask(user, snapshot.data))
+    throw new HttpError(404, "Görev bulunamadı.");
+  await requireActiveHotel(tx, snapshot.data.hotelId, lock);
+  if (!lock) return snapshot.data;
   const [row] = await tx.query<{ data: Task }>(
-    `SELECT data FROM tasks WHERE id=$1${lock ? " FOR UPDATE" : ""}`,
-    [taskId],
+    "SELECT data FROM tasks WHERE id=$1 FOR UPDATE", [taskId],
   );
   if (!row || !canViewTask(user, row.data))
     throw new HttpError(404, "Görev bulunamadı.");
@@ -181,12 +188,7 @@ export async function updateHotelManager(
     const actor = users.find((row) => row.data.id === user.id)?.data;
     if (!actor) throw new HttpError(403, "Yönetici yetkisi gerekiyor.");
     requireAdmin(actor);
-    const [row] = await tx.query<{ data: Hotel }>(
-      "SELECT data FROM hotels WHERE id=$1 FOR UPDATE",
-      [hotelId],
-    );
-    if (!row) throw new HttpError(404, "Otel bulunamadı.");
-    const hotel = row.data;
+    const hotel = await requireActiveHotel(tx, hotelId, true);
     if (hotel.managerId === managerId) return { hotel };
     await validateAssignee(tx, managerId);
     hotel.managerId = managerId;
@@ -212,6 +214,8 @@ export async function createHotel(
   requireAdmin(user);
   const db = await getDb();
   return db.transaction(async (tx) => {
+    const actor = await lockActiveActor(tx, user);
+    requireAdmin(actor);
     await validateAssignee(tx, input.managerId);
     const hotel: Hotel = {
       id: randomUUID(),
@@ -236,11 +240,11 @@ export async function createHotel(
       if (task.department === "Proje Yöneticisi")
         task.assigneeId = hotel.managerId;
       await insertTask(tx, task);
-      if (task.assigneeId) await notifyTaskChange(tx, user, null, task);
+      if (task.assigneeId) await notifyTaskChange(tx, actor, null, task);
     }
     await audit(
       tx,
-      user,
+      actor,
       hotel.id,
       null,
       `Otel oluşturuldu${tasks.length ? `; kaynak şablondan ${tasks.length} görev eklendi` : ""}.`,
@@ -255,11 +259,9 @@ export async function createTask(
   requireAdmin(user);
   const db = await getDb();
   return db.transaction(async (tx) => {
-    if (
-      !(await tx.query("SELECT id FROM hotels WHERE id=$1", [input.hotelId]))
-        .length
-    )
-      throw new HttpError(404, "Otel bulunamadı.");
+    const actor = await lockActiveActor(tx, user);
+    requireAdmin(actor);
+    await requireActiveHotel(tx, input.hotelId, true);
     await validateAssignee(tx, input.assigneeId);
     const now = new Date().toISOString();
     const task: Task = {
@@ -287,12 +289,12 @@ export async function createTask(
     await insertTask(tx, task);
     await audit(
       tx,
-      user,
+      actor,
       task.hotelId,
       task.id,
       `Görev oluşturuldu. Öncelik: ${task.priority}.`,
     );
-    await notifyTaskChange(tx, user, null, task);
+    await notifyTaskChange(tx, actor, null, task);
     return { task };
   });
 }
@@ -305,7 +307,8 @@ export async function updateTask(
 ) {
   const db = await getDb();
   return db.transaction(async (tx) => {
-    const task = await findTask(tx, user, taskId, true);
+    const actor = await lockActiveActor(tx, user);
+    const task = await findTask(tx, actor, taskId, true);
     // Compare only after acquiring the row lock, so simultaneous writes cannot
     // both pass with a version read before the other transaction committed.
     if (expectedVersion !== undefined && taskVersion(task) !== expectedVersion)
@@ -317,7 +320,7 @@ export async function updateTask(
     let message = "";
     switch (input.action) {
       case "update": {
-        requireAdmin(user);
+        requireAdmin(actor);
         const changes = input as unknown as { action: "update" } & Partial<
           z.infer<typeof createTaskSchema>
         >;
@@ -353,7 +356,7 @@ export async function updateTask(
         break;
       }
       case "status":
-        if (!canSetStatus(user, task, input.status))
+        if (!canSetStatus(actor, task, input.status))
           throw new HttpError(
             403,
             "Bu görevin durumunu değiştiremezsiniz. Kontrol veya tamamlanma aşamasındaki işleri yönetici geri açmalıdır.",
@@ -366,7 +369,7 @@ export async function updateTask(
         message = `Durum “${STATUS_LABELS[task.status]}” olarak değiştirildi.${task.waitingReason ? ` Neden: ${task.waitingReason}` : ""}`;
         break;
       case "checklist": {
-        if (!canEditChecklist(user, task))
+        if (!canEditChecklist(actor, task))
           throw new HttpError(
             403,
             "Bu görevin kontrol listesini değiştiremezsiniz.",
@@ -378,9 +381,9 @@ export async function updateTask(
         break;
       }
       case "submit":
-        if (!canWorkOnTask(user, task))
+        if (!canWorkOnTask(actor, task))
           throw new HttpError(403, "Bu görevi kontrole gönderemezsiniz.");
-        if (!canSubmitTask(user, task))
+        if (!canSubmitTask(actor, task))
           throw new HttpError(
             400,
             "Önce tüm tamamlanma kriterlerini işaretleyin. Görev kontrol veya tamamlandı aşamasında olmamalı.",
@@ -390,8 +393,8 @@ export async function updateTask(
         message = "Görev yönetici kontrolüne gönderildi.";
         break;
       case "approve":
-        requireAdmin(user);
-        if (!canApproveTask(user, task))
+        requireAdmin(actor);
+        if (!canApproveTask(actor, task))
           throw new HttpError(
             400,
             "Yalnızca kontrol bekleyen işler onaylanabilir.",
@@ -403,8 +406,8 @@ export async function updateTask(
         message = "Görev yönetici onayıyla tamamlandı.";
         break;
       case "return":
-        requireAdmin(user);
-        if (!canReturnTask(user, task))
+        requireAdmin(actor);
+        if (!canReturnTask(actor, task))
           throw new HttpError(
             400,
             "Yalnızca kontrol bekleyen işler geri gönderilebilir.",
@@ -414,7 +417,7 @@ export async function updateTask(
         message = `Görev düzeltme için geri gönderildi. Neden: ${input.reason}`;
         break;
       case "reopen":
-        requireAdmin(user);
+        requireAdmin(actor);
         if (task.status !== "completed" && task.status !== "review")
           throw new HttpError(400, "Görev zaten çalışmaya açık.");
         await validateAssignee(
@@ -432,8 +435,8 @@ export async function updateTask(
       "UPDATE tasks SET assignee_id=$2,data=$3::jsonb WHERE id=$1",
       [task.id, task.assigneeId, JSON.stringify(task)],
     );
-    await audit(tx, user, task.hotelId, task.id, message);
-    await notifyTaskChange(tx, user, before, task, {
+    await audit(tx, actor, task.hotelId, task.id, message);
+    await notifyTaskChange(tx, actor, before, task, {
       reason: "reason" in input ? input.reason : undefined,
     });
     return { task };
@@ -447,14 +450,15 @@ export async function addComment(
 ) {
   const db = await getDb();
   return db.transaction(async (tx) => {
-    const task = await findTask(tx, user, taskId, true);
-    if (!canWorkOnTask(user, task))
+    const actor = await lockActiveActor(tx, user);
+    const task = await findTask(tx, actor, taskId, true);
+    if (!canWorkOnTask(actor, task))
       throw new HttpError(
         403,
         "Yalnızca size atanan görevlere yorum yazabilirsiniz.",
       );
     const commentId = requestId
-      ? mobileCommentId(user.id, taskId, requestId)
+      ? mobileCommentId(actor.id, taskId, requestId)
       : randomUUID();
     if (requestId) {
       // The task lock serializes retries. Authorization is checked before any
@@ -466,7 +470,7 @@ export async function addComment(
       if (existing) {
         if (
           existing.data.taskId !== taskId ||
-          existing.data.userId !== user.id ||
+          existing.data.userId !== actor.id ||
           existing.data.body !== body
         )
           throw new HttpError(
@@ -479,8 +483,8 @@ export async function addComment(
     const comment: TaskComment = {
       id: commentId,
       taskId,
-      userId: user.id,
-      userName: user.name,
+      userId: actor.id,
+      userName: actor.name,
       body,
       createdAt: new Date().toISOString(),
     };
@@ -488,7 +492,7 @@ export async function addComment(
       "INSERT INTO task_comments(id,task_id,data) VALUES ($1,$2,$3::jsonb)",
       [comment.id, taskId, JSON.stringify(comment)],
     );
-    await audit(tx, user, task.hotelId, taskId, "Göreve yorum eklendi.");
+    await audit(tx, actor, task.hotelId, taskId, "Göreve yorum eklendi.");
     return { comment };
   });
 }

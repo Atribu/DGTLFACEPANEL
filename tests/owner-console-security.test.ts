@@ -8,6 +8,7 @@ import { HttpError } from "../lib/server/http";
 import { migrateUserSchema } from "../lib/server/user-schema";
 import { migrateOwnerSchema } from "../lib/server/owner-schema";
 import { migrateOwnerConsoleSchema } from "../lib/server/owner-console-schema";
+import { migrateHotelSchema } from "../lib/server/hotel-schema";
 import { ownerConsole, ownerConsoleQuerySchema } from "../lib/server/owner-console";
 import { SYSTEM_OWNER_EMAIL } from "../lib/server/owner-identity";
 import { presenceSessionId, recordFailedLogin, recordLogin, recordLogout, touchPresence } from "../lib/server/presence";
@@ -47,11 +48,12 @@ before(async () => {
   await migrateUserSchema(db);
   await migrateOwnerSchema(db);
   await migrateOwnerConsoleSchema(db);
+  await migrateHotelSchema(db);
   globals.dgtlDatabase = Promise.resolve(db);
 });
 
 beforeEach(async () => {
-  await local.exec("TRUNCATE account_events,account_sessions,user_events,activities,tasks,hotels,app_users");
+  await local.exec("TRUNCATE hotel_events,account_events,account_sessions,user_events,activities,tasks,hotels,app_users");
   for (const user of [systemOwner, admin, otherStaff, observer]) {
     await db.query("INSERT INTO app_users(id,email,password_hash,data) VALUES ($1,$2,'not-used',$3::jsonb)",
       [user.id,user.email,JSON.stringify(user)]);
@@ -277,4 +279,44 @@ test("workload and failed login summaries use Istanbul dates and count only unfi
   assert.equal(result.team.find(user=>user.id===otherStaff.id)?.overdueTasks,1);
   assert.equal(result.hotels[0].id,"hotel-a");
   assert.equal(result.hotels[0].overdueTasks,1);
+});
+
+test("archived work leaves workload totals while its historical actions remain in the owner audit", async () => {
+  for (const id of ["hotel-a", "hotel-b"]) {
+    const item = task({ id: `task-${id}`, hotelId: id, assigneeId: otherStaff.id, dueDate: "2026-10-22" });
+    await db.query("INSERT INTO tasks(id,hotel_id,assignee_id,data) VALUES ($1,$2,$3,$4::jsonb)", [item.id, id, otherStaff.id, JSON.stringify(item)]);
+  }
+  await operation("before-archive", now.toISOString());
+  await db.query("UPDATE hotels SET data=data || jsonb_build_object('archivedAt',$1::text) WHERE id='hotel-a'", [now.toISOString()]);
+  const result = await ownerConsole(systemOwner, {}, now);
+  assert.equal(result.summary.openTasks, 1);
+  assert.equal(result.summary.overdueTasks, 1);
+  assert.equal(result.team.find(({ id }) => id === otherStaff.id)?.openTasks, 1);
+  assert.deepEqual(result.hotels.map(({ id }) => id), ["hotel-b"]);
+  assert.equal(result.events[0].id, "operation:before-archive");
+  assert.equal(result.events[0].hotelName, "hotel-a");
+});
+
+test("hotel lifecycle receipts retain name, exact time and owner attribution after deletion and remain filterable", async () => {
+  for (const [index, action] of ["archive", "restore", "delete"].entries()) {
+    const event = {
+      id: `lifecycle-${action}`, hotelId: "deleted-hotel", hotelName: "Silinen Otel",
+      actorId: systemOwner.id, actorName: systemOwner.name, action,
+      createdAt: `2026-10-23T10:00:0${index}.123Z`,
+      counts: { tasks: 12, comments: 5, attachments: 3, recurrences: 2 },
+    };
+    await db.query("INSERT INTO hotel_events(id,actor_id,hotel_id,data) VALUES ($1,$2,$3,$4::jsonb)", [event.id, systemOwner.id, event.hotelId, JSON.stringify(event)]);
+  }
+  const result = await ownerConsole(systemOwner, { kind: "operation", actorId: systemOwner.id, q: "Silinen Otel", from: "2026-10-23", to: "2026-10-23" }, now);
+  assert.equal(result.events.length, 3);
+  const deleted = result.events[0];
+  assert.equal(deleted.id, "hotel:lifecycle-delete");
+  assert.equal(deleted.hotelName, "Silinen Otel");
+  assert.equal(deleted.hotelId, "deleted-hotel");
+  assert.equal(deleted.actorId, systemOwner.id);
+  assert.equal(deleted.actorName, systemOwner.name);
+  assert.equal(deleted.createdAt, "2026-10-23T10:00:02.123Z");
+  assert.ok(deleted.message.includes("Görev: 12, yorum: 5, ek: 3, düzenli iş: 2"));
+  assert.equal((await ownerConsole(systemOwner, { kind: "user" }, now)).events.length, 0);
+  assert.equal((await ownerConsole(systemOwner, { from: "2026-10-24" }, now)).events.length, 0);
 });

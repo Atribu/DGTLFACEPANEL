@@ -24,6 +24,7 @@ export interface Hotel {
   contactEmail: string;
   color: string;
   createdAt: string;
+  archivedAt?: string;
 }
 export interface ChecklistItem {
   id: string;

@@ -37,8 +37,8 @@ export async function ownerConsole(actor: User, rawQuery: OwnerConsoleQuery, now
   const to = query.to ? new Date(new Date(`${query.to}T00:00:00+03:00`).getTime() + 86400000).toISOString() : null;
   const [users, tasks, hotels, presence, logins, failed] = await Promise.all([
     db.query<{data: User}>("SELECT data FROM app_users ORDER BY data->>'name',id"),
-    db.query<{data: Task}>("SELECT data FROM tasks"),
-    db.query<{data: Hotel}>("SELECT data FROM hotels ORDER BY data->>'name',id"),
+    db.query<{data: Task}>("SELECT t.data FROM tasks t JOIN hotels h ON h.id=t.hotel_id WHERE h.data->>'archivedAt' IS NULL"),
+    db.query<{data: Hotel}>("SELECT data FROM hotels WHERE data->>'archivedAt' IS NULL ORDER BY data->>'name',id"),
     db.query<{user_id:string; last_seen_at:string|Date; online:boolean; channels:string[]}>(`
       SELECT s.user_id,max(s.last_seen_at) AS last_seen_at,
         bool_or(s.ended_at IS NULL AND s.expires_at > $1::timestamptz AND s.auth_version=u.auth_version
@@ -68,31 +68,43 @@ export async function ownerConsole(actor: User, rawQuery: OwnerConsoleQuery, now
     WITH events AS (
       SELECT 'operation:'||a.id AS id,'operation' AS kind,a.data->>'userId' AS actor_id,
         a.data->>'userName' AS actor_name,a.data->>'message' AS message,
-        a.data->>'createdAt' AS created_at,a.hotel_id,a.task_id
+        a.data->>'createdAt' AS created_at,a.hotel_id,a.task_id,NULL AS hotel_name
         FROM activities a
         WHERE ($1::text IS NULL OR a.data->>'createdAt'>=$1)
           AND ($2::text IS NULL OR a.data->>'createdAt'<$2)
       UNION ALL
       SELECT 'user:'||u.id,'user',u.data->>'actorId',u.data->>'actorName',
         coalesce(u.data->>'targetName','')||': '||coalesce(u.data->>'message',''),
-        u.data->>'createdAt',NULL,NULL FROM user_events u
+        u.data->>'createdAt',NULL,NULL,NULL FROM user_events u
         WHERE ($1::text IS NULL OR u.data->>'createdAt'>=$1)
           AND ($2::text IS NULL OR u.data->>'createdAt'<$2)
       UNION ALL
       SELECT 'session:'||s.id,'session',s.user_id,s.actor_name,
         CASE s.action WHEN 'login' THEN 'Hesaba giriş yapıldı.' WHEN 'logout' THEN 'Hesaptan çıkış yapıldı.'
           ELSE 'Başarısız giriş denemesi.' END,
-        to_char(s.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),NULL,NULL FROM account_events s
+        to_char(s.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),NULL,NULL,NULL FROM account_events s
         WHERE ($1::text IS NULL OR s.created_at >= $1::timestamptz)
           AND ($2::text IS NULL OR s.created_at < $2::timestamptz)
+      UNION ALL
+      SELECT 'hotel:'||h.id,'operation',h.data->>'actorId',h.data->>'actorName',
+        CASE h.data->>'action'
+          WHEN 'archive' THEN 'Otel arşivlendi. Düzenli işler duraklatıldı.'
+          WHEN 'restore' THEN 'Otel arşivden çıkarıldı. Düzenli işler duraklatılmış durumda.'
+          ELSE 'Otel kalıcı olarak silindi. Görev: '||coalesce(h.data->'counts'->>'tasks','0')
+            ||', yorum: '||coalesce(h.data->'counts'->>'comments','0')
+            ||', ek: '||coalesce(h.data->'counts'->>'attachments','0')
+            ||', düzenli iş: '||coalesce(h.data->'counts'->>'recurrences','0')||'.' END,
+        h.data->>'createdAt',h.hotel_id,NULL,h.data->>'hotelName' FROM hotel_events h
+        WHERE ($1::text IS NULL OR h.data->>'createdAt'>=$1)
+          AND ($2::text IS NULL OR h.data->>'createdAt'<$2)
     )
     SELECT e.id,e.kind,e.actor_id AS "actorId",e.actor_name AS "actorName",e.message,
-      e.created_at AS "createdAt",e.hotel_id AS "hotelId",h.data->>'name' AS "hotelName",
+      e.created_at AS "createdAt",e.hotel_id AS "hotelId",coalesce(e.hotel_name,h.data->>'name') AS "hotelName",
       e.task_id AS "taskId",t.data->>'title' AS "taskTitle"
     FROM events e LEFT JOIN hotels h ON h.id=e.hotel_id LEFT JOIN tasks t ON t.id=e.task_id
     WHERE ($3::text IS NULL OR e.actor_id=$3)
       AND ($4='all' OR e.kind=$4)
-      AND ($5='' OR strpos(lower(concat_ws(' ',e.actor_name,e.message,h.data->>'name',t.data->>'title')),lower($5))>0)
+      AND ($5='' OR strpos(lower(concat_ws(' ',e.actor_name,e.message,coalesce(e.hotel_name,h.data->>'name'),t.data->>'title')),lower($5))>0)
     ORDER BY e.created_at DESC,e.id DESC LIMIT 51 OFFSET $6`,
     [from,to,query.actorId || null,query.kind,query.q,query.offset]);
   return {

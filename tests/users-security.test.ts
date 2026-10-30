@@ -268,6 +268,25 @@ test("observers require at least one existing hotel and duplicate selections are
   );
 });
 
+test("archived memberships can be retained but cannot be newly granted", async () => {
+  await db.query("UPDATE hotels SET data=data || $2::jsonb WHERE id=$1", [
+    "hotel-a", JSON.stringify({ archivedAt: new Date().toISOString() }),
+  ]);
+  await assert.rejects(createUser(admin, draft({ role: "observer", hotelIds: ["hotel-a"] })), { status: 400 });
+  await assert.rejects(updateUser(admin, otherStaff.id, edit(otherStaff, { role: "observer", hotelIds: ["hotel-a"] })), { status: 400 });
+  const updated = await updateUser(admin, observer.id, edit(observer, { name: "Yeni gözlemci adı" }));
+  assert.deepEqual(updated.user.hotelIds, observer.hotelIds);
+  assert.deepEqual((await bootstrap(updated.user)).hotels, []);
+});
+
+test("archived open responsibilities still protect users until work is transferred or purged", async () => {
+  await db.query("UPDATE hotels SET data=data || $2::jsonb WHERE id=$1", [
+    "hotel-a", JSON.stringify({ archivedAt: new Date().toISOString() }),
+  ]);
+  await assert.rejects(deleteUser(admin, owner.id), { status: 409 });
+  await assert.rejects(updateUser(admin, owner.id, edit(owner, { active: false })), { status: 409 });
+});
+
 test("disable blocks login and existing sessions; re-enable never resurrects a stale cookie", async () => {
   const initial = await authenticate(observer.email, password);
   const cookie = {
