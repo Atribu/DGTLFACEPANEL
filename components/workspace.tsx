@@ -30,6 +30,7 @@ import {
   Users,
   UserCog,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { type BootstrapData, ROLE_LABELS, type Task } from "@/lib/types";
 import {
@@ -187,7 +188,11 @@ export default function Workspace() {
   const alerts = admin
     ? data.tasks.filter((t) => t.status === "review").length
     : data.tasks.filter((t) => t.assigneeId === user.id && isOverdue(t)).length;
-  const nav = [
+  const nav: Array<{
+    view: View | "benchmark";
+    label: string;
+    icon: LucideIcon;
+  }> = [
     {
       view: "overview" as View,
       label: observer
@@ -207,6 +212,11 @@ export default function Workspace() {
     {
       view: "reports" as View,
       label: "Otel Raporları",
+      icon: ChartNoAxesCombined,
+    },
+    {
+      view: "benchmark",
+      label: "Benchmark",
       icon: ChartNoAxesCombined,
     },
     { view: "notifications" as View, label: "Bildirimler", icon: Bell },
@@ -245,19 +255,28 @@ export default function Workspace() {
         </button>
         <div className="workspace-label">ÇALIŞMA ALANI</div>
         <nav aria-label="Ana menü">
-          {nav.map((n) => (
-            <button
-              key={n.view}
-              className={`nav-item ${view === n.view || (n.view === "hotels" && view === "hotel") || (n.view === "tasks" && view === "task") ? "active" : ""}`}
-              onClick={() => navigate(n.view)}
-            >
-              <n.icon size={19} />
-              <span>{n.label}</span>
-              {n.view === "tasks" && alerts > 0 && (
-                <span className="nav-count">{alerts}</span>
-              )}
-            </button>
-          ))}
+          {nav.map((n) =>
+            n.view === "benchmark" ? (
+              <a key={n.view} className="nav-item" href="/benchmark">
+                <n.icon size={19} />
+                <span>{n.label}</span>
+              </a>
+            ) : (
+              <button
+                key={n.view}
+                className={`nav-item ${view === n.view || (n.view === "hotels" && view === "hotel") || (n.view === "tasks" && view === "task") ? "active" : ""}`}
+                onClick={() => {
+                  if (n.view !== "benchmark") navigate(n.view);
+                }}
+              >
+                <n.icon size={19} />
+                <span>{n.label}</span>
+                {n.view === "tasks" && alerts > 0 && (
+                  <span className="nav-count">{alerts}</span>
+                )}
+              </button>
+            ),
+          )}
         </nav>
         <div className="sidebar-bottom">
           {admin && (
