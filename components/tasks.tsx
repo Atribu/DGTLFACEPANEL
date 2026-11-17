@@ -44,6 +44,11 @@ import {
   type TaskStatus,
 } from "@/lib/types";
 import {
+  compareTaskStages,
+  INITIAL_SETUP_TASK_BY_ID,
+  INITIAL_SETUP_TASK_STAGES,
+} from "@/lib/task-presets";
+import {
   Avatar,
   EmptyState,
   Field,
@@ -85,12 +90,13 @@ const timestamp = (value: string) =>
     minute: "2-digit",
     timeZone: "Europe/Istanbul",
   }).format(new Date(value));
+const taskStage = (task: Task) => task.stage.trim() || "Diğer işler";
 
 export function TasksView(props: ViewProps) {
   const { data, navigate } = props;
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [loaded, setLoaded] = useState(false);
-  const [composer, setComposer] = useState(false);
+  const [composerPresetId, setComposerPresetId] = useState<string | null>(null);
   const isAdmin = data.user.role === "admin";
   const patchFilter = (patch: Partial<Filters>) =>
     setFilters((current) => ({ ...current, ...patch }));
@@ -159,7 +165,7 @@ export function TasksView(props: ViewProps) {
         data.tasks.filter((task) => {
           const query = filters.query.trim().toLocaleLowerCase("tr");
           const searchable =
-            `${task.title} ${task.code} ${hotelById.get(task.hotelId)?.name || ""} ${task.department}`.toLocaleLowerCase(
+            `${task.title} ${task.code} ${hotelById.get(task.hotelId)?.name || ""} ${task.department} ${task.stage}`.toLocaleLowerCase(
               "tr",
             );
           if (query && !searchable.includes(query)) return false;
@@ -186,6 +192,21 @@ export function TasksView(props: ViewProps) {
   const activeCount = data.tasks.filter(
     (task) => task.status !== "completed",
   ).length;
+  const taskGroups = useMemo(() => {
+    const grouped = new Map<string, Task[]>();
+    for (const task of tasks) {
+      const stage = taskStage(task);
+      grouped.set(stage, [...(grouped.get(stage) ?? []), task]);
+    }
+    return [...grouped.entries()]
+      .sort(([left], [right]) => compareTaskStages(left, right))
+      .map(([stage, stageTasks]) => ({
+        stage,
+        tasks: sortTasks(stageTasks),
+        completed: stageTasks.filter((task) => task.status === "completed")
+          .length,
+      }));
+  }, [tasks]);
   const overdueCount = data.tasks.filter(isOverdue).length;
   const reviewCount = data.tasks.filter(
     (task) => task.status === "review",
@@ -221,12 +242,12 @@ export function TasksView(props: ViewProps) {
       <PageHeader
         eyebrow="ÇALIŞMA ALANI"
         title="Görevler"
-        description="Her işin bir sorumlusu, her adımın net bir önceliği var."
+        description="İşler kurulum aşamalarına göre gruplu ve sıralı gösterilir."
         actions={
           isAdmin ? (
             <button
               className="btn btn-primary"
-              onClick={() => setComposer(true)}
+              onClick={() => setComposerPresetId("")}
             >
               <Plus size={17} /> Yeni görev
             </button>
@@ -244,6 +265,71 @@ export function TasksView(props: ViewProps) {
         <span>
           <Eye size={14} /> <strong>{reviewCount}</strong> kontrol bekleyen
         </span>
+      </div>
+      <section className="panel setup-task-catalog">
+        <div className="setup-task-catalog-heading">
+          <div>
+            <span className="eyebrow">EXCEL İLK KURULUM PLANI</span>
+            <h2>Yeni görev yapısı</h2>
+            <p>
+              Excel tablosundaki 9 aşama ve 98 görev burada şablon olarak
+              gösterilir. Bir satırı seçerek o görevi oluşturabilirsiniz.
+            </p>
+          </div>
+          <span className="setup-task-total">98 görev şablonu</span>
+        </div>
+        <div className="setup-task-stages">
+          {INITIAL_SETUP_TASK_STAGES.map((presetStage, stageIndex) => (
+            <details
+              className="setup-task-stage"
+              key={presetStage.name}
+              open={stageIndex === 0}
+            >
+              <summary>
+                <span className="setup-task-stage-number">
+                  {stageIndex + 1}
+                </span>
+                <strong>{presetStage.name}</strong>
+                <span>{presetStage.tasks.length} görev</span>
+                <ChevronRight className="setup-task-stage-chevron" size={17} />
+              </summary>
+              <div className="setup-task-rows">
+                {presetStage.tasks.map((preset) => (
+                  <div className="setup-task-row" key={preset.id}>
+                    <span className="setup-task-checkbox" aria-hidden="true" />
+                    <span className="setup-task-name">{preset.title}</span>
+                    {preset.cadence && (
+                      <span className="setup-task-cadence">
+                        {preset.cadence}
+                      </span>
+                    )}
+                    <span className="setup-task-label">Şablon</span>
+                    {isAdmin && (
+                      <button
+                        className="btn btn-small btn-secondary setup-task-create"
+                        aria-label={`${preset.title} görevini oluştur`}
+                        onClick={() => setComposerPresetId(preset.id)}
+                      >
+                        <Plus size={14} /> Oluştur
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+      <div className="previous-tasks-heading">
+        <div>
+          <span className="eyebrow">MEVCUT KAYITLAR</span>
+          <h2>Önceki görevler</h2>
+          <p>
+            Daha önce oluşturulan görevler değişmeden ve mevcut çalışma
+            düzeniyle burada devam eder.
+          </p>
+        </div>
+        <span>{data.tasks.length} görev</span>
       </div>
       <section className="panel task-workspace">
         <div className="toolbar task-toolbar">
@@ -348,7 +434,9 @@ export function TasksView(props: ViewProps) {
           )}
         </div>
         <div className="task-list-meta">
-          <span>{tasks.length} görev gösteriliyor</span>
+          <span>
+            {taskGroups.length} aşama · {tasks.length} görev gösteriliyor
+          </span>
           <span>
             <ArrowDownWideNarrow size={14} /> Öncelik: 1 → 10{" "}
             <span className="desktop-only">· ardından teslim tarihi</span>
@@ -375,7 +463,7 @@ export function TasksView(props: ViewProps) {
               ) : isAdmin ? (
                 <button
                   className="btn btn-primary"
-                  onClick={() => setComposer(true)}
+                  onClick={() => setComposerPresetId("")}
                 >
                   <Plus size={16} /> İlk görevi oluştur
                 </button>
@@ -398,89 +486,107 @@ export function TasksView(props: ViewProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                {tasks.map((task, index) => {
-                  const assignee = task.assigneeId
-                    ? userById.get(task.assigneeId)
-                    : undefined;
-                  return (
-                    <tr
-                      key={task.id}
-                      className={`${task.status === "completed" ? "completed-task" : ""} ${task.status === "completed" && tasks[index - 1]?.status !== "completed" ? "completed-first" : ""}`}
-                    >
-                      <td>
-                        <button
-                          className="task-title-link"
-                          onClick={() => navigate("task", task.id)}
-                        >
-                          <span
-                            className={`task-state-mark state-${task.status}`}
+              {taskGroups.map((group, groupIndex) => (
+                <tbody key={group.stage}>
+                  <tr className="task-stage-row">
+                    <td colSpan={7}>
+                      <div>
+                        <span className="task-stage-number">
+                          {groupIndex + 1}
+                        </span>
+                        <strong>{group.stage}</strong>
+                        <span>
+                          {group.completed}/{group.tasks.length} tamamlandı
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  {group.tasks.map((task, index) => {
+                    const assignee = task.assigneeId
+                      ? userById.get(task.assigneeId)
+                      : undefined;
+                    return (
+                      <tr
+                        key={task.id}
+                        className={`${task.status === "completed" ? "completed-task" : ""} ${task.status === "completed" && group.tasks[index - 1]?.status !== "completed" ? "completed-first" : ""}`}
+                      >
+                        <td>
+                          <button
+                            className="task-title-link"
+                            onClick={() => navigate("task", task.id)}
                           >
-                            {task.status === "completed" && <Check size={11} />}
-                          </span>
-                          <span>
-                            <strong>{task.title}</strong>
-                            <span className="subtext">
-                              {task.code} <span>·</span> {task.department}
-                              {task.status === "waiting" && task.waitingReason
-                                ? ` · ${task.waitingReason}`
-                                : ""}
+                            <span
+                              className={`task-state-mark state-${task.status}`}
+                            >
+                              {task.status === "completed" && (
+                                <Check size={11} />
+                              )}
                             </span>
+                            <span>
+                              <strong>{task.title}</strong>
+                              <span className="subtext">
+                                {task.code} <span>·</span> {task.department}
+                                {task.status === "waiting" &&
+                                task.waitingReason
+                                  ? ` · ${task.waitingReason}`
+                                  : ""}
+                              </span>
+                            </span>
+                          </button>
+                        </td>
+                        <td>
+                          <span className="hotel-cell">
+                            <span
+                              className="hotel-dot"
+                              style={{
+                                background:
+                                  hotelById.get(task.hotelId)?.color ||
+                                  "var(--accent)",
+                              }}
+                            />
+                            {hotelById.get(task.hotelId)?.name || "Otel"}
                           </span>
-                        </button>
-                      </td>
-                      <td>
-                        <span className="hotel-cell">
+                        </td>
+                        <td>
+                          {assignee ? (
+                            <span className="assignee-cell">
+                              <Avatar name={assignee.name} size="small" />
+                              <span>{assignee.name}</span>
+                            </span>
+                          ) : (
+                            <span className="muted">Atanmadı</span>
+                          )}
+                        </td>
+                        <td>
+                          <StatusBadge status={task.status} />
+                        </td>
+                        <td>
+                          <PriorityBadge value={task.priority} />
+                        </td>
+                        <td>
                           <span
-                            className="hotel-dot"
-                            style={{
-                              background:
-                                hotelById.get(task.hotelId)?.color ||
-                                "var(--accent)",
-                            }}
-                          />
-                          {hotelById.get(task.hotelId)?.name || "Otel"}
-                        </span>
-                      </td>
-                      <td>
-                        {assignee ? (
-                          <span className="assignee-cell">
-                            <Avatar name={assignee.name} size="small" />
-                            <span>{assignee.name}</span>
+                            className={
+                              isOverdue(task) ? "due-overdue" : "due-date"
+                            }
+                          >
+                            <CalendarDays size={13} />
+                            {dateLabel(task.dueDate)}
                           </span>
-                        ) : (
-                          <span className="muted">Atanmadı</span>
-                        )}
-                      </td>
-                      <td>
-                        <StatusBadge status={task.status} />
-                      </td>
-                      <td>
-                        <PriorityBadge value={task.priority} />
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            isOverdue(task) ? "due-overdue" : "due-date"
-                          }
-                        >
-                          <CalendarDays size={13} />
-                          {dateLabel(task.dueDate)}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="icon-btn"
-                          aria-label={`${task.title} görevini aç`}
-                          onClick={() => navigate("task", task.id)}
-                        >
-                          <ChevronRight size={17} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+                        </td>
+                        <td>
+                          <button
+                            className="icon-btn"
+                            aria-label={`${task.title} görevini aç`}
+                            onClick={() => navigate("task", task.id)}
+                          >
+                            <ChevronRight size={17} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              ))}
             </table>
           </div>
         ) : (
@@ -559,11 +665,12 @@ export function TasksView(props: ViewProps) {
           </div>
         )}
       </section>
-      {composer && (
+      {composerPresetId !== null && (
         <TaskComposer
           {...props}
           hotelId={filters.hotel || undefined}
-          onClose={() => setComposer(false)}
+          initialPresetId={composerPresetId || undefined}
+          onClose={() => setComposerPresetId(null)}
         />
       )}
     </>
@@ -1353,9 +1460,25 @@ export function TaskComposer({
   onClose,
   hotelId,
   task,
-}: ViewProps & { onClose: () => void; hotelId?: string; task?: Task }) {
+  initialPresetId,
+}: ViewProps & {
+  onClose: () => void;
+  hotelId?: string;
+  task?: Task;
+  initialPresetId?: string;
+}) {
+  const initialPreset = initialPresetId
+    ? INITIAL_SETUP_TASK_BY_ID.get(initialPresetId)
+    : undefined;
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
+  const [selectedPresetId, setSelectedPresetId] = useState(
+    initialPreset?.id || "",
+  );
+  const [title, setTitle] = useState(task?.title || initialPreset?.title || "");
+  const [stage, setStage] = useState(
+    task?.stage || initialPreset?.stage || INITIAL_SETUP_TASK_STAGES[0].name,
+  );
   const staff = data.users.filter(
     (user) => user.role !== "observer" && user.active !== false,
   );
@@ -1366,6 +1489,22 @@ export function TaskComposer({
   const departmentOptions = [
     ...new Set([...departments, ...data.tasks.map((item) => item.department)]),
   ].filter(Boolean);
+  const initialSetupStageNames = new Set(
+    INITIAL_SETUP_TASK_STAGES.map((item) => item.name),
+  );
+  const existingStageOptions = [
+    ...new Set(data.tasks.map((item) => item.stage.trim()).filter(Boolean)),
+  ]
+    .filter((name) => !initialSetupStageNames.has(name))
+    .sort(compareTaskStages);
+
+  function selectPreset(presetId: string) {
+    setSelectedPresetId(presetId);
+    const preset = INITIAL_SETUP_TASK_BY_ID.get(presetId);
+    if (!preset) return;
+    setTitle(preset.title);
+    setStage(preset.stage);
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1373,12 +1512,13 @@ export function TaskComposer({
     setFormError("");
     const values = new FormData(event.currentTarget);
     const priority = Number(values.get("priority"));
-    const title = String(values.get("title") || "").trim();
+    const taskTitle = String(values.get("title") || "").trim();
+    const taskStageValue = String(values.get("stage") || "").trim();
     const selectedHotelId =
       task?.hotelId || String(values.get("hotelId") || "");
     const department = String(values.get("department") || "");
-    if (!title || !selectedHotelId || !department) {
-      setFormError("Görev adı, otel ve ekip alanlarını doldurun.");
+    if (!taskTitle || !selectedHotelId || !department || !taskStageValue) {
+      setFormError("Görev adı, otel, ekip ve süreç aşaması alanlarını doldurun.");
       return;
     }
     if (!Number.isInteger(priority) || priority < 1 || priority > 10) {
@@ -1404,14 +1544,14 @@ export function TaskComposer({
     }
     const assigneeId = String(values.get("assigneeId") || "") || null;
     const body = {
-      title,
+      title: taskTitle,
       department,
       priority,
       description: String(values.get("description") || "").trim(),
       ...(!task || assigneeId !== task.assigneeId ? { assigneeId } : {}),
       dueDate: String(values.get("dueDate") || "") || null,
       hotelInput: String(values.get("hotelInput") || "").trim(),
-      stage: String(values.get("stage") || "").trim() || "Genel",
+      stage: taskStageValue,
       ...(task
         ? { action: "update" }
         : { hotelId: selectedHotelId, checklist }),
@@ -1467,12 +1607,40 @@ export function TaskComposer({
           </div>
         )}
         <div className="stack">
+          {!task && (
+            <Field
+              label="Excel ilk kurulum görevi"
+              hint="Seçtiğiniz görev adı ve süreç aşaması otomatik doldurulur. Mevcut görevler etkilenmez."
+            >
+              <select
+                className="select"
+                value={selectedPresetId}
+                onChange={(event) => selectPreset(event.target.value)}
+              >
+                <option value="">Görevi kendim yazacağım</option>
+                {INITIAL_SETUP_TASK_STAGES.map((presetStage, index) => (
+                  <optgroup
+                    key={presetStage.name}
+                    label={`${index + 1}. ${presetStage.name}`}
+                  >
+                    {presetStage.tasks.map((preset) => (
+                      <option key={preset.id} value={preset.id}>
+                        {preset.title}
+                        {preset.cadence ? ` · ${preset.cadence}` : ""}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </Field>
+          )}
           <Field label="Görev adı *">
             <input
               className="input"
               name="title"
               placeholder="Örneğin: Rezervasyon bağlantısını test et"
-              defaultValue={task?.title || ""}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
               required
               maxLength={200}
             />
@@ -1572,14 +1740,29 @@ export function TaskComposer({
                 defaultValue={task?.dueDate?.slice(0, 10) || ""}
               />
             </Field>
-            <Field label="Süreç aşaması">
-              <input
-                className="input"
+            <Field label="Süreç aşaması *">
+              <select
+                className="select"
                 name="stage"
-                defaultValue={task?.stage || "Genel"}
-                placeholder="Örneğin: Teknik kurulum"
-                maxLength={150}
-              />
+                value={stage}
+                onChange={(event) => setStage(event.target.value)}
+                required
+              >
+                <optgroup label="Excel ilk kurulum aşamaları">
+                  {INITIAL_SETUP_TASK_STAGES.map((presetStage, index) => (
+                    <option key={presetStage.name} value={presetStage.name}>
+                      {index + 1}. {presetStage.name}
+                    </option>
+                  ))}
+                </optgroup>
+                {existingStageOptions.length > 0 && (
+                  <optgroup label="Mevcut diğer aşamalar">
+                    {existingStageOptions.map((name) => (
+                      <option key={name}>{name}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
             </Field>
           </div>
           {!task && (
