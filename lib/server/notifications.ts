@@ -23,7 +23,7 @@ const labels: Record<NotificationKind, string> = {
   priority_changed: "Görevin önceliği değişti",
   due_date_changed: "Hedef tarih değişti",
   returned: "Görev düzeltme için geri gönderildi",
-  approved: "Görev onaylandı",
+  approved: "Görev tamamlandı",
   review_requested: "Görev kontrolünüzü bekliyor",
   waiting: "Görev beklemeye alındı",
   due_today: "Görevin hedef tarihi bugün",
@@ -151,7 +151,9 @@ export async function notifyTaskChange(
     await send(
       "approved",
       [...assignee, ...observers],
-      `“${after.title}” görevi yönetici onayıyla tamamlandı.`,
+      before?.status === "review"
+        ? `“${after.title}” görevi yönetici onayıyla tamamlandı.`
+        : `“${after.title}” görevi tamamlandı.`,
     );
   if (before?.status !== "review" && after.status === "review")
     await send(

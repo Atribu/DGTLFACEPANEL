@@ -50,6 +50,8 @@ Aşağıdaki hesapların ortak şifresi: **`Demo2026!`**
 
 Görev durumları **Planlandı → Devam ediyor / Bekliyor → Kontrol bekliyor → Tamamlandı** şeklinde ilerler. Beklemeye alınan iş için neden yazılır. Tamamlanma kriterleri işaretlendikten sonra görev kontrole gönderilir; işi yalnızca yönetici onayı tamamlar. Kontroldeki ve tamamlanmış işlerin durum/kriter değişiklikleri kilitlidir; yönetici işi geri gönderebilir veya yeniden açabilir. Yorumlar ayrıca kaydedilir.
 
+Geçici olarak yönetici kontrolünü atlamak için `TASK_APPROVAL_BYPASS_UNTIL` gelecekteki bir ISO tarih/saatine ayarlanabilir. Bu süre boyunca “submit” işlemi tüm kriterleri tamamlanmış görevi doğrudan bitirir; mevcut onay/geri gönderme kodu ve önceden kontrolde bekleyen işler korunur. Belirlenen an geldiğinde veya değişken kaldırıldığında normal yönetici onay akışı otomatik olarak yeniden devreye girer.
+
 Öncelikler **1–10** arasındadır: **1 en yüksek**, 10 en düşük. Görevler tamamlanmamış işler önce gelecek şekilde, ardından öncelik ve hedef tarihe göre sıralanır. Gecikme hesabı Türkiye saat dilimine göre yapılır.
 
 ## Kaynak görev listesi

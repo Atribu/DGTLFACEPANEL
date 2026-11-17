@@ -7,6 +7,13 @@ export const isDemo = () =>
   !isProduction() &&
   (process.env.ENABLE_DEMO === "true" || !process.env.DATABASE_URL);
 
+export function isTaskApprovalBypassed(now = new Date()): boolean {
+  const configuredUntil = process.env.TASK_APPROVAL_BYPASS_UNTIL?.trim();
+  if (!configuredUntil) return false;
+  const until = Date.parse(configuredUntil);
+  return Number.isFinite(until) && now.getTime() < until;
+}
+
 export function checkEnvironment() {
   if (isProduction() && !process.env.DATABASE_URL)
     throw new Error("Production requires DATABASE_URL.");

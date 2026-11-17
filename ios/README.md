@@ -20,6 +20,8 @@ Görev ayrıntısından **Dosyalar ve bağlantılar** ve **Görev geçmişi** a�
 
 **Tik koymak bir tamamlanma kriterini işaretler.** Tüm kriterler hazır olunca iş yönetici kontrolüne gönderilir; ancak yönetici onayıyla “Tamamlandı” olur. Kontrol veya tamamlandı aşamasındaki kriterler kilitlidir. Yönetici işi geri gönderebilir veya yeniden açabilir.
 
+Sunucuda tarihli geçici onay bypassı etkinse web ve iPhone bunun yerine **Görevi tamamla** eylemini gösterir ve tüm kriterleri biten görev doğrudan tamamlanır. Bypass süresi dolduğunda uygulama, bir sonraki eşitlemede mevcut yönetici kontrolü arayüzüne geri döner.
+
 **Yorum / açıklama ekle** alanı ortak ekip yorumuna yeni bir kayıt ekler. Bu notlar webde de görünür ve görevi görmeye yetkili otel gözlemcileri tarafından okunabilir. Mevcut yorum üzerine yazılmaz. Aynı gönderimin bağlantı sorunu nedeniyle tekrar denenmesi aynı yorum kaydını döndürür; yeni kopya oluşturmaz. Başka biri görevi değiştirmişse eski sürüme dayanan tik/durum işlemi uygulanmaz; güncel bilgi alınıp tekrar denenir.
 
 ## Eşitleme ve çevrimdışı kullanım

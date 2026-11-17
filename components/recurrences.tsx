@@ -181,9 +181,10 @@ export function RecurrencesView(props: ViewProps) {
         <div>
           <strong>Her dönem kendi kaydını korur.</strong>
           <p>
-            Oluşan görevler personel tarafından kontrole gönderilir ve yönetici
-            onayıyla tamamlanır. Plan değişiklikleri önceki görevleri
-            değiştirmez.
+            {data.taskApprovalBypass
+              ? "Oluşan görevler, tüm kriterler tamamlandığında personel tarafından doğrudan bitirilir."
+              : "Oluşan görevler personel tarafından kontrole gönderilir ve yönetici onayıyla tamamlanır."}{" "}
+            Plan değişiklikleri önceki görevleri değiştirmez.
           </p>
         </div>
       </div>

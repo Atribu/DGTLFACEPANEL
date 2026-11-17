@@ -832,7 +832,9 @@ export function TaskDetail(props: ViewProps & { taskId: string }) {
             </div>
             <div className="panel-body">
               <p className="muted task-section-intro">
-                İşi kontrole göndermeden önce aşağıdaki adımları tamamlayın.
+                {data.taskApprovalBypass
+                  ? "İşi tamamlamadan önce aşağıdaki adımları tamamlayın."
+                  : "İşi kontrole göndermeden önce aşağıdaki adımları tamamlayın."}
               </p>
               {task.checklist.length ? (
                 <div className="checklist">
@@ -872,7 +874,9 @@ export function TaskDetail(props: ViewProps & { taskId: string }) {
                 <div className="task-submit-row">
                   <span className="subtext">
                     {allDone
-                      ? "Görev yönetici kontrolüne gönderilmeye hazır."
+                      ? data.taskApprovalBypass
+                        ? "Görev tamamlanmaya hazır."
+                        : "Görev yönetici kontrolüne gönderilmeye hazır."
                       : `${task.checklist.length - doneCount} kriter daha tamamlanmalı.`}
                   </span>
                   <button
@@ -881,13 +885,21 @@ export function TaskDetail(props: ViewProps & { taskId: string }) {
                     onClick={() =>
                       void mutate(
                         { action: "submit" },
-                        "Görev yönetici kontrolüne gönderildi.",
+                        data.taskApprovalBypass
+                          ? "Görev tamamlandı."
+                          : "Görev yönetici kontrolüne gönderildi.",
                         "submit",
                       )
                     }
                   >
                     <Send size={15} />{" "}
-                    {busy === "submit" ? "Gönderiliyor…" : "Kontrole gönder"}
+                    {busy === "submit"
+                      ? data.taskApprovalBypass
+                        ? "Tamamlanıyor…"
+                        : "Gönderiliyor…"
+                      : data.taskApprovalBypass
+                        ? "Görevi tamamla"
+                        : "Kontrole gönder"}
                   </button>
                 </div>
               )}
@@ -1172,8 +1184,9 @@ export function TaskDetail(props: ViewProps & { taskId: string }) {
                   </button>
                 )}
                 <p className="subtext" style={{ marginTop: 12 }}>
-                  Tüm kriterler tamamlandığında işi yönetici kontrolüne
-                  gönderin.
+                  {data.taskApprovalBypass
+                    ? "Tüm kriterler tamamlandığında görevi doğrudan tamamlayın."
+                    : "Tüm kriterler tamamlandığında işi yönetici kontrolüne gönderin."}
                 </p>
               </div>
             </section>
@@ -1572,7 +1585,11 @@ export function TaskComposer({
           {!task && (
             <Field
               label="Tamamlanma kriterleri *"
-              hint="Her satıra bir kriter yazın. Tüm kriterler tamamlanmadan görev kontrole gönderilemez."
+              hint={
+                data.taskApprovalBypass
+                  ? "Her satıra bir kriter yazın. Tüm kriterler tamamlanmadan görev bitirilemez."
+                  : "Her satıra bir kriter yazın. Tüm kriterler tamamlanmadan görev kontrole gönderilemez."
+              }
             >
               <textarea
                 className="textarea"

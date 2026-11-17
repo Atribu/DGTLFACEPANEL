@@ -98,6 +98,7 @@ struct PanelSnapshot: Codable, Equatable, Sendable {
     var comments: [PanelComment]
     var taskVersions: [String: String]
     let demo: Bool
+    let taskApprovalBypass: Bool?
     let checklistImportWarning: String?
 
     // Keep all identities in users for historical task and comment attribution.

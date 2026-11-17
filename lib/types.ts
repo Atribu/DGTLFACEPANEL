@@ -76,6 +76,7 @@ export interface BootstrapData {
   activities: Activity[];
   comments: TaskComment[];
   demo: boolean;
+  taskApprovalBypass: boolean;
   checklistImportWarning?: string;
 }
 export const STATUS_LABELS: Record<TaskStatus, string> = {

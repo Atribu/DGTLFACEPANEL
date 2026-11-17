@@ -149,7 +149,7 @@ private struct PanelAPITests {
         let snapshot = PanelSnapshot(user: user, users: [user],
                                      hotels: [PanelHotel(id: "hotel-one", name: "Miramare Beach", location: "", stage: "onboarding")],
                                      tasks: [task], comments: [], taskVersions: [task.id: "version-one"],
-                                     demo: false, checklistImportWarning: nil)
+                                     demo: false, taskApprovalBypass: nil, checklistImportWarning: nil)
         let comment = PanelComment(id: "comment-one", taskId: task.id, userId: user.id,
                                    userName: user.name, body: "Türkçe ekip notu", createdAt: task.createdAt)
 

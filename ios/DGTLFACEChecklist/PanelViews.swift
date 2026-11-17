@@ -609,7 +609,7 @@ struct PanelTaskDetailView: View {
         } header: {
             Text("Tamamlanma kriterleri · \(task.checklist.filter(\.done).count) / \(task.checklist.count)")
         } footer: {
-            Text(task.status == "review" || task.status == "completed" ? "Kontrol ve tamamlandı aşamalarında kriterler kilitlidir. Yönetici görevi yeniden çalışmaya açabilir." : "Kriter tikleri hazırlığı gösterir. Görev, kontrole gönderilip yönetici tarafından onaylanınca tamamlanır.")
+            Text(task.status == "review" || task.status == "completed" ? "Kontrol ve tamamlandı aşamalarında kriterler kilitlidir. Yönetici görevi yeniden çalışmaya açabilir." : store.snapshot?.taskApprovalBypass == true ? "Tüm kriterler işaretlendiğinde görevi doğrudan tamamlayabilirsiniz." : "Kriter tikleri hazırlığı gösterir. Görev, kontrole gönderilip yönetici tarafından onaylanınca tamamlanır.")
         }
     }
 
@@ -624,11 +624,11 @@ struct PanelTaskDetailView: View {
                 } label: { Label("Durumu değiştir", systemImage: "arrow.triangle.2.circlepath").frame(minHeight: 44) }
                     .disabled(store.isOffline || store.isSaving)
                 Button { update(task, .submit) } label: {
-                    Label("Yönetici kontrolüne gönder", systemImage: "paperplane").frame(minHeight: 44)
+                    Label(store.snapshot?.taskApprovalBypass == true ? "Görevi tamamla" : "Yönetici kontrolüne gönder", systemImage: store.snapshot?.taskApprovalBypass == true ? "checkmark.seal" : "paperplane").frame(minHeight: 44)
                 }
                 .disabled(store.isOffline || store.isSaving || !task.checklist.allSatisfy(\.done))
             } header: { Text("İşlemler") }
-              footer: { if !task.checklist.allSatisfy(\.done) { Text("Kontrole göndermek için tüm kriterleri işaretle.") } }
+              footer: { if !task.checklist.allSatisfy(\.done) { Text(store.snapshot?.taskApprovalBypass == true ? "Görevi tamamlamak için tüm kriterleri işaretle." : "Kontrole göndermek için tüm kriterleri işaretle.") } }
         }
         if store.snapshot?.user.role == "admin", store.snapshot?.user.active != false, task.status == "review" {
             Section {

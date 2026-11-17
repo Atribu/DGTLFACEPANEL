@@ -844,14 +844,18 @@ function Overview(props: ViewProps & { onCreate: () => void }) {
                 {observer
                   ? "Size özel görünüm"
                   : u.role === "staff"
-                    ? "Kontrolle tamamlanan işler"
+                    ? data.taskApprovalBypass
+                      ? "Doğrudan tamamlanan işler"
+                      : "Kontrolle tamamlanan işler"
                     : "Ortak hedef, net sorumluluk"}
               </strong>
               <p>
                 {observer
                   ? "Yalnızca hesabınıza bağlı otellerin çalışmalarını görüntülüyorsunuz."
                   : u.role === "staff"
-                    ? "İşiniz bittiğinde kontrole gönderin. Yönetici onayladığında tamamlanır."
+                    ? data.taskApprovalBypass
+                      ? "Tüm kriterler bittiğinde görevi doğrudan tamamlayabilirsiniz."
+                      : "İşiniz bittiğinde kontrole gönderin. Yönetici onayladığında tamamlanır."
                     : "Öncelikleri belirleyin, işleri ekibinize atayın ve tamamlanan çalışmaları onaylayın."}
               </p>
             </div>

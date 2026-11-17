@@ -150,13 +150,18 @@ const globals = globalThis as typeof globalThis & {
   dgtlDatabase?: Promise<Database>;
 };
 let originalDatabase: Promise<Database> | undefined;
+const originalApprovalBypass = process.env.TASK_APPROVAL_BYPASS_UNTIL;
 let memory: MemoryQueries;
 beforeEach(() => {
+  delete process.env.TASK_APPROVAL_BYPASS_UNTIL;
   originalDatabase = globals.dgtlDatabase;
   memory = new MemoryQueries();
   globals.dgtlDatabase = Promise.resolve(memory);
 });
 afterEach(() => {
+  if (originalApprovalBypass === undefined)
+    delete process.env.TASK_APPROVAL_BYPASS_UNTIL;
+  else process.env.TASK_APPROVAL_BYPASS_UNTIL = originalApprovalBypass;
   if (originalDatabase) globals.dgtlDatabase = originalDatabase;
   else delete globals.dgtlDatabase;
 });
@@ -314,6 +319,57 @@ test("the assigned worker must complete all criteria before submission, and only
         item.message.includes("onayıyla"),
     ),
   );
+});
+
+test("a dated temporary bypass completes submitted work without removing the manager approval flow", async () => {
+  process.env.TASK_APPROVAL_BYPASS_UNTIL = "2999-12-01T00:00:00+03:00";
+  await updateTask(
+    owner,
+    "task-a",
+    patch({ action: "checklist", itemId: "criterion-a", done: true }),
+  );
+  const submitted = await updateTask(
+    owner,
+    "task-a",
+    patch({ action: "submit" }),
+  );
+  assert.equal(submitted.task.status, "completed");
+  assert.ok(
+    memory.activities.some(
+      (item) =>
+        item.taskId === "task-a" &&
+        item.message.includes("geçici doğrudan tamamlama"),
+    ),
+  );
+  assert.equal(
+    (memory.notifications as { kind: string; message: string }[]).some(
+      (item) => item.kind === "review_requested",
+    ),
+    false,
+  );
+  assert.ok(
+    (memory.notifications as { kind: string; message: string }[]).some(
+      (item) =>
+        item.kind === "approved" &&
+        item.message.includes("görevi tamamlandı") &&
+        !item.message.includes("yönetici onayıyla"),
+    ),
+  );
+
+  process.env.TASK_APPROVAL_BYPASS_UNTIL = "2000-01-01T00:00:00Z";
+  memory.tasks.set(
+    "task-expired",
+    task({
+      id: "task-expired",
+      checklist: [{ id: "criterion-expired", text: "Bitti", done: true }],
+    }),
+  );
+  const expired = await updateTask(
+    owner,
+    "task-expired",
+    patch({ action: "submit" }),
+  );
+  assert.equal(expired.task.status, "review");
 });
 
 test("approval rejects non-review work and incomplete criteria, including for a manager", async () => {

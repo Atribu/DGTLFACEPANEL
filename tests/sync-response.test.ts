@@ -13,6 +13,7 @@ function snapshot(): BootstrapData {
     activities: [],
     comments: [],
     demo: false,
+    taskApprovalBypass: false,
   };
 }
 

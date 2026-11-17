@@ -10,7 +10,7 @@ import type {
 import { STATUS_LABELS } from "../types";
 import { getDb, type Queryable } from "./db";
 import { lockActiveActor, requireActiveHotel } from "./hotel-access";
-import { isDemo } from "./config";
+import { isDemo, isTaskApprovalBypassed } from "./config";
 import { HttpError, requireAdmin } from "./http";
 import {
   canApproveTask,
@@ -114,7 +114,16 @@ export async function bootstrap(user: User): Promise<BootstrapData> {
       );
   }
   return redactOwnerReferences(
-    { user, users, hotels, tasks, activities, comments, demo: isDemo() },
+    {
+      user,
+      users,
+      hotels,
+      tasks,
+      activities,
+      comments,
+      demo: isDemo(),
+      taskApprovalBypass: isTaskApprovalBypassed(),
+    },
     await ownerPrivacyContext(db, user),
   );
 }
@@ -388,9 +397,12 @@ export async function updateTask(
             400,
             "Önce tüm tamamlanma kriterlerini işaretleyin. Görev kontrol veya tamamlandı aşamasında olmamalı.",
           );
-        task.status = "review";
+        const bypassApproval = isTaskApprovalBypassed();
+        task.status = bypassApproval ? "completed" : "review";
         task.waitingReason = "";
-        message = "Görev yönetici kontrolüne gönderildi.";
+        message = bypassApproval
+          ? "Görev geçici doğrudan tamamlama akışıyla tamamlandı."
+          : "Görev yönetici kontrolüne gönderildi.";
         break;
       case "approve":
         requireAdmin(actor);
